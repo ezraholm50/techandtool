@@ -22,8 +22,8 @@ We at [Tech and Me](https://www.techandme.se) dedicate our time building and mai
 
 Here is an example of VM's we offer for **free**:
 
-* ownCloud
-* ownCloud on a RaspberryPI
+* Nextcloud / ownCloud
+* Nextcloud on a RaspberryPI
 * WordPress
 * Minecraft
 * Access manager
