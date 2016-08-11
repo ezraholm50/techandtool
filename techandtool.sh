@@ -30,6 +30,7 @@
 #- 3.61 Resize root fs
 #- 3.62 External USB HD
 #- 3.63 RPI-update
+#- 3.64 Raspi-config
 #- 3.7 Show folder size
 #- 3.8 Show folder content with permissions
 #- 3.9 Show connected devices
@@ -584,14 +585,12 @@ do_change_timezone() {
 ################################ Wifi 3.5
 
 do_wlan() {
-	 whiptail --yesno "Would you like to use advanced options?" 20 60 2
-    if [ $? -eq 0 ]; then # yes
+	 whiptail --msgbox "In the next screen navigate with the arrow keys (right arrow for config) and don't for get to select auto connect at the networks config settings." 20 60 2
+    
+		if [ $(dpkg-query -W -f='${Status}' wicd-curses 2>/dev/null | grep -c "ok installed") -eq 1 ]; then
 
-		if [ $(dpkg-query -W -f='${Status}' wicd-curses 2>/dev/null | grep -c "ok installed") -eq 1 ];
-then
          whiptail --msgbox "wicd-curses is already installed!" 20 60 1
          wicd-curses
-
 else
 
     {
@@ -601,7 +600,7 @@ else
         echo $i
     done < <(apt-get update)
     } | whiptail --title "Progress" --gauge "Please wait while updating" 6 60 0
-    
+
     {
     i=1
     while read -r line; do
@@ -609,16 +608,10 @@ else
         echo $i
     done < <(apt-get install wicd-curses -y)
     } | whiptail --title "Progress" --gauge "Please wait while installing wicd-curses" 6 60 0
-    
-	wicd-curses
-fi
 
-else
+	if [ $(dpkg-query -W -f='${Status}' linux-firmware 2>/dev/null | grep -c "ok installed") -eq 1 ]; then
 
-		if [ $(dpkg-query -W -f='${Status}' linux-firmware 2>/dev/null | grep -c "ok installed") -eq 1 ];
-then
-         whiptail --msgbox "Linux-firmware is already installed!" 20 60 1
-
+	echo "Linux-firmware is already installed!"
 else
     {
     i=1
@@ -629,69 +622,8 @@ else
     } | whiptail --title "Progress" --gauge "Please wait while installing linux firmware" 6 60 0
 fi
 
-	if [ $(dpkg-query -W -f='${Status}' network-manager 2>/dev/null | grep -c "ok installed") -eq 1 ];
-then
-        whiptail --msgbox "Network manager is already installed!" 20 60 1
-
-else
-    {
-    i=1
-    while read -r line; do
-        i=$(( $i + 1 ))
-        echo $i
-    done < <(apt-get install network-manager -y)
-    } | whiptail --title "Progress" --gauge "Please wait while installing network manager" 6 60 0
+	wicd-curses
 fi
-
-	if [ $(dpkg-query -W -f='${Status}' wireless-tools 2>/dev/null | grep -c "ok installed") -eq 1 ];
-then
-         whiptail --msgbox "wireless-tools is already installed!" 20 60 1
-
-else
-    {
-    i=1
-    while read -r line; do
-        i=$(( $i + 1 ))
-        echo $i
-    done < <(	apt-get install wireless-tools -y)
-    } | whiptail --title "Progress" --gauge "Please wait while installing wireless tools" 6 60 0
-fi
-
-	sed -i 's|managed=false|managed=true|g' /etc/NetworkManager/NetworkManager.conf
-	/etc/init.d/network-manager restart
-
-	WIFACE=$(lshw -c network | grep "wl" | awk '{print $3}')
-	cp /etc/network/interfaces /etc/network/interfaces.bak
-	echo "auto $WIFACE" >> /etc/network/interfaces
-	echo "allow-hotplug $WIFACE" >> /etc/network/interfaces
-	echo "iface $WIFACE inet dhcp" >> /etc/network/interfaces
-	ifup $WIFACE
-
-	IWLIST=$(nmcli dev wifi)
-	OLDSETTINGS=$(cat /etc/network/interfaces.bak)
-	whiptail --msgbox "In the next screen copy your wifi network SSID (CTRL + SHIFT + C)" 20 60 1
-	whiptail --msgbox "$IWLIST" 30 80 1
-	WLAN=$(whiptail --title "SSID, network name? (case sensetive)" --inputbox "Navigate with TAB to hit ok to enter input" 10 60 3>&1 1>&2 2>&3)
-	WLANPASS=$(whiptail --title "Wlan password? (case sensetive)" --passwordbox "Navigate with TAB to hit ok to enter input" 10 60 3>&1 1>&2 2>&3)
-	
-cat <<-NETWORK > "/etc/network/interfaces"
-$OLDSETTINGS
-
-auto $WIFACE
-allow-hotplug $WIFACE
-iface $WIFACE inet dhcp
-wireless-essid $WLAN
-wireless-key $WLANPASS
-NETWORK
-
-	ifup $WIFACE
-	nmcli dev wifi connect $WLAN password $WLANPASS
-	ifdown $WIFACE
-	ifup $WIFACE
-	dhcpcd -r
-	dhcpcd $WIFACE
-fi
-}
 
 ################################ Raspberry specific 3.6
 
@@ -700,7 +632,8 @@ do_Raspberry() {
     "R1 Resize SD" "" \
     "R2 External USB" "Use an USB HD/SSD as root" \
     "R3 RPI-update" "Update the RPI firmware and kernel" \
-    3>&1 1>&2 2>&3)
+    "R4 Raspi-config" "Set various settings, not all are tested! Already overclocked!" \ 
+  3>&1 1>&2 2>&3)
   RET=$?
   if [ $RET -eq 1 ]; then
     return 0
@@ -709,6 +642,7 @@ do_Raspberry() {
       R1\ *) do_expand_rootfs ;;
       R2\ *) do_external_usb ;;
       R3\ *) do_rpi_update ;;
+      R4\ *) do_raspi_config ;;
       *) whiptail --msgbox "Programmer error: unrecognized option" 20 60 1 ;;
     esac || whiptail --msgbox "There was an error running option $FUN" 20 60 1
   fi
@@ -811,6 +745,15 @@ do_rpi_update() {
         echo $i
     done < <(rpi-update)
     } | whiptail --title "Progress" --gauge "Please wait while updating your RPI firmware and kernel" 6 60 0
+}
+
+##################### Raspi-config 3.64
+
+do_raspi_config() {
+	echo
+	echo "Not configured yet, sorry..."
+	echo
+	sleep 2
 }
 
 ################################ Show folder size 3.7
