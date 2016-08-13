@@ -851,8 +851,6 @@ whiptail --msgbox "IPV6 is now disabled..." 30 $WT_WIDTH $WT_MENU_HEIGHT
 ################################ Find string text 3.13
 
 do_find_string() {
-#!/bin/bash
-#!/bin/bash
         STRINGTEXT=$(whiptail --inputbox "Text that you want to search for? eg. ip mismatch: 192.168.1.133" 10 60 3>&1 1>&2 2>&3)
         STRINGDIR=$(whiptail --inputbox "Directory you want to search in? eg. / for whole system or /home" 10 60 3>&1 1>&2 2>&3)
         STRINGCMD=$(grep -Rl $STRINGTEXT $STRINGDIR)
