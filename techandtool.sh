@@ -37,7 +37,7 @@
 #- 3.10 Show disks usage
 #- 3.11 Show system performance
 #- 3.12 Disable IPV6
-#- 3.13 
+#- 3.13 Find string in files
 #- 4 About this tool
 #- 5 Tech and Tool
 
@@ -481,6 +481,7 @@ do_tools() {
     "T9 Show disks usage" "df -h" \
     "T10 Show system performance" "HTOP" \
     "T11 Disable IPV6" "Via sysctl.conf"\
+    "T12 Find text" "In a given directory"\
     3>&1 1>&2 2>&3)
   RET=$?
   if [ $RET -eq 1 ]; then
@@ -498,6 +499,7 @@ do_tools() {
       T9\ *) do_df ;;
       T10\ *) do_htop ;;
       T11\ *) do_disable_ipv6 ;;
+      T12\ *) do_find_string ;;
     *) whiptail --msgbox "Programmer error: unrecognized option" 20 60 1 ;;
     esac || whiptail --msgbox "There was an error running option $FUN" 20 60 1
   fi
@@ -844,6 +846,15 @@ do_disable_ipv6() {
  fi
  
 whiptail --msgbox "IPV6 is now disabled..." 30 $WT_WIDTH $WT_MENU_HEIGHT
+}
+
+################################ Find string text 3.13
+
+do_find_string() {
+	$STRINGTEXT=$(whiptail --inputbox "Text that you want to search for? eg. ip mismatch: 192.168.1.133" 20 60 1)
+	$STRINGDIR=$(whiptail --inputbox "Directory you want to search in? eg. / for whole system or /home" 20 60 1)
+	$STRINGCMD=$(grep -Rl "$STRINGTEXT" "$STRINGDIR")
+	whiptail --msgbox "$STRINGCMD" 30 60 1
 }
 
 ################################################ Update
