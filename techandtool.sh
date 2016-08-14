@@ -819,6 +819,10 @@ do_disable_ipv6() {
  echo "net.ipv6.conf.lo.disable_ipv6 = 1" >> /etc/sysctl.conf
  fi
  
+ echo
+ sysctl -p
+ echo
+ 
 whiptail --msgbox "IPV6 is now disabled..." 30 $WT_WIDTH $WT_MENU_HEIGHT
 }
 
