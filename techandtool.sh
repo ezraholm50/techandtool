@@ -972,4 +972,4 @@ do_reboot() {
 
 do_poweroff() {
 	shutdown now
-}
+;}
