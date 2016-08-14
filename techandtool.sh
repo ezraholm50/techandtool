@@ -413,36 +413,6 @@ sed -i "s|OWNCLOUD_ORIGIN: '',|OWNCLOUD_ORIGIN: 'SPREEDDOMAIN',|g" $OCDIR/apps/s
 # Restart spreed server
 service spreedwebrtc restart
 
-# Vhost configuration 443
-sed -i 's|</virtualhost>|  <Location /webrtc>\
-      ProxyPass http://$LISTENADDRESS:$LISTENPORT/webrtc\
-      ProxyPassReverse /\
-  </Location>\
-\
-  <Location /webrtc/ws>\
-      ProxyPass ws://$LISTENADDRESS:$LISTENPORT/webrtc/ws\
-  </Location>\
-\
-  ProxyVia On\
-  ProxyPreserveHost On\
-  RequestHeader set X-Forwarded-Proto 'https' env=HTTPS\
-</virtualhost>|g' $VHOST443
-
-# Vhost configuration 80
-#sed -i 's|</virtualhost>|  <Location /webrtc>\
-#      ProxyPass http://$LISTENADDRESS:$LISTENPORT/webrtc\
-#      ProxyPassReverse /\
-#  </Location>\
-#\
-#  <Location /webrtc/ws>\
-#      ProxyPass ws://$LISTENADDRESS:$LISTENPORT/webrtc/ws\
-#  </Location>\
-#\
-#  ProxyVia On\
-#  ProxyPreserveHost On\
-#  RequestHeader set X-Forwarded-Proto 'https' env=HTTPS\
-#</virtualhost>|g' $VHOST80
-
 # Enable apache2 mods if needed
       	if [ -d /etc/apache2/ ]; then
       	        a2enmod proxy proxy_http proxy_wstunnel headers
@@ -592,16 +562,21 @@ do_wlan() {
 		if [ $(dpkg-query -W -f='${Status}' wicd-curses 2>/dev/null | grep -c "ok installed") -eq 1 ]; then
 
          whiptail --msgbox "wicd-curses is already installed!" 20 60 1
-         wicd-curses
+         
+         if [ $(dpkg-query -W -f='${Status}' linux-firmware 2>/dev/null | grep -c "ok installed") -eq 1 ]; then
+	echo "Linux-firmware is already installed!"
 else
-
     {
     i=1
     while read -r line; do
         i=$(( $i + 1 ))
         echo $i
-    done < <(apt-get update)
-    } | whiptail --title "Progress" --gauge "Please wait while updating" 6 60 0
+    done < <(apt-get install linux-firmware -y)
+    } | whiptail --title "Progress" --gauge "Please wait while installing linux firmware" 6 60 0
+fi
+         
+         wicd-curses
+else
 
     {
     i=1
@@ -634,7 +609,7 @@ do_Raspberry() {
     "R1 Resize SD" "" \
     "R2 External USB" "Use an USB HD/SSD as root" \
     "R3 RPI-update" "Update the RPI firmware and kernel" \
-    "R4 Raspi-config" "Set various settings, not all are tested! Already overclocked!" \ 
+    "R4 Raspi-config" "Set various settings, not all are tested! Already overclocked!"  
   3>&1 1>&2 2>&3)
   RET=$?
   if [ $RET -eq 1 ]; then
@@ -785,7 +760,6 @@ do_listdir() {
 	LISTDIR=$(whiptail --title "Directory to list? Eg. /mnt/yourfolder" --inputbox "Navigate with TAB to hit ok to enter input" $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT 3>&1 1>&2 2>&3)
 	LISTDIR1=$(ls -la $LISTDIR)
 	whiptail --msgbox "$LISTDIR1" 30 $WT_WIDTH $WT_MENU_HEIGHT
-	
 }
 
 ################################ Show connected devices 3.9
@@ -972,4 +946,4 @@ do_reboot() {
 
 do_poweroff() {
 	shutdown now
-;}
+}
