@@ -55,17 +55,17 @@ GATEWAY=$($IP route | awk '/default/ { print $3 }')
 ################################ Collabora variable 1.2
 
 HTTPS_CONF="/etc/apache2/sites-available/$EDITORDOMAIN"
-DOMAIN=$(whiptail --title "Techandme.se Collabora" --inputbox "Nextcloud url, make sure it looks like this: office\.yourdomain\.com" $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT 3>&1 1>&2 2>&3)
-EDITORDOMAIN=$(whiptail --title "Techandme.se Collabora" --inputbox "Collabora subdomain eg: office.yourdomain.com" $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT 3>&1 1>&2 2>&3)
+DOMAIN=$(whiptail --title "Techandme.se Collabora" --inputbox "Nextcloud url, make sure it looks like this: cloud\.yourdomain\.com" 10 60 cloud\.yourdomain\.com 3>&1 1>&2 2>&3)
+EDITORDOMAIN=$(whiptail --title "Techandme.se Collabora" --inputbox "Collabora subdomain eg: office.yourdomain.com" 10 60 3>&1 1>&2 2>&3)
 
 ################################ Spreed-webrtc variable 1.3 
 
-DOMAIN=$(whiptail --title "Techandme.se Collabora online installer" --inputbox "Nextcloud url, make sure it looks like this: cloud\.nextcloud\.com" $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT 3>&1 1>&2 2>&3)
-NCDIR=$(whiptail --title "Nextcloud directory" --inputbox "eg. /var/www/nextcloud" $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT 3>&1 1>&2 2>&3)
-WEB=$(whiptail --title "What webserver do you run" --inputbox "eg. apache2" $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT 3>&1 1>&2 2>&3)
-SPREEDDOMAIN=$(whiptail --title "Spreed domain" --inputbox "Leave empty for autodiscovery" $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT 3>&1 1>&2 2>&3)
-SPREEDPORT=$(whiptail --title "Spreed port" --inputbox "Leave empty for autodiscovery" $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT 3>&1 1>&2 2>&3)
-VHOST443=$(whiptail --title "Vhost 443 file location" --inputbox "eg. /etc/$WEB/sites-available/nextcloud_ssl_domain_self_signed.conf or /etc/$WEB/sites-available/$WEB/sites-available/" $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT 3>&1 1>&2 2>&3)
+DOMAIN=$(whiptail --title "Techandme.se Collabora online installer" --inputbox "Nextcloud url, make sure it looks like this: cloud\.nextcloud\.com" 10 60 3>&1 1>&2 2>&3)
+NCDIR=$(whiptail --title "Nextcloud directory" --inputbox "eg. /var/www/nextcloud" 10 60 3>&1 1>&2 2>&3)
+WEB=$(whiptail --title "What webserver do you run" --inputbox "eg. apache2" 10 60 apache2 3>&1 1>&2 2>&3)
+SPREEDDOMAIN=$(whiptail --title "Spreed domain" --inputbox "Leave empty for autodiscovery" 10 60 3>&1 1>&2 2>&3)
+SPREEDPORT=$(whiptail --title "Spreed port" --inputbox "Leave empty for autodiscovery" 10 60 3>&1 1>&2 2>&3)
+VHOST443=$(whiptail --title "Vhost 443 file location" --inputbox "eg. /etc/$WEB/sites-available/nextcloud_ssl_domain_self_signed.conf or /etc/$WEB/sites-available/$WEB/sites-available/" 10 60 3>&1 1>&2 2>&3)
 #VHOST80="/etc/$WEB/sites-available/xxx"
 lISTENADDRESS="$ADDRESS"
 lISTENPORT="$SPREEDPORT"
