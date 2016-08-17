@@ -64,7 +64,7 @@ DOMAIN=$(whiptail --title "Techandme.se Collabora online installer" --inputbox "
 NCDIR=$(whiptail --title "Nextcloud directory" --inputbox "eg. /var/www/nextcloud" 10 60 3>&1 1>&2 2>&3)
 WEB=$(whiptail --title "What webserver do you run" --inputbox "eg. apache2" 10 60 apache2 3>&1 1>&2 2>&3)
 SPREEDDOMAIN=$(whiptail --title "Spreed domain" --inputbox "Leave empty for autodiscovery" 10 60 3>&1 1>&2 2>&3)
-SPREEDPORT=$(whiptail --title "Spreed port" --inputbox "Leave empty for autodiscovery" 10 60 3>&1 1>&2 2>&3)
+SPREEDPORT=$(whiptail --title "Spreed port" --inputbox "Please use default 8443" 10 60 8443 3>&1 1>&2 2>&3)
 VHOST443=$(whiptail --title "Vhost 443 file location" --inputbox "eg. /etc/$WEB/sites-available/nextcloud_ssl_domain_self_signed.conf or /etc/$WEB/sites-available/$WEB/sites-available/" 10 60 3>&1 1>&2 2>&3)
 #VHOST80="/etc/$WEB/sites-available/xxx"
 lISTENADDRESS="$ADDRESS"
@@ -376,14 +376,13 @@ exit 0
 ################################ Spreed-webrtc 2.2
 
 do_spreed_webrtc() {
-	# Secrets
 ENCRYPTIONSECRET=$(openssl rand -hex 32)
 SESSIONSECRET=$(openssl rand -hex 32)
 SERVERTOKEN=$(openssl rand -hex 32)
 SHAREDSECRET=$(openssl rand -hex 32)
 
 # Install spreed (Unstable is used as there are some systemd errors in ubuntu 16.04)
-apt-add-repository ppa:strukturag/spreed-webrtc-unstable
+apt-add-repository ppa:strukturag/spreed-webrtc
 apt-get update
 apt-get install spreed-webrtc -y
 
@@ -392,26 +391,42 @@ sed -i "s|listen = 127.0.0.1:8080|listen = $LISTENADDRESS:$LISTENPORT|g" /etc/sp
 sed -i "s|;basePath = /some/sub/path/|basePath = /webrtc/|g" /etc/spreed/webrtc.conf
 sed -i "s|;authorizeRoomJoin = false|authorizeRoomJoin = true|g" /etc/spreed/webrtc.conf
 sed -i "s|;stunURIs = stun:stun.spreed.me:443|stunURIs = stun:stun.spreed.me:443|g" /etc/spreed/webrtc.conf
-sed -i "s|encryptionSecret = tne-default-encryption-block-key|encryptionSecret = $ENCRYPTIONSECRET|g" /etc/spreed/webrtc.conf
-sed -i "s|sessionSecret = the-default-secret-do-not-keep-me|sessionSecret = $SESSIONSECRET|g" /etc/spreed/webrtc.conf
-sed -i "s|serverToken = i-did-not-change-the-public-token-boo|serverToken = $SERVERTOKEN|g" /etc/spreed/webrtc.conf
-sed -i "s|;extra = /usr/share/spreed-webrtc-server/extra|$OCDIR/apps/spreedme/extra|g" /etc/spreed/webrtc.conf
-sed -i "s|;plugin = extra/static/myplugin.js|plugin = $OCDIR/apps/spreedme/extra/static/owncloud.js|g" /etc/spreed/webrtc.conf
+sed -i "s|encryptionSecret = .*|encryptionSecret = $ENCRYPTIONSECRET|g" /etc/spreed/webrtc.conf
+sed -i "s|sessionSecret = .*|sessionSecret = $SESSIONSECRET|g" /etc/spreed/webrtc.conf
+sed -i "s|serverToken = .*|serverToken = $SERVERTOKEN|g" /etc/spreed/webrtc.conf
+sed -i "s|;extra = /usr/share/spreed-webrtc-server/extra|extra = $NCDIR/apps/spreedme/extra|g" /etc/spreed/webrtc.conf
+sed -i "s|;plugin = extra/static/myplugin.js|plugin = $NCDIR/apps/spreedme/extra/static/owncloud.js|g" /etc/spreed/webrtc.conf
 sed -i "s|enabled = false|enabled = true|g" /etc/spreed/webrtc.conf
 sed -i "s|;mode = sharedsecret|mode = sharedsecret|g" /etc/spreed/webrtc.conf
-sed -i "s|;sharedsecret_secret = some-secret-do-not-keep|sharedsecret_secret = $SHAREDSECRET|g" /etc/spreed/webrtc.conf
+sed -i "s|;sharedsecret_secret = .*|sharedsecret_secret = $SHAREDSECRET|g" /etc/spreed/webrtc.conf
 
 # Change spreed.me config.php
-cp $OCDIR/apps/spreedme/config/config.php.in $OCDIR/apps/spreedme/config/config.php
-sed -i "s|const SPREED_WEBRTC_ORIGIN = '';|const SPREED_WEBRTC_ORIGIN = '$SPREEDDOMAIN';|g" $OCDIR/apps/spreedme/config/config.php
-sed -i "s|const SPREED_WEBRTC_SHAREDSECRET = 'bb04fb058e2d7fd19c5bdaa129e7883195f73a9c49414a7eXXXXXXXXXXXXXXXX';|const SPREED_WEBRTC_SHAREDSECRET = '$SHAREDSECRET';|g" $OCDIR/apps/spreedme/config/config.php
+cp $NCDIR/apps/spreedme/config/config.php.in $NCDIR/apps/spreedme/config/config.php
+sed -i "s|const SPREED_WEBRTC_ORIGIN = '';|const SPREED_WEBRTC_ORIGIN = '$SPREEDDOMAIN';|g" $NCDIR/apps/spreedme/config/config.php
+sed -i "s|const SPREED_WEBRTC_SHAREDSECRET = 'bb04fb058e2d7fd19c5bdaa129e7883195f73a9c49414a7eXXXXXXXXXXXXXXXX';|const SPREED_WEBRTC_SHAREDSECRET = '$SHAREDSECRET';|g" $NCDIR/apps/spreedme/config/config.php
 
 # Change OwnCloudConfig.js
-cp $OCDIR/apps/spreedme/extra/static/config/OwnCloudConfig.js.in $OCDIR/apps/spreedme/extra/static/config/OwnCloudConfig.js
-sed -i "s|OWNCLOUD_ORIGIN: '',|OWNCLOUD_ORIGIN: 'SPREEDDOMAIN',|g" $OCDIR/apps/spreedme/extra/static/config/OwnCloudConfig.js
+cp $NCDIR/apps/spreedme/extra/static/config/OwnCloudConfig.js.in $NCDIR/apps/spreedme/extra/static/config/OwnCloudConfig.js
+sed -i "s|OWNCLOUD_ORIGIN: '',|OWNCLOUD_ORIGIN: 'SPREEDDOMAIN',|g" $NCDIR/apps/spreedme/extra/static/config/OwnCloudConfig.js
 
 # Restart spreed server
 service spreedwebrtc restart
+
+# Vhost configuration 443
+sed -i 's|</VirtualHost>||g' "$VHOST443"
+CAT <<-VHOST > "$VHOST443"
+<Location /webrtc>
+      ProxyPass http://"$LISTENADDRESS":"$LISTENPORT"/webrtc
+      ProxyPassReverse /webrtc
+  </Location>
+  <Location /webrtc/ws>
+      ProxyPass ws://"$LISTENADDRESS":"$LISTENPORT"/webrtc/ws
+  </Location>
+  ProxyVia On
+  ProxyPreserveHost On
+  RequestHeader set X-Forwarded-Proto 'https' env=HTTPS
+</VirtualHost>
+VHOST
 
 # Enable apache2 mods if needed
       	if [ -d /etc/apache2/ ]; then
@@ -426,8 +441,6 @@ echo "Please enable the app in Nextcloud/ownCloud..."
 echo
 echo "If there are any errors make sure to append /?debug to the url when visiting the spreedme app in the cloud"
 echo "This will help us troubleshoot the issues, you could also visit: mydomain.com/index.php/apps/spreedme/admin/debug"
-
-exit 0
 }
 
 ################################ Gpxpod 2.3
@@ -555,51 +568,25 @@ do_change_timezone() {
 }
 
 ################################ Wifi 3.5
+#IFACEWIFI=$(lshw -c network | grep "wl" | awk '{print $3}')
+#IFACEWIRED=$(lshw -c network | grep "en" | awk '{print $3}')
 
 do_wlan() {
-	 whiptail --msgbox "In the next screen navigate with the arrow keys (right arrow for config) and don't for get to select auto connect at the networks config settings." 20 60 2
-    
-		if [ $(dpkg-query -W -f='${Status}' wicd-curses 2>/dev/null | grep -c "ok installed") -eq 1 ]; then
+whiptail --yesno "Do you want to connect to wifi? Its recommended to use a wired connection for your NextBerry server!" --yes-button "Wireless" --no-button "Wired" 20 60 1
+	if [ $? -eq 0 ];         then # yes
 
-         whiptail --msgbox "wicd-curses is already installed!" 20 60 1
-         
-         if [ $(dpkg-query -W -f='${Status}' linux-firmware 2>/dev/null | grep -c "ok installed") -eq 1 ]; then
-	echo "Linux-firmware is already installed!"
-else
-    {
-    i=1
-    while read -r line; do
-        i=$(( $i + 1 ))
-        echo $i
-    done < <(apt-get install linux-firmware -y)
-    } | whiptail --title "Progress" --gauge "Please wait while installing linux firmware" 6 60 0
-fi
-         
-         wicd-curses
-else
+                        apt-get install linux-firmware wicd-curses wicd-daemon wicd-cli -y
+                        #ifdown "$IFACEWIRED"
+                        #sed -i "s|'$IFACEWIRED'|'$IFACEWIFI'|g" /etc/network/interfaces
+			whiptail --msgbox "In the next screen navigate with the arrow keys (right arrow for config) and don't for get to select auto connect at the networks config settings." 20 60 2
+                        wicd-curses
+                        #ifup "$IFACEWIFI"
+                        whiptail --msgbox "Due to the new interface the DHCP server gave you a new ip:\n\n'$ADDRESS' \n\n If the NIC starts with 'wl', you're good to go and you can unplug the ethernet cable: \n\n '$IFACE'" 12 60 1
 
-    {
-    i=1
-    while read -r line; do
-        i=$(( $i + 1 ))
-        echo $i
-    done < <(apt-get install wicd-curses -y)
-    } | whiptail --title "Progress" --gauge "Please wait while installing wicd-curses" 6 60 0
-
-	if [ $(dpkg-query -W -f='${Status}' linux-firmware 2>/dev/null | grep -c "ok installed") -eq 1 ]; then
-
-	echo "Linux-firmware is already installed!"
-else
-    {
-    i=1
-    while read -r line; do
-        i=$(( $i + 1 ))
-        echo $i
-    done < <(apt-get install linux-firmware -y)
-    } | whiptail --title "Progress" --gauge "Please wait while installing linux firmware" 6 60 0
-fi
-
-	wicd-curses
+	else
+        		echo
+        		echo "We'll use a wired connection..."
+        		echo
 fi
 
 ################################ Raspberry specific 3.6
