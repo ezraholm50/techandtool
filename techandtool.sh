@@ -49,7 +49,7 @@ IP="/sbin/ip"
 IFACE=$($IP -o link show | awk '{print $2,$9}' | grep "UP" | cut -d ":" -f 1)
 INTERFACES="/etc/network/interfaces"
 ADDRESS=$($IP route get 1 | awk '{print $NF;exit}')
-NETMASK=$(ifconfig $IFACE | grep Mask | sed s/^.*Mask://)
+NETMASK=$(ifconfig "$IFACE" | grep Mask | sed s/^.*Mask://)
 GATEWAY=$($IP route | awk '/default/ { print $3 }')
 
 ################################ Whiptail size 1.4
@@ -64,7 +64,7 @@ calc_wt_size() {
   if [ "$WT_WIDTH" -gt 178 ]; then
     WT_WIDTH=120
   fi
-  WT_MENU_HEIGHT=$(($WT_HEIGHT-7))
+  WT_MENU_HEIGHT=$((WT_HEIGHT-7))
 }
 
 ################################################ Whiptail check 1.5
@@ -78,7 +78,7 @@ else
     {
     i=1
     while read -r line; do
-        i=$(( $i + 1 ))
+        i=$(( i + 1 ))
         echo $i
     done < <(apt-get install whiptail -y)
     } | whiptail --title "Progress" --gauge "Please wait while installing Whiptail" 6 60 0
@@ -109,8 +109,8 @@ do_finish() {
 
 ################################################ Locations 1.8
 
-REPO="https://github.com/ezraholm50/vm/raw/master"
-SCRIPTS="/var/scripts"
+#REPO="https://github.com/ezraholm50/vm/raw/master"
+#SCRIPTS="/var/scripts"
 
 ################################################ Apps 2
 
@@ -147,7 +147,7 @@ whiptail --msgbox "Please before you start make sure port 443 is directly forwar
     {
     i=1
     while read -r line; do
-        i=$(( $i + 1 ))
+        i=$(( i + 1 ))
         echo $i
     done < <(apt-get update && apt-get upgrade -y && apt-get -f install -y)
     } | whiptail --title "Progress" --gauge "Please wait while updating repo's" 6 60 0
@@ -162,7 +162,7 @@ else
     {
     i=1
     while read -r line; do
-        i=$(( $i + 1 ))
+        i=$(( i + 1 ))
         echo $i
     done < <(apt-get install docker.io -y)
     } | whiptail --title "Progress" --gauge "Please wait while installing docker" 6 60 0
@@ -184,7 +184,7 @@ else
     {
     i=1
     while read -r line; do
-        i=$(( $i + 1 ))
+        i=$(( i + 1 ))
         echo $i
     done < <(apt-get install apache2 -y)
     } | whiptail --title "Progress" --gauge "Please wait while installing Apache2" 6 60 0
@@ -200,7 +200,7 @@ a2enmod ssl
 
 # Create Vhost for Collabora online in Apache2
 
-if [ -f $HTTPS_CONF ];
+if [ -f "$HTTPS_CONF" ];
 then
         echo "Virtual Host exists"
 else
@@ -252,7 +252,7 @@ else
 </VirtualHost>
 HTTPS_CREATE
 
-if [ -f $HTTPS_CONF ];
+if [ -f "$HTTPS_CONF" ];
 then
         echo "$HTTPS_CONF was successfully created"
         sleep 2
@@ -288,13 +288,13 @@ service apache2 restart
         sudo service apache2 stop
 # Check if $letsencryptpath exist, and if, then delete.
 if [ -d "$letsencryptpath" ]; then
-  	rm -R $letsencryptpath
+  	rm -R "$letsencryptpath"
 fi
 # Generate certs
-	cd $dir_before_letsencrypt
+	cd "$dir_before_letsencrypt" || exit
 	git clone https://github.com/letsencrypt/letsencrypt
-	cd $letsencryptpath
-        ./letsencrypt-auto certonly --standalone -d $EDITORDOMAIN
+	cd "$letsencryptpath" || exit
+        ./letsencrypt-auto certonly --standalone -d "$EDITORDOMAIN"
 # Use for testing
 #./letsencrypt-auto --apache --server https://acme-staging.api.letsencrypt.org/directory -d EXAMPLE.COM
 # Activate Apache again (Disabled during standalone)
@@ -317,24 +317,24 @@ and enable the Collabora online connector app and change the URL to whatever sub
 
 	exit 0
 else
-        echo -e "\e[96m"
-        echo -e "It seems like no certs were generated, we do three more tries."
-        echo -e "\e[32m"
-        read -p "Press any key to continue... " -n1 -s
-        echo -e "\e[0m"
+        echo "\e[96m"
+        echo "It seems like no certs were generated, we do three more tries."
+        echo "\e[32m"
+        read -r "Press any key to continue... " -n1 -s
+        echo "\e[0m"
 fi
 
 ##### START SECOND TRY
 # Check if $letsencryptpath exist, and if, then delete.
 	if [ -d "$letsencryptpath" ]; then
-  	rm -R $letsencryptpath
+  	rm -R "$letsencryptpath"
 fi
 
 # Generate certs
-	cd $dir_before_letsencrypt
+	cd "$dir_before_letsencrypt" || exit
 	git clone https://github.com/letsencrypt/letsencrypt
-	cd $letsencryptpath
-	./letsencrypt-auto -d $EDITORDOMAIN
+	cd "$letsencryptpath" || exit
+	./letsencrypt-auto -d "$EDITORDOMAIN"
 
 # Check if $certfiles exists
 if [ -d "$certfiles" ]; then
@@ -349,11 +349,11 @@ whiptail --msgbox "Succesfully installed Collabora online docker, now please hea
 
         exit 0
 else
-	echo -e "\e[96m"
-	echo -e "It seems like no certs were generated, something went wrong"
-	echo -e "\e[32m"
-	read -p "Press any key to continue... " -n1 -s
-	echo -e "\e[0m"
+	echo "\e[96m"
+	echo "It seems like no certs were generated, something went wrong"
+	echo "\e[32m"
+	read -r "Press any key to continue... " -n1 -s
+	echo "\e[0m"
 fi
 
 exit 0
@@ -373,8 +373,8 @@ SPREEDDOMAIN=$(whiptail --title "Spreed domain" --inputbox "Leave empty for auto
 SPREEDPORT=$(whiptail --title "Spreed port" --inputbox "Please use default 8443" 10 60 8443 3>&1 1>&2 2>&3)
 VHOST443=$(whiptail --title "Vhost 443 file location" --inputbox "eg. /etc/$WEB/sites-available/nextcloud_ssl_domain_self_signed.conf or /etc/$WEB/sites-available/$WEB/sites-available/" 10 60 3>&1 1>&2 2>&3)
 #VHOST80="/etc/$WEB/sites-available/xxx"
-lISTENADDRESS="$ADDRESS"
-lISTENPORT="$SPREEDPORT"
+LISTENADDRESS="$ADDRESS"
+LISTENPORT="$SPREEDPORT"
 
 # Install spreed (Unstable is used as there are some systemd errors in ubuntu 16.04)
 apt-add-repository ppa:strukturag/spreed-webrtc
@@ -396,13 +396,13 @@ sed -i "s|;mode = sharedsecret|mode = sharedsecret|g" /etc/spreed/webrtc.conf
 sed -i "s|;sharedsecret_secret = .*|sharedsecret_secret = $SHAREDSECRET|g" /etc/spreed/webrtc.conf
 
 # Change spreed.me config.php
-cp $NCDIR/apps/spreedme/config/config.php.in $NCDIR/apps/spreedme/config/config.php
-sed -i "s|const SPREED_WEBRTC_ORIGIN = '';|const SPREED_WEBRTC_ORIGIN = '$SPREEDDOMAIN';|g" $NCDIR/apps/spreedme/config/config.php
-sed -i "s|const SPREED_WEBRTC_SHAREDSECRET = 'bb04fb058e2d7fd19c5bdaa129e7883195f73a9c49414a7eXXXXXXXXXXXXXXXX';|const SPREED_WEBRTC_SHAREDSECRET = '$SHAREDSECRET';|g" $NCDIR/apps/spreedme/config/config.php
+cp "$NCDIR"/apps/spreedme/config/config.php.in "$NCDIR"/apps/spreedme/config/config.php
+sed -i "s|const SPREED_WEBRTC_ORIGIN = '';|const SPREED_WEBRTC_ORIGIN = '$SPREEDDOMAIN';|g" "$NCDIR"/apps/spreedme/config/config.php
+sed -i "s|const SPREED_WEBRTC_SHAREDSECRET = 'bb04fb058e2d7fd19c5bdaa129e7883195f73a9c49414a7eXXXXXXXXXXXXXXXX';|const SPREED_WEBRTC_SHAREDSECRET = '$SHAREDSECRET';|g" "$NCDIR"/apps/spreedme/config/config.php
 
 # Change OwnCloudConfig.js
-cp $NCDIR/apps/spreedme/extra/static/config/OwnCloudConfig.js.in $NCDIR/apps/spreedme/extra/static/config/OwnCloudConfig.js
-sed -i "s|OWNCLOUD_ORIGIN: '',|OWNCLOUD_ORIGIN: 'SPREEDDOMAIN',|g" $NCDIR/apps/spreedme/extra/static/config/OwnCloudConfig.js
+cp "$NCDIR"/apps/spreedme/extra/static/config/OwnCloudConfig.js.in "$NCDIR"/apps/spreedme/extra/static/config/OwnCloudConfig.js
+sed -i "s|OWNCLOUD_ORIGIN: '',|OWNCLOUD_ORIGIN: 'SPREEDDOMAIN',|g" "$NCDIR"/apps/spreedme/extra/static/config/OwnCloudConfig.js
 
 # Restart spreed server
 service spreedwebrtc restart
@@ -429,7 +429,7 @@ VHOST
       	fi
 
 # Restart webserver
-service $WEB reload
+service "$WEB" reload
 
 # Almost done
 echo "Please enable the app in Nextcloud/ownCloud..."
@@ -512,10 +512,10 @@ Hostname labels cannot begin or end with a hyphen.
 No other symbols, punctuation characters, or blank spaces are permitted.\
 " 20 70 1
 
-  CURRENT_HOSTNAME=`cat /etc/hostname | tr -d " \t\n\r"`
+  CURRENT_HOSTNAME=$(cat < /etc/hostname | tr -d " \t\n\r")
   NEW_HOSTNAME=$(whiptail --inputbox "Please enter a hostname" 20 60 "$CURRENT_HOSTNAME" 3>&1 1>&2 2>&3)
   if [ $? -eq 0 ]; then
-    echo $NEW_HOSTNAME > /etc/hostname
+    echo "$NEW_HOSTNAME" > /etc/hostname
     sed -i "s/127.0.1.1.*$CURRENT_HOSTNAME/127.0.1.1\t$NEW_HOSTNAME/g" /etc/hosts
     ASK_TO_REBOOT=1
   fi
@@ -583,6 +583,7 @@ whiptail --yesno "Do you want to connect to wifi? Its recommended to use a wired
         		echo "We'll use a wired connection..."
         		echo
 fi
+}
 
 ################################ Raspberry specific 3.6
 
@@ -598,7 +599,7 @@ do_Raspberry() {
     return 0
   elif [ $RET -eq 0 ]; then
     case "$FUN" in
-      R1\ *) do_expand_rootfs ;;
+      R1\ *) do_expand_rootfs "$@";;
       R2\ *) do_external_usb ;;
       R3\ *) do_rpi_update ;;
       R4\ *) do_raspi_config ;;
@@ -700,7 +701,7 @@ do_rpi_update() {
 	    {
     i=1
     while read -r line; do
-        i=$(( $i + 1 ))
+        i=$(( i + 1 ))
         echo $i
     done < <(rpi-update)
     } | whiptail --title "Progress" --gauge "Please wait while updating your RPI firmware and kernel" 6 60 0
@@ -726,7 +727,7 @@ else
     {
     i=1
     while read -r line; do
-        i=$(( $i + 1 ))
+        i=$(( i + 1 ))
         echo $i
     done < <(	apt-get install ncdu -y)
     } | whiptail --title "Progress" --gauge "Please wait while installing ncdu" 6 60 0
@@ -740,7 +741,7 @@ fi
 
 do_listdir() {
 	LISTDIR=$(whiptail --title "Directory to list? Eg. /mnt/yourfolder" --inputbox "Navigate with TAB to hit ok to enter input" $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT 3>&1 1>&2 2>&3)
-	LISTDIR1=$(ls -la $LISTDIR)
+	LISTDIR1=$(ls -la "$LISTDIR")
 	whiptail --msgbox "$LISTDIR1" 30 $WT_WIDTH $WT_MENU_HEIGHT
 }
 
@@ -770,7 +771,7 @@ else
     {
     i=1
     while read -r line; do
-        i=$(( $i + 1 ))
+        i=$(( i + 1 ))
         echo $i
     done < <(apt-get install htop -y)
     } | whiptail --title "Progress" --gauge "Please wait while installing htop" 6 60 0
@@ -813,7 +814,7 @@ whiptail --msgbox "IPV6 is now disabled..." 30 $WT_WIDTH $WT_MENU_HEIGHT
 do_find_string() {
         STRINGTEXT=$(whiptail --inputbox "Text that you want to search for? eg. ip mismatch: 192.168.1.133" 10 60 3>&1 1>&2 2>&3)
         STRINGDIR=$(whiptail --inputbox "Directory you want to search in? eg. / for whole system or /home" 10 60 3>&1 1>&2 2>&3)
-        STRINGCMD=$(grep -Rl $STRINGTEXT $STRINGDIR)
+        STRINGCMD=$(grep -Rl "$STRINGTEXT" "$STRINGDIR")
         whiptail --msgbox "$STRINGCMD" $WT_WIDTH $WT_MENU_HEIGHT
 }
 
@@ -824,7 +825,7 @@ do_update() {
    {
     i=1
     while read -r line; do
-        i=$(( $i + 1 ))
+        i=$(( i + 1 ))
         echo $i
     done < <( apt-get autoclean )
     } | whiptail --title "Progress" --gauge "Please wait while auto cleaning" 6 60 0
@@ -832,7 +833,7 @@ do_update() {
     {
     i=1
     while read -r line; do
-        i=$(( $i + 1 ))
+        i=$(( i + 1 ))
         echo $i
     done < <( apt-get autoremove -y )
     } | whiptail --title "Progress" --gauge "Please wait while auto removing unneeded dependancies " 6 60 0
@@ -840,7 +841,7 @@ do_update() {
     {
     i=1
     while read -r line; do
-        i=$(( $i + 1 ))
+        i=$(( i + 1 ))
         echo $i
     done < <( apt-get update )
     } | whiptail --title "Progress" --gauge "Please wait while updating " 6 60 0
@@ -849,7 +850,7 @@ do_update() {
     {
     i=1
     while read -r line; do
-        i=$(( $i + 1 ))
+        i=$(( i + 1 ))
         echo $i
     done < <( apt-get apt-get upgrade -y )
     } | whiptail --title "Progress" --gauge "Please wait while ugrading " 6 60 0
@@ -857,9 +858,9 @@ do_update() {
     {
     i=1
     while read -r line; do
-        i=$(( $i + 1 ))
+        i=$(( i + 1 ))
         echo $i
-    done < <( 	apt-get -f install -y )
+    done < <( apt-get -f install -y )
     } | whiptail --title "Progress" --gauge "Please wait while forcing install of dependancies " 6 60 0
 
 	dpkg --configure --pending
@@ -868,20 +869,10 @@ do_update() {
 
 	if [ -f /var/scripts/techandtool.sh ]
 then
-    rm /var/scripts/techandtool.sh
+        rm /var/scripts/techandtool.sh
 fi
-
-    {
-    i=1
-    while read -r line; do
-        i=$(( $i + 1 ))
-        echo $i
-    done < <( 	wget https://github.com/ezraholm50/vm/raw/master/static/techandtool.sh -P /var/scripts )
-    } | whiptail --title "Progress" --gauge "Please wait while downloading latest version Tech and Tool " 6 60 0
-	
-
+        wget https://github.com/ezraholm50/vm/raw/master/static/techandtool.sh -P /var/scripts
 	exit | bash /var/scripts/techandtool.sh 
-
 }
 
 ################################################ About
