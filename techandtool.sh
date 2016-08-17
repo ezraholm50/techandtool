@@ -762,22 +762,22 @@ do_df() {
 ################################ Show system performance 3.11
 
 do_htop() {
-	if [ $(dpkg-query -W -f='${Status}' htop 2>/dev/null | grep -c "ok installed") -eq 1 ];
-then
+#	if [ $(dpkg-query -W -f='${Status}' htop 2>/dev/null | grep -c "ok installed") -eq 1 ];
+#then
+	apt-get install htop
         htop
-
-else
-
-    {
-    i=1
-    while read -r line; do
-        i=$(( i + 1 ))
-        echo $i
-    done < <(apt-get install htop -y)
-    } | whiptail --title "Progress" --gauge "Please wait while installing htop" 6 60 0
-
-fi
-	htop
+#else
+#
+#    {
+#    i=1
+#    while read -r line; do
+#        i=$(( i + 1 ))
+#        echo $i
+#    done < <(apt-get install htop -y)
+#    } | whiptail --title "Progress" --gauge "Please wait while installing htop" 6 60 0
+#
+#fi
+#	htop
 }
 
 ################################ Disable IPV6 3.12
