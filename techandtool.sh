@@ -852,7 +852,7 @@ do_update() {
     while read -r line; do
         i=$(( i + 1 ))
         echo $i
-    done < <( apt-get apt-get upgrade -y )
+    done < <( apt-get upgrade -y )
     } | whiptail --title "Progress" --gauge "Please wait while ugrading " 6 60 0
 
     {
@@ -860,7 +860,7 @@ do_update() {
     while read -r line; do
         i=$(( i + 1 ))
         echo $i
-    done < <( apt-get -f install -y )
+    done < <( )
     } | whiptail --title "Progress" --gauge "Please wait while forcing install of dependancies " 6 60 0
 
 	dpkg --configure --pending
