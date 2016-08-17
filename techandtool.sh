@@ -109,8 +109,8 @@ do_finish() {
 
 ################################################ Locations 1.8
 
-#REPO="https://github.com/ezraholm50/vm/raw/master"
-#SCRIPTS="/var/scripts"
+REPO="https://github.com/ezraholm50/vm/raw/master"
+SCRIPTS="/var/scripts"
 
 ################################################ Apps 2
 
@@ -366,11 +366,11 @@ ENCRYPTIONSECRET=$(openssl rand -hex 32)
 SESSIONSECRET=$(openssl rand -hex 32)
 SERVERTOKEN=$(openssl rand -hex 32)
 SHAREDSECRET=$(openssl rand -hex 32)
-DOMAIN=$(whiptail --title "Techandme.se Collabora online installer" --inputbox "Nextcloud url, make sure it looks like this: cloud\.nextcloud\.com" 10 60 3>&1 1>&2 2>&3)
-NCDIR=$(whiptail --title "Nextcloud directory" --inputbox "eg. /var/www/nextcloud" 10 60 3>&1 1>&2 2>&3)
-WEB=$(whiptail --title "What webserver do you run" --inputbox "eg. apache2" 10 60 apache2 3>&1 1>&2 2>&3)
+DOMAIN=$(whiptail --title "Techandme.se Collabora online installer" --inputbox "Nextcloud url, make sure it looks like this: https://cloud.nextcloud.com" 10 60 https://cloud.nextcloud.com 3>&1 1>&2 2>&3)
+NCDIR=$(whiptail --title "Nextcloud directory" --inputbox "If you're not sure use default" 10 60 /var/www/nextcloud" 3>&1 1>&2 2>&3)
+WEB=$(whiptail --title "What webserver do you run" --inputbox "If you're not sure use default" 10 60 apache2 3>&1 1>&2 2>&3)
 SPREEDDOMAIN=$(whiptail --title "Spreed domain" --inputbox "Leave empty for autodiscovery" 10 60 3>&1 1>&2 2>&3)
-SPREEDPORT=$(whiptail --title "Spreed port" --inputbox "Please use default 8443" 10 60 8443 3>&1 1>&2 2>&3)
+SPREEDPORT=$(whiptail --title "Spreed port" --inputbox "If you're not sure use default" 10 60 8443 3>&1 1>&2 2>&3)
 VHOST443=$(whiptail --title "Vhost 443 file location" --inputbox "eg. /etc/$WEB/sites-available/nextcloud_ssl_domain_self_signed.conf or /etc/$WEB/sites-available/$WEB/sites-available/" 10 60 3>&1 1>&2 2>&3)
 #VHOST80="/etc/$WEB/sites-available/xxx"
 LISTENADDRESS="$ADDRESS"
@@ -567,7 +567,7 @@ do_change_timezone() {
 #IFACEWIRED=$(lshw -c network | grep "en" | awk '{print $3}')
 
 do_wlan() {
-whiptail --yesno "Do you want to connect to wifi? Its recommended to use a wired connection for your NextBerry server!" --yes-button "Wireless" --no-button "Wired" 20 60 1
+whiptail --yesno "Do you want to connect to wifi? Its recommended to use a wired connection for your Nextcloud server!" --yes-button "Wireless" --no-button "Wired" 20 60 1
 	if [ $? -eq 0 ];         then # yes
 
                         apt-get install linux-firmware wicd-curses wicd-daemon wicd-cli -y
@@ -871,7 +871,7 @@ do_update() {
 then
         rm /var/scripts/techandtool.sh
 fi
-        wget https://github.com/ezraholm50/vm/raw/master/static/techandtool.sh -P /var/scripts
+        wget https://raw.githubusercontent.com/ezraholm50/techandtool/master/techandtool.sh -P /var/scripts
 	exit | bash /var/scripts/techandtool.sh 
 }
 
