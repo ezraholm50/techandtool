@@ -5,8 +5,8 @@
 ##### Index ######
 #- 1 Variable
 #- 1.1 Network
-#- 1.2 Collabora
-#- 1.3 Spreed-webrtc
+#- 1.2 
+#- 1.3
 #- 1.4 Whiptail
 #- 1.5 Root check
 #- 1.6 Ask to reboot
@@ -51,24 +51,6 @@ INTERFACES="/etc/network/interfaces"
 ADDRESS=$($IP route get 1 | awk '{print $NF;exit}')
 NETMASK=$(ifconfig $IFACE | grep Mask | sed s/^.*Mask://)
 GATEWAY=$($IP route | awk '/default/ { print $3 }')
-
-################################ Collabora variable 1.2
-
-HTTPS_CONF="/etc/apache2/sites-available/$EDITORDOMAIN"
-DOMAIN=$(whiptail --title "Techandme.se Collabora" --inputbox "Nextcloud url, make sure it looks like this: cloud\.yourdomain\.com" 10 60 cloud\.yourdomain\.com 3>&1 1>&2 2>&3)
-EDITORDOMAIN=$(whiptail --title "Techandme.se Collabora" --inputbox "Collabora subdomain eg: office.yourdomain.com" 10 60 3>&1 1>&2 2>&3)
-
-################################ Spreed-webrtc variable 1.3 
-
-DOMAIN=$(whiptail --title "Techandme.se Collabora online installer" --inputbox "Nextcloud url, make sure it looks like this: cloud\.nextcloud\.com" 10 60 3>&1 1>&2 2>&3)
-NCDIR=$(whiptail --title "Nextcloud directory" --inputbox "eg. /var/www/nextcloud" 10 60 3>&1 1>&2 2>&3)
-WEB=$(whiptail --title "What webserver do you run" --inputbox "eg. apache2" 10 60 apache2 3>&1 1>&2 2>&3)
-SPREEDDOMAIN=$(whiptail --title "Spreed domain" --inputbox "Leave empty for autodiscovery" 10 60 3>&1 1>&2 2>&3)
-SPREEDPORT=$(whiptail --title "Spreed port" --inputbox "Please use default 8443" 10 60 8443 3>&1 1>&2 2>&3)
-VHOST443=$(whiptail --title "Vhost 443 file location" --inputbox "eg. /etc/$WEB/sites-available/nextcloud_ssl_domain_self_signed.conf or /etc/$WEB/sites-available/$WEB/sites-available/" 10 60 3>&1 1>&2 2>&3)
-#VHOST80="/etc/$WEB/sites-available/xxx"
-lISTENADDRESS="$ADDRESS"
-lISTENPORT="$SPREEDPORT"
 
 ################################ Whiptail size 1.4
 
@@ -154,6 +136,10 @@ do_apps() {
 ################################ Collabora 2.1
 
 do_collabora() {
+HTTPS_CONF="/etc/apache2/sites-available/$EDITORDOMAIN"
+DOMAIN=$(whiptail --title "Techandme.se Collabora" --inputbox "Nextcloud url, make sure it looks like this: cloud\.yourdomain\.com" 10 60 cloud\.yourdomain\.com 3>&1 1>&2 2>&3)
+EDITORDOMAIN=$(whiptail --title "Techandme.se Collabora" --inputbox "Collabora subdomain eg: office.yourdomain.com" 10 60 3>&1 1>&2 2>&3)
+	
 # Message
 whiptail --msgbox "Please before you start make sure port 443 is directly forwarded to this machine or open!" 20 60 2
 
@@ -380,6 +366,15 @@ ENCRYPTIONSECRET=$(openssl rand -hex 32)
 SESSIONSECRET=$(openssl rand -hex 32)
 SERVERTOKEN=$(openssl rand -hex 32)
 SHAREDSECRET=$(openssl rand -hex 32)
+DOMAIN=$(whiptail --title "Techandme.se Collabora online installer" --inputbox "Nextcloud url, make sure it looks like this: cloud\.nextcloud\.com" 10 60 3>&1 1>&2 2>&3)
+NCDIR=$(whiptail --title "Nextcloud directory" --inputbox "eg. /var/www/nextcloud" 10 60 3>&1 1>&2 2>&3)
+WEB=$(whiptail --title "What webserver do you run" --inputbox "eg. apache2" 10 60 apache2 3>&1 1>&2 2>&3)
+SPREEDDOMAIN=$(whiptail --title "Spreed domain" --inputbox "Leave empty for autodiscovery" 10 60 3>&1 1>&2 2>&3)
+SPREEDPORT=$(whiptail --title "Spreed port" --inputbox "Please use default 8443" 10 60 8443 3>&1 1>&2 2>&3)
+VHOST443=$(whiptail --title "Vhost 443 file location" --inputbox "eg. /etc/$WEB/sites-available/nextcloud_ssl_domain_self_signed.conf or /etc/$WEB/sites-available/$WEB/sites-available/" 10 60 3>&1 1>&2 2>&3)
+#VHOST80="/etc/$WEB/sites-available/xxx"
+lISTENADDRESS="$ADDRESS"
+lISTENPORT="$SPREEDPORT"
 
 # Install spreed (Unstable is used as there are some systemd errors in ubuntu 16.04)
 apt-add-repository ppa:strukturag/spreed-webrtc
