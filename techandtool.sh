@@ -78,7 +78,7 @@ else
     {
     i=1
     while read -r line; do
-        i=$(( i + 1 ))
+        i=$(( $i + 1 ))
         echo $i
     done < <(apt-get install whiptail -y)
     } | whiptail --title "Progress" --gauge "Please wait while installing Whiptail" 6 60 0
@@ -132,7 +132,7 @@ whiptail --msgbox "Please before you start make sure port 443 is directly forwar
     {
     i=1
     while read -r line; do
-        i=$(( i + 1 ))
+        i=$(( $i + 1 ))
         echo $i
     done < <(apt-get update && apt-get upgrade -y && apt-get -f install -y)
     } | whiptail --title "Progress" --gauge "Please wait while updating repo's" 6 60 0
@@ -147,7 +147,7 @@ else
     {
     i=1
     while read -r line; do
-        i=$(( i + 1 ))
+        i=$(( $i + 1 ))
         echo $i
     done < <(apt-get install docker.io -y)
     } | whiptail --title "Progress" --gauge "Please wait while installing docker" 6 60 0
@@ -169,7 +169,7 @@ else
     {
     i=1
     while read -r line; do
-        i=$(( i + 1 ))
+        i=$(( $i + 1 ))
         echo $i
     done < <(apt-get install apache2 -y)
     } | whiptail --title "Progress" --gauge "Please wait while installing Apache2" 6 60 0
@@ -276,9 +276,9 @@ if [ -d "$letsencryptpath" ]; then
   	rm -R "$letsencryptpath"
 fi
 # Generate certs
-	cd "$dir_before_letsencrypt" || exit
+	cd "$dir_before_letsencrypt"
 	git clone https://github.com/letsencrypt/letsencrypt
-	cd "$letsencryptpath" || exit
+	cd "$letsencryptpath"
         ./letsencrypt-auto certonly --standalone -d "$EDITORDOMAIN"
 # Use for testing
 #./letsencrypt-auto --apache --server https://acme-staging.api.letsencrypt.org/directory -d EXAMPLE.COM
@@ -302,11 +302,11 @@ and enable the Collabora online connector app and change the URL to whatever sub
 
 	exit 0
 else
-        echo "\e[96m"
-        echo "It seems like no certs were generated, we do three more tries."
-        echo "\e[32m"
-        read -r "Press any key to continue... " -n1 -s
-        echo "\e[0m"
+        echo -e "\e[96m"
+        echo -e "It seems like no certs were generated, we do three more tries."
+        echo -e "\e[32m"
+        read -p "Press any key to continue... " -n1 -s
+        echo -e "\e[0m"
 fi
 
 ##### START SECOND TRY
@@ -316,9 +316,9 @@ fi
 fi
 
 # Generate certs
-	cd "$dir_before_letsencrypt" || exit
+	cd "$dir_before_letsencrypt"
 	git clone https://github.com/letsencrypt/letsencrypt
-	cd "$letsencryptpath" || exit
+	cd "$letsencryptpath"
 	./letsencrypt-auto -d "$EDITORDOMAIN"
 
 # Check if $certfiles exists
@@ -334,11 +334,11 @@ whiptail --msgbox "Succesfully installed Collabora online docker, now please hea
 
         exit 0
 else
-	echo "\e[96m"
-	echo "It seems like no certs were generated, something went wrong"
-	echo "\e[32m"
-	read -r "Press any key to continue... " -n1 -s
-	echo "\e[0m"
+	echo -e "\e[96m"
+	echo -e "It seems like no certs were generated, something went wrong"
+	echo -e "\e[32m"
+	read -p "Press any key to continue... " -n1 -s
+	echo -e "\e[0m"
 fi
 
 exit 0
@@ -686,7 +686,7 @@ do_rpi_update() {
 	    {
     i=1
     while read -r line; do
-        i=$(( i + 1 ))
+        i=$(( $i + 1 ))
         echo $i
     done < <(rpi-update)
     } | whiptail --title "Progress" --gauge "Please wait while updating your RPI firmware and kernel" 6 60 0
@@ -712,7 +712,7 @@ else
     {
     i=1
     while read -r line; do
-        i=$(( i + 1 ))
+        i=$(( $i + 1 ))
         echo $i
     done < <(apt-get install ncdu -y)
     } | whiptail --title "Progress" --gauge "Please wait while installing ncdu" 6 60 0
@@ -756,7 +756,7 @@ do_htop() {
 #    {
 #    i=1
 #    while read -r line; do
-#        i=$(( i + 1 ))
+#        i=$(( $i + 1 ))
 #        echo $i
 #    done < <(apt-get install htop -y)
 #    } | whiptail --title "Progress" --gauge "Please wait while installing htop" 6 60 0
@@ -810,7 +810,7 @@ do_update() {
    {
     i=1
     while read -r line; do
-        i=$(( i + 1 ))
+        i=$(( $i + 1 ))
         echo $i
     done < <( apt-get autoclean )
     } | whiptail --title "Progress" --gauge "Please wait while auto cleaning" 6 60 0
@@ -818,7 +818,7 @@ do_update() {
     {
     i=1
     while read -r line; do
-        i=$(( i + 1 ))
+        i=$(( $i + 1 ))
         echo $i
     done < <( apt-get autoremove -y )
     } | whiptail --title "Progress" --gauge "Please wait while auto removing unneeded dependancies " 6 60 0
@@ -826,7 +826,7 @@ do_update() {
     {
     i=1
     while read -r line; do
-        i=$(( i + 1 ))
+        i=$(( $i + 1 ))
         echo $i
     done < <( apt-get update )
     } | whiptail --title "Progress" --gauge "Please wait while updating " 6 60 0
@@ -835,7 +835,7 @@ do_update() {
     {
     i=1
     while read -r line; do
-        i=$(( i + 1 ))
+        i=$(( $i + 1 ))
         echo $i
     done < <( apt-get upgrade -y )
     } | whiptail --title "Progress" --gauge "Please wait while ugrading " 6 60 0
@@ -843,7 +843,7 @@ do_update() {
     {
     i=1
     while read -r line; do
-        i=$(( i + 1 ))
+        i=$(( $i + 1 ))
         echo $i
     done < <( apt-get install -fy )
     } | whiptail --title "Progress" --gauge "Please wait while forcing install of dependancies " 6 60 0
