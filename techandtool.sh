@@ -9,7 +9,7 @@
 #- 1.3
 #- 1.4 Whiptail
 #- 1.5 Root check
-#- 1.6 Ask to reboot
+#- 1.6 
 #- 1.7 
 #- 1.8
 #- 1.9
@@ -92,25 +92,10 @@ if [ "$(whoami)" != "root" ]; then
         exit
 fi
 
-################################################ Ask to reboot 1.7
-
-ASK_TO_REBOOT=0
-
-do_finish() {
-  if [ $ASK_TO_REBOOT -eq 1 ]; then
-    whiptail --yesno "Would you like to reboot now?" 20 60 2
-    if [ $? -eq 0 ]; then # yes
-      sync
-      reboot
-    fi
-  fi
-  exit 0
-}
-
 ################################################ Locations 1.8
 
-#REPO="https://github.com/ezraholm50/vm/raw/master"
-#SCRIPTS="/var/scripts"
+REPO="https://github.com/ezraholm50/vm/raw/master"
+SCRIPTS="/var/scripts"
 
 ################################################ Apps 2
 
@@ -371,7 +356,7 @@ NCDIR=$(whiptail --title "Nextcloud directory" --inputbox "If you're not sure us
 WEB=$(whiptail --title "What webserver do you run" --inputbox "If you're not sure use the default setting" 10 60 apache2 3>&1 1>&2 2>&3)
 SPREEDDOMAIN=$(whiptail --title "Spreed domain" --inputbox "Leave empty for autodiscovery" 10 60 3>&1 1>&2 2>&3)
 SPREEDPORT=$(whiptail --title "Spreed port" --inputbox "If you're not sure use the default setting" 10 60 8443 3>&1 1>&2 2>&3)
-VHOST443=$(whiptail --title "Vhost 443 file location" --inputbox "If you're not sure use the default setting" 10 60 /etc/$WEB/sites-available/nextcloud_ssl_domain_self_signed.conf 3>&1 1>&2 2>&3)
+VHOST443=$(whiptail --title "Vhost 443 file location" --inputbox "If you're not sure use the default setting" 10 60 /etc/"$WEB"/sites-available/nextcloud_ssl_domain_self_signed.conf 3>&1 1>&2 2>&3)
 #VHOST80="/etc/$WEB/sites-available/xxx"
 LISTENADDRESS="$ADDRESS"
 LISTENPORT="$SPREEDPORT"
@@ -729,7 +714,7 @@ else
     while read -r line; do
         i=$(( i + 1 ))
         echo $i
-    done < <(	apt-get install ncdu -y)
+    done < <(apt-get install ncdu -y)
     } | whiptail --title "Progress" --gauge "Please wait while installing ncdu" 6 60 0
 	
 	ncdu /
