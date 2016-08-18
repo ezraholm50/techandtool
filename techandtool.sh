@@ -845,7 +845,7 @@ do_update() {
     while read -r line; do
         i=$(( i + 1 ))
         echo $i
-    done < <( )
+    done < <( apt-get install -fy )
     } | whiptail --title "Progress" --gauge "Please wait while forcing install of dependancies " 6 60 0
 
 	dpkg --configure --pending
