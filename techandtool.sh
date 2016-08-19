@@ -121,10 +121,13 @@ do_apps() {
 ################################ Collabora 2.1
 
 do_collabora() {
+HTTPS_EXIST="/etc/apache2/sites-available/$EXISTINGDOMAIN"
 HTTPS_CONF="/etc/apache2/sites-available/$EDITORDOMAIN"
 DOMAIN=$(whiptail --title "Techandme.se Collabora" --inputbox "Nextcloud url, make sure it looks like this: cloud\.yourdomain\.com" 10 60 cloud\.yourdomain\.com 3>&1 1>&2 2>&3)
+DOMAIN1=$(whiptail --title "Techandme.se Collabora" --inputbox "Nextcloud url, now make sure it look normal" 10 60 cloud.yourdomain.com 3>&1 1>&2 2>&3)
 EDITORDOMAIN=$(whiptail --title "Techandme.se Collabora" --inputbox "Collabora subdomain eg: office.yourdomain.com" 10 60 3>&1 1>&2 2>&3)
-	
+EXISTINGDOMAIN=$(whiptail --title "Techandme.se Collabora" --inputbox "Existing domain VHOST" 10 60 nextcloud_ssl_domain_self_signed.conf 3>&1 1>&2 2>&3)	
+
 # Message
 whiptail --msgbox "Please before you start make sure port 443 is directly forwarded to this machine or open!" 20 60 2
 
@@ -279,7 +282,7 @@ fi
 	cd "$dir_before_letsencrypt"
 	git clone https://github.com/letsencrypt/letsencrypt
 	cd "$letsencryptpath"
-        ./letsencrypt-auto certonly --standalone -d "$EDITORDOMAIN"
+        ./letsencrypt-auto certonly --standalone -d "$EDITORDOMAIN" -d "$DOMAIN1"
 # Use for testing
 #./letsencrypt-auto --apache --server https://acme-staging.api.letsencrypt.org/directory -d EXAMPLE.COM
 # Activate Apache again (Disabled during standalone)
@@ -319,7 +322,7 @@ fi
 	cd "$dir_before_letsencrypt"
 	git clone https://github.com/letsencrypt/letsencrypt
 	cd "$letsencryptpath"
-	./letsencrypt-auto -d "$EDITORDOMAIN"
+	./letsencrypt-auto -d "$EDITORDOMAIN" -d "$DOMAIN1"
 
 # Check if $certfiles exists
 if [ -d "$certfiles" ]; then
@@ -327,6 +330,8 @@ if [ -d "$certfiles" ]; then
 	sed -i "s|SSLCertificateKeyFile /path/to/private/key|SSLCertificateKeyFile $certfiles/$EDITORDOMAIN/privkey.pem|g"    
 	sed -i "s|SSLCertificateFile /path/to/signed_certificate|SSLCertificateFile $certfiles/$EDITORDOMAIN/cert.pem|g"
 	sed -i "s|SSLCertificateChainFile /path/to/intermediate_certificate|SSLCertificateChainFile $certfiles/$EDITORDOMAIN/chain.pem|g"
+##### original vhost also change the newly made certs
+
 	service apache2 restart
 	bash /var/scripts/test-new-config.sh
 # Message
