@@ -60,16 +60,16 @@ apt-key add jcameron-key.asc
 apt-get update
 apt-get install webmin -y
 
-sudo apt-get purge virtualbox* dkms linux-headers-$(uname -r)
+sudo apt-get install aptitude virtualbox-5.1 dkms linux-headers-$(uname -r)
 echo "deb http://download.virtualbox.org/virtualbox/debian xenial contrib" >> /etc/apt/sources.list
 wget -q https://www.virtualbox.org/download/oracle_vbox_2016.asc -O- | sudo apt-key add -
 wget -q https://www.virtualbox.org/download/oracle_vbox.asc -O- | sudo apt-key add -
 sudo aptitude update
 sudo aptitude install virtualbox-dkms dkms build-essential linux-headers-generic linux-headers-$(uname -r) virtualbox-5.1 -y
-sudo dpkg-reconfigure virtualbox-dkms
+#sudo dpkg-reconfigure virtualbox-dkms
 sudo modprobe vboxdrv
 wget http://download.virtualbox.org/virtualbox/5.1.4/Oracle_VM_VirtualBox_Extension_Pack-5.1.4-110228.vbox-extpack -P /var/scripts/
-vboxmanage
+vboxmanage extpack install /var/scripts/http://download.virtualbox.org/virtualbox/5.1.4/Oracle_VM_VirtualBox_Extension_Pack-5.1.4-110228.vbox-extpack
 
 echo "# panic kernel on OOM" > /etc/sysctl.d/oom_reboot.conf
 echo "vm.panic_on_oom=1" >> /etc/sysctl.d/oom_reboot.conf
@@ -81,7 +81,7 @@ echo "options timeout:1 rotate attempts:1" > /etc/resolvconf/resolv.conf.d/tail
 echo "nameserver 8.8.8.8 #Google NS1" >> /etc/resolvconf/resolv.conf.d/tail
 echo "nameserver 8.8.2.2 #Google NS2" >> /etc/resolvconf/resolv.conf.d/tail
 echo "nameserver 208.67.222.222 #OpenDNS1" >> /etc/resolvconf/resolv.conf.d/tail
-echo "#nameserver 208.67.220.220 #OpenDNS2" >> /etc/resolvconf/resolv.conf.d/tail
+echo "nameserver 208.67.220.220 #OpenDNS2" >> /etc/resolvconf/resolv.conf.d/tail
 
 
 #!/bin/bash

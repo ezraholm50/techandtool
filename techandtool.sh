@@ -5,12 +5,12 @@
 ##### Index ######
 #- 1 Variable
 #- 1.1 Network
-#- 1.2 
+#- 1.2
 #- 1.3
 #- 1.4 Whiptail
 #- 1.5 Root check
-#- 1.6 
-#- 1.7 
+#- 1.6
+#- 1.7
 #- 1.8
 #- 1.9
 #- 2 Apps
@@ -38,6 +38,7 @@
 #- 3.11 Show system performance
 #- 3.12 Disable IPV6
 #- 3.13 Find string in files
+#- 3.14 Reboot on out of memory
 #- 4 About this tool
 #- 5 Tech and Tool
 
@@ -126,7 +127,7 @@ HTTPS_CONF="/etc/apache2/sites-available/$EDITORDOMAIN"
 DOMAIN=$(whiptail --title "Techandme.se Collabora" --inputbox "Nextcloud url, make sure it looks like this: cloud\.yourdomain\.com" 10 60 cloud\.yourdomain\.com 3>&1 1>&2 2>&3)
 DOMAIN1=$(whiptail --title "Techandme.se Collabora" --inputbox "Nextcloud url, now make sure it look normal" 10 60 cloud.yourdomain.com 3>&1 1>&2 2>&3)
 EDITORDOMAIN=$(whiptail --title "Techandme.se Collabora" --inputbox "Collabora subdomain eg: office.yourdomain.com" 10 60 3>&1 1>&2 2>&3)
-EXISTINGDOMAIN=$(whiptail --title "Techandme.se Collabora" --inputbox "Existing domain VHOST" 10 60 nextcloud_ssl_domain_self_signed.conf 3>&1 1>&2 2>&3)	
+EXISTINGDOMAIN=$(whiptail --title "Techandme.se Collabora" --inputbox "Existing domain VHOST" 10 60 nextcloud_ssl_domain_self_signed.conf 3>&1 1>&2 2>&3)
 
 # Message
 whiptail --msgbox "Please before you start make sure port 443 is directly forwarded to this machine or open!" 20 60 2
@@ -192,7 +193,7 @@ if [ -f "$HTTPS_CONF" ];
 then
         echo "Virtual Host exists"
 else
-	
+
 	touch "$HTTPS_CONF"
         cat << HTTPS_CREATE > "$HTTPS_CONF"
 <VirtualHost *:443>
@@ -292,7 +293,7 @@ fi
 # Check if $certfiles exists
 if [ -d "$certfiles" ]; then
 # Activate new config
-	sed -i "s|SSLCertificateKeyFile /path/to/private/key|SSLCertificateKeyFile $certfiles/$EDITORDOMAIN/privkey.pem|g"    
+	sed -i "s|SSLCertificateKeyFile /path/to/private/key|SSLCertificateKeyFile $certfiles/$EDITORDOMAIN/privkey.pem|g"
 	sed -i "s|SSLCertificateFile /path/to/signed_certificate|SSLCertificateFile $certfiles/$EDITORDOMAIN/cert.pem|g"
 	sed -i "s|SSLCertificateChainFile /path/to/intermediate_certificate|SSLCertificateChainFile $certfiles/$EDITORDOMAIN/chain.pem|g"
         service apache2 restart
@@ -327,7 +328,7 @@ fi
 # Check if $certfiles exists
 if [ -d "$certfiles" ]; then
 # Activate new config
-	sed -i "s|SSLCertificateKeyFile /path/to/private/key|SSLCertificateKeyFile $certfiles/$EDITORDOMAIN/privkey.pem|g"    
+	sed -i "s|SSLCertificateKeyFile /path/to/private/key|SSLCertificateKeyFile $certfiles/$EDITORDOMAIN/privkey.pem|g"
 	sed -i "s|SSLCertificateFile /path/to/signed_certificate|SSLCertificateFile $certfiles/$EDITORDOMAIN/cert.pem|g"
 	sed -i "s|SSLCertificateChainFile /path/to/intermediate_certificate|SSLCertificateChainFile $certfiles/$EDITORDOMAIN/chain.pem|g"
 ##### original vhost also change the newly made certs
@@ -448,8 +449,12 @@ do_tools() {
     "T8 Show connected devices" "blkid" \
     "T9 Show disks usage" "df -h" \
     "T10 Show system performance" "HTOP" \
-    "T11 Disable IPV6" "Via sysctl.conf"\
-    "T12 Find text" "In a given directory"\
+    "T11 Disable IPV6" "Via sysctl.conf" \
+    "T12 Find text" "In a given directory" \
+    "T13 OOM fix" "Auto reboot on out of memory errors" \
+    "T14 Install virtualbox" \
+    "T15 Install virtualbox extension pack"
+    "T16 Install virtualbox guest additions"
     3>&1 1>&2 2>&3)
   RET=$?
   if [ $RET -eq 1 ]; then
@@ -468,6 +473,10 @@ do_tools() {
       T10\ *) do_htop ;;
       T11\ *) do_disable_ipv6 ;;
       T12\ *) do_find_string ;;
+      T13\ *) do_oom ;;
+      T14\ *) do_virtualbox ;;
+      T15\ *) do_vboxextpack ;;
+      T16\ *) do_vboxguestadd ;;
     *) whiptail --msgbox "Programmer error: unrecognized option" 20 60 1 ;;
     esac || whiptail --msgbox "There was an error running option $FUN" 20 60 1
   fi
@@ -496,9 +505,9 @@ do_wan_ip() {
 do_change_hostname() {
   whiptail --msgbox "\
 Please note: RFCs mandate that a hostname's labels \
-may contain only the ASCII letters 'a' through 'z' (case-insensitive), 
+may contain only the ASCII letters 'a' through 'z' (case-insensitive),
 the digits '0' through '9', and the hyphen.
-Hostname labels cannot begin or end with a hyphen. 
+Hostname labels cannot begin or end with a hyphen.
 No other symbols, punctuation characters, or blank spaces are permitted.\
 " 20 70 1
 
@@ -582,7 +591,7 @@ do_Raspberry() {
     "R1 Resize SD" "" \
     "R2 External USB" "Use an USB HD/SSD as root" \
     "R3 RPI-update" "Update the RPI firmware and kernel" \
-    "R4 Raspi-config" "Set various settings, not all are tested! Already overclocked!"  
+    "R4 Raspi-config" "Set various settings, not all are tested! Already overclocked!"
   3>&1 1>&2 2>&3)
   RET=$?
   if [ $RET -eq 1 ]; then
@@ -613,7 +622,7 @@ do_expand_rootfs() {
     return 0
   fi
 
-  # NOTE: the NOOBS partition layout confuses parted. For now, let's only 
+  # NOTE: the NOOBS partition layout confuses parted. For now, let's only
   # agree to work with a sufficiently simple partition layout
   if [ "$PART_NUM" -ne 2 ]; then
     whiptail --msgbox "Your partition layout is not currently supported by this tool. You are probably using NOOBS, in which case your root filesystem is already expanded anyway." 20 60 2
@@ -709,7 +718,7 @@ do_raspi_config() {
 ################################ Show folder size 3.7
 
 do_foldersize() {
-	
+
 	if [ $(dpkg-query -W -f='${Status}' ncdu 2>/dev/null | grep -c "ok installed") -eq 1 ];
 then
         ncdu /
@@ -721,9 +730,9 @@ else
         echo $i
     done < <(apt-get install ncdu -y)
     } | whiptail --title "Progress" --gauge "Please wait while installing ncdu" 6 60 0
-	
+
 	ncdu /
-	
+
 fi
 }
 
@@ -785,18 +794,18 @@ do_disable_ipv6() {
  else
  echo "net.ipv6.conf.default.disable_ipv6 = 1" >> /etc/sysctl.conf
  fi
- 
+
   if grep -q net.ipv6.conf.lo.disable_ipv6 = 1 = 1 "/etc/sysctl.conf"; then
    sleep 0
  else
  echo "net.ipv6.conf.lo.disable_ipv6 = 1" >> /etc/sysctl.conf
  fi
- 
+
  echo
  sysctl -p
  echo
- 
-whiptail --msgbox "IPV6 is now disabled..." 30 $WT_WIDTH $WT_MENU_HEIGHT
+
+whiptail --msgbox "IPV6 is now disabled..." 10 60 1
 }
 
 ################################ Find string text 3.13
@@ -808,7 +817,74 @@ do_find_string() {
         whiptail --msgbox "$STRINGCMD" $WT_WIDTH $WT_MENU_HEIGHT
 }
 
-################################################ Update
+################################ Reboot on out of memory 3.14
+
+do_oom() {
+
+ if grep -q kernel.panic=10 "/etc/sysctl.d/oom_reboot.conf"; then
+   sleep 0
+ else
+ echo "kernel.panic=10" >> /etc/sysctl.d/oom_reboot.conf
+ fi
+
+ if grep -q vm.panic_on_oom=1 "/etc/sysctl.d/oom_reboot.conf"; then
+   sleep 0
+ else
+ echo "vm.panic_on_oom=1" >> /etc/sysctl.d/oom_reboot.conf
+ fi
+
+ echo
+ sysctl -p /etc/sysctl.d/oom_reboot.conf
+ echo
+
+whiptail --msgbox "System will reboot on out of memory error..." 10 60 1
+}
+
+################################ Install virtualbox 3.15
+
+do_virtualbox() {
+echo "deb http://download.virtualbox.org/virtualbox/debian xenial contrib" >> /etc/apt/sources.list
+wget -q https://www.virtualbox.org/download/oracle_vbox_2016.asc -O- | sudo apt-key add -
+wget -q https://www.virtualbox.org/download/oracle_vbox.asc -O- | sudo apt-key add -
+sudo aptitude update
+sudo aptitude install virtualbox-dkms dkms build-essential linux-headers-generic linux-headers-$(uname -r) virtualbox-5.1 -y
+sudo modprobe vboxdrv
+
+whiptail --msgbox "Virtualbox is now installed..." 10 60 1
+}
+
+################################ Install virtualbox extension pack 3.16
+
+do_vboxextpack() {
+wget http://download.virtualbox.org/virtualbox/5.1.4/Oracle_VM_VirtualBox_Extension_Pack-5.1.4-110228.vbox-extpack -P /var/scripts/
+vboxmanage extpack install /var/scripts/http://download.virtualbox.org/virtualbox/5.1.4/Oracle_VM_VirtualBox_Extension_Pack-5.1.4-110228.vbox-extpack
+
+whiptail --msgbox "Virtualbox extension pack is installed..." 10 60 1
+}
+
+################################ Install virtualbox guest additions
+
+do_vboxguestadd() {
+apt-get update
+apt-get install virtualbox-guest-additions-iso -y
+mkdir -p /mnt
+mkdir -p /mnt/tmp
+mount /usr/share/virtualbox/VBoxGuestAdditions.iso /mnt/tmp
+cd /mnt/tmp
+./VBoxLinuxAdditions.run
+cd
+umount /mnt/tmp
+rm -rf /mnt/tmp
+
+whiptail --msgbox "Virtualbox guest additions are now installed, make sure to reboot..." 10 60 1
+}
+
+################################
+################################
+################################
+################################
+################################
+################################# Update
 
 do_update() {
 
@@ -862,7 +938,7 @@ then
         rm /var/scripts/techandtool.sh
 fi
         wget https://github.com/ezraholm50/vm/raw/master/static/techandtool.sh -P /var/scripts
-	exit | bash /var/scripts/techandtool.sh 
+	exit | bash /var/scripts/techandtool.sh
 }
 
 ################################################ About
