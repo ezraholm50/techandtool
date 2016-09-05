@@ -50,6 +50,7 @@
 #- 3.23 Set swappiness
 #- 3.24 Delete line containing string
 #- 3.25 Upgrade kernel
+#- 3.26 Install Nextcloud
 #- 4 Firewall
 #- 5 Update & upgrade
 #- 6 About this tool
@@ -464,6 +465,7 @@ do_tools() {
     "T22 Delete line containing a string of text" "Warning, deletes every line containing the string!" \
     "T23 Set swappiness" \
     "T24 Upgrade Ubuntu Kernel" "To the latest version" \
+    "T25 Install Nextcloud" "Must be a clean Ubuntu 16.04 server 64bit"
     3>&1 1>&2 2>&3)
   RET=$?
   if [ $RET -eq 1 ]; then
@@ -494,6 +496,7 @@ do_tools() {
       T22\ *) do_stringdel ;;
       T23\ *) do_swappiness ;;
       T24\ *) do_ukupgrade ;;
+      T25\ *) do_nextcloud ;;
     *) whiptail --msgbox "Programmer error: unrecognized option" 20 60 1 ;;
     esac || whiptail --msgbox "There was an error running option $FUN" 20 60 1
   fi
@@ -994,12 +997,20 @@ DELETESTRINGFILE=$(whiptail --inputbox "In what file should we search?" 10 60 /f
 sed -i "/$DELETESTRING/d" "$DELETESTRINGFILE"
 }
 
-################################ Kernel upgrade
+################################ Kernel upgrade 3.25
 
 do_ukupgrade() {}
 mkdir -p /var/scripts
 wget https://raw.githubusercontent.com/muhasturk/ukupgrade/master/ukupgrade -P /var/scripts
 bash /var/scripts/ukupgrade
+}
+
+################################ Install nextcloud 3.26
+
+do_nextcloud() {}
+mkdir -p /var/scripts
+wget https://raw.githubusercontent.com/nextcloud/vm/master/nextcloud_install_production.sh -P /var/scripts
+bash /var/scripts/nextcloud_install_production.sh
 }
 
 ################################################ Firewall 4
