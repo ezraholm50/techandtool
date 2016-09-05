@@ -39,8 +39,15 @@
 #- 3.12 Disable IPV6
 #- 3.13 Find string in files
 #- 3.14 Reboot on out of memory
-#- 4 About this tool
-#- 5 Tech and Tool
+#- 3.15 Install virtualbox
+#- 3.16 Install virtualbox extension pack
+#- 3.17 Install virtualbox guest additions
+#- 3.18 Install webmin
+#- 3.19 Set dns to google and opendns
+#- 4 Firewall
+#- 5 Update & upgrade
+#- 6 About this tool
+#- 7 Tech and Tool
 
 ################################################ Variable 1
 ################################ Network 1.1
@@ -82,14 +89,14 @@ else
         i=$(( $i + 1 ))
         echo $i
     done < <(apt-get install whiptail -y)
-    } | whiptail --title "Progress" --gauge "Please wait while installing Whiptail" 6 60 0
+  } | whiptail --title "Progress" --gauge "Please wait while installing Whiptail..." 6 60 0
 
 fi
 
 ################################################ Check if root 1.6
 
 if [ "$(whoami)" != "root" ]; then
-        whiptail --msgbox "Sorry you are not root. You must type: sudo bash techandtool.sh" 20 60 1
+        whiptail --msgbox "Sorry you are not root. You must type: sudo bash techandtool.sh" 10 60 1
         exit
 fi
 
@@ -122,232 +129,220 @@ do_apps() {
 ################################ Collabora 2.1
 
 do_collabora() {
-HTTPS_EXIST="/etc/apache2/sites-available/$EXISTINGDOMAIN"
-HTTPS_CONF="/etc/apache2/sites-available/$EDITORDOMAIN"
-DOMAIN=$(whiptail --title "Techandme.se Collabora" --inputbox "Nextcloud url, make sure it looks like this: cloud\.yourdomain\.com" 10 60 cloud\.yourdomain\.com 3>&1 1>&2 2>&3)
-DOMAIN1=$(whiptail --title "Techandme.se Collabora" --inputbox "Nextcloud url, now make sure it look normal" 10 60 cloud.yourdomain.com 3>&1 1>&2 2>&3)
-EDITORDOMAIN=$(whiptail --title "Techandme.se Collabora" --inputbox "Collabora subdomain eg: office.yourdomain.com" 10 60 3>&1 1>&2 2>&3)
-EXISTINGDOMAIN=$(whiptail --title "Techandme.se Collabora" --inputbox "Existing domain VHOST" 10 60 nextcloud_ssl_domain_self_signed.conf 3>&1 1>&2 2>&3)
+  DOMAIN=$(whiptail --title "Techandme.se Collabora" --inputbox "Nextcloud url, make sure it looks like this: cloud\.yourdomain\.com" 10 60 cloud\.yourdomain\.com 3>&1 1>&2 2>&3)
+  CLEANDOMAIN=$(whiptail --title "Techandme.se Collabora" --inputbox "Nextcloud url, now make sure it look normal" 10 60 cloud.yourdomain.com 3>&1 1>&2 2>&3)
+  EDITORDOMAIN=$(whiptail --title "Techandme.se Collabora" --inputbox "Collabora subdomain eg: office.yourdomain.com" 10 60 3>&1 1>&2 2>&3)
+  HTTPS_EXIST="/etc/apache2/sites-available/'$EXISTINGDOMAIN'"
+  HTTPS_CONF="/etc/apache2/sites-available/'$EDITORDOMAIN'"
+  LETSENCRYPTDIR="/etc"
+  LETSENCRYPTPATH="/etc/letsencrypt"
+  CERTFILES="$LETSENCRYPTPATH"/live/"$EDITORDOMAIN"
 
-# Message
-whiptail --msgbox "Please before you start make sure port 443 is directly forwarded to this machine or open!" 20 60 2
+  # Message
+  whiptail --msgbox "Please before you start make sure port 443 is directly forwarded to this machine or open!" 20 60 2
 
-# Update & upgrade
-    {
-    i=1
-    while read -r line; do
-        i=$(( $i + 1 ))
-        echo $i
-    done < <(apt-get update && apt-get upgrade -y && apt-get -f install -y)
-    } | whiptail --title "Progress" --gauge "Please wait while updating repo's" 6 60 0
+  # Update & upgrade
+  apt-get update
+  apt-get upgrade -y
+  apt-get -f install -y
 
-# Check if docker is installed
+  # Check if docker is installed
+  	if [ $(dpkg-query -W -f='${Status}' docker.io 2>/dev/null | grep -c "ok installed") -eq 1 ]; then
+  				echo "Docker.io is installed..."
+  else
+  				apt-get install docker.io -y
+  fi
 
-	if [ $(dpkg-query -W -f='${Status}' docker.io 2>/dev/null | grep -c "ok installed") -eq 1 ];
-then
-        sleep 0
+  	if [ $(dpkg-query -W -f='${Status}' git 2>/dev/null | grep -c "ok installed") -eq 1 ]; then
+  				echo "Git is installed..."
+  else
+  				apt-get install git -y
+  fi
 
-else
-    {
-    i=1
-    while read -r line; do
-        i=$(( $i + 1 ))
-        echo $i
-    done < <(apt-get install docker.io -y)
-    } | whiptail --title "Progress" --gauge "Please wait while installing docker" 6 60 0
-fi
 
-# Install Collabora docker
+  # Install Collabora docker
+  docker pull collabora/code
+  docker run -t -d -p 127.0.0.1:9980:9980 -e "domain=$DOMAIN" --restart always --cap-add MKNOD collabora/code
 
-docker pull collabora/code
-docker run -t -d -p 127.0.0.1:9980:9980 -e "domain=$DOMAIN" --restart always --cap-add MKNOD collabora/code
+  # Install Apache2
+  	if [ $(dpkg-query -W -f='${Status}' apache2 2>/dev/null | grep -c "ok installed") -eq 1 ];
+  then
+          echo "Apache2 is installed..."
+  else
 
-# Install Apache2
+      {
+      i=1
+      while read -r line; do
+          i=$(( $i + 1 ))
+          echo $i
+      done < <(apt-get install apache2 -y)
+      } | whiptail --title "Progress" --gauge "Please wait while installing Apache2" 6 60 0
 
-	if [ $(dpkg-query -W -f='${Status}' apache2 2>/dev/null | grep -c "ok installed") -eq 1 ];
-then
-        sleep 0
+  fi
 
-else
+  # Enable Apache2 module's
+  a2enmod proxy
+  a2enmod proxy_wstunnel
+  a2enmod proxy_http
+  a2enmod ssl
 
-    {
-    i=1
-    while read -r line; do
-        i=$(( $i + 1 ))
-        echo $i
-    done < <(apt-get install apache2 -y)
-    } | whiptail --title "Progress" --gauge "Please wait while installing Apache2" 6 60 0
+  # Create Vhost for Collabora online in Apache2
+  if [ -f "$HTTPS_CONF" ];
+  then
+          echo "Virtual Host exists"
+  else
 
-fi
+  	touch "$HTTPS_CONF"
+          cat << HTTPS_CREATE > "$HTTPS_CONF"
+  <VirtualHost *:443>
+    ServerName $EDITORDOMAIN
 
-# Enable Apache2 module's
+    # SSL configuration, you may want to take the easy route instead and use Lets Encrypt!
+    SSLEngine on
+    SSLCertificateFile /path/to/signed_certificate
+    SSLCertificateChainFile /path/to/intermediate_certificate
+    SSLCertificateKeyFile /path/to/private/key
+    SSLProtocol             all -SSLv2 -SSLv3
+    SSLCipherSuite ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA:ECDHE-RSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA:DHE-RSA-AES256-SHA256:DHE-RSA-AES256-SHA:ECDHE-ECDSA-DES-CBC3-SHA:ECDHE-RSA-DES-CBC3-SHA:EDH-RSA-DES-CBC3-SHA:AES128-GCM-SHA256:AES256-GCM-SHA384:AES128-SHA256:AES256-SHA256:AES128-SHA:AES256-SHA:DES-CBC3-SHA:!DSS
+    SSLHonorCipherOrder     on
 
-a2enmod proxy
-a2enmod proxy_wstunnel
-a2enmod proxy_http
-a2enmod ssl
+    # Encoded slashes need to be allowed
+    AllowEncodedSlashes On
 
-# Create Vhost for Collabora online in Apache2
+    # Container uses a unique non-signed certificate
+    SSLProxyEngine On
+    SSLProxyVerify None
+    SSLProxyCheckPeerCN Off
+    SSLProxyCheckPeerName Off
 
-if [ -f "$HTTPS_CONF" ];
-then
-        echo "Virtual Host exists"
-else
+    # keep the host
+    ProxyPreserveHost On
 
-	touch "$HTTPS_CONF"
-        cat << HTTPS_CREATE > "$HTTPS_CONF"
-<VirtualHost *:443>
-  ServerName $EDITORDOMAIN
+    # static html, js, images, etc. served from loolwsd
+    # loleaflet is the client part of LibreOffice Online
+    ProxyPass           /loleaflet https://127.0.0.1:9980/loleaflet retry=0
+    ProxyPassReverse    /loleaflet https://127.0.0.1:9980/loleaflet
 
-  # SSL configuration, you may want to take the easy route instead and use Lets Encrypt!
-  SSLEngine on
-  SSLCertificateFile /path/to/signed_certificate
-  SSLCertificateChainFile /path/to/intermediate_certificate
-  SSLCertificateKeyFile /path/to/private/key
-  SSLProtocol             all -SSLv2 -SSLv3
-  SSLCipherSuite ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA:ECDHE-RSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA:DHE-RSA-AES256-SHA256:DHE-RSA-AES256-SHA:ECDHE-ECDSA-DES-CBC3-SHA:ECDHE-RSA-DES-CBC3-SHA:EDH-RSA-DES-CBC3-SHA:AES128-GCM-SHA256:AES256-GCM-SHA384:AES128-SHA256:AES256-SHA256:AES128-SHA:AES256-SHA:DES-CBC3-SHA:!DSS
-  SSLHonorCipherOrder     on
+    # WOPI discovery URL
+    ProxyPass           /hosting/discovery https://127.0.0.1:9980/hosting/discovery retry=0
+    ProxyPassReverse    /hosting/discovery https://127.0.0.1:9980/hosting/discovery
 
-  # Encoded slashes need to be allowed
-  AllowEncodedSlashes On
+    # Main websocket
+    ProxyPass   /lool/ws      wss://127.0.0.1:9980/lool/ws
 
-  # Container uses a unique non-signed certificate
-  SSLProxyEngine On
-  SSLProxyVerify None
-  SSLProxyCheckPeerCN Off
-  SSLProxyCheckPeerName Off
+    # Admin Console websocket
+    ProxyPass   /lool/adminws wss://127.0.0.1:9980/lool/adminws
 
-  # keep the host
-  ProxyPreserveHost On
-
-  # static html, js, images, etc. served from loolwsd
-  # loleaflet is the client part of LibreOffice Online
-  ProxyPass           /loleaflet https://127.0.0.1:9980/loleaflet retry=0
-  ProxyPassReverse    /loleaflet https://127.0.0.1:9980/loleaflet
-
-  # WOPI discovery URL
-  ProxyPass           /hosting/discovery https://127.0.0.1:9980/hosting/discovery retry=0
-  ProxyPassReverse    /hosting/discovery https://127.0.0.1:9980/hosting/discovery
-
-  # Main websocket
-  ProxyPass   /lool/ws      wss://127.0.0.1:9980/lool/ws
-
-  # Admin Console websocket
-  ProxyPass   /lool/adminws wss://127.0.0.1:9980/lool/adminws
-
-  # Download as, Fullscreen presentation and Image upload operations
-  ProxyPass           /lool https://127.0.0.1:9980/lool
-  ProxyPassReverse    /lool https://127.0.0.1:9980/lool
-</VirtualHost>
+    # Download as, Fullscreen presentation and Image upload operations
+    ProxyPass           /lool https://127.0.0.1:9980/lool
+  ProxyPassReverse /lool https://127.0.0.1:9980/lool
+  </VirtualHost>
 HTTPS_CREATE
 
-if [ -f "$HTTPS_CONF" ];
-then
-        echo "$HTTPS_CONF was successfully created"
-        sleep 2
-else
-	echo "Unable to create vhost, exiting..."
-	exit
-fi
+  if [ -f "$HTTPS_CONF" ];
+  then
+          echo "$HTTPS_CONF was successfully created"
+          sleep 2
+  else
+  	echo "Unable to create vhost, exiting..."
+  	exit
+  fi
 
-fi
+  fi
 
-# Restart Apache2
-service apache2 restart
+   # Let's Encrypt
+  ##### START FIRST TRY
+  # Stop Apache to aviod port conflicts
+          a2dissite 000-default.conf
+          sudo service apache2 stop
 
-# Firewall -- not needed for it to work
-#if (whiptail --title "Test Yes/No Box" --yes-button "Firewall" --no-button "No Firewall"  --yesno "Do you have a firewall enabled?" 10 60) then
-#    echo "You chose yes..."
+  # Check if $LETSENCRYPTPATH exist, and if, then delete.
+  if [ -d "$LETSENCRYPTPATH" ]; then
+    	rm -R "$LETSENCRYPTPATH"
+  fi
 
-#if (whiptail --title "Test Yes/No Box" --yes-button "UFW" --no-button "IPtables"  --yesno "Do you have UFW or IPtables enabled?" 10 60) then
-#    echo "You chose UFW..."
-#        sudo ufw allow 9980
-#else
-#    echo "You chose IPtables... Please file a PR to add a rule for IPtables."
-#fi
+  # Generate certs
+  	cd "$LETSENCRYPTDIR"
+  	git clone https://github.com/letsencrypt/letsencrypt
+  	cd "$LETSENCRYPTPATH"
+          ./letsencrypt-auto certonly --standalone -d "$EDITORDOMAIN" -d "$CLEANDOMAIN"
 
-#else
-#    echo "You chose no, it is highly recommended that you use a firewall! Enable it by typing: sudo ufw enable && sudo ufw allow 9980."
-#fi
+  # Use for testing
+  #./letsencrypt-auto --apache --server https://acme-staging.api.letsencrypt.org/directory -d EXAMPLE.COM
+  # Activate Apache again (Disabled during standalone)
+          service apache2 start
+          a2ensite 000-default.conf
+          service apache2 reload
 
-# Let's Encrypt
-##### START FIRST TRY
-# Stop Apache to aviod port conflicts
-        a2dissite 000-default.conf
-        sudo service apache2 stop
-# Check if $letsencryptpath exist, and if, then delete.
-if [ -d "$letsencryptpath" ]; then
-  	rm -R "$letsencryptpath"
-fi
-# Generate certs
-	cd "$dir_before_letsencrypt"
-	git clone https://github.com/letsencrypt/letsencrypt
-	cd "$letsencryptpath"
-        ./letsencrypt-auto certonly --standalone -d "$EDITORDOMAIN" -d "$DOMAIN1"
-# Use for testing
-#./letsencrypt-auto --apache --server https://acme-staging.api.letsencrypt.org/directory -d EXAMPLE.COM
-# Activate Apache again (Disabled during standalone)
-        service apache2 start
-        a2ensite 000-default.conf
-        service apache2 reload
-# Check if $certfiles exists
-if [ -d "$certfiles" ]; then
-# Activate new config
-	sed -i "s|SSLCertificateKeyFile /path/to/private/key|SSLCertificateKeyFile $certfiles/$EDITORDOMAIN/privkey.pem|g"
-	sed -i "s|SSLCertificateFile /path/to/signed_certificate|SSLCertificateFile $certfiles/$EDITORDOMAIN/cert.pem|g"
-	sed -i "s|SSLCertificateChainFile /path/to/intermediate_certificate|SSLCertificateChainFile $certfiles/$EDITORDOMAIN/chain.pem|g"
-        service apache2 restart
-        bash /var/scripts/test-new-config.sh
-# Message
-whiptail --msgbox "\
-Succesfully installed Collabora online docker, now please head over to your Nextcloud apps and admin panel
-and enable the Collabora online connector app and change the URL to whatever subdomain you choose to run Collabora on.\
-" $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT
+  # Check if $CERTFILES exists
+  if [ -d "$CERTFILES" ]; then
 
-	exit 0
-else
-        echo -e "\e[96m"
-        echo -e "It seems like no certs were generated, we do three more tries."
-        echo -e "\e[32m"
-        read -p "Press any key to continue... " -n1 -s
-        echo -e "\e[0m"
-fi
+  # Activate new config
+  	sed -i "s|SSLCertificateKeyFile /path/to/private/key|SSLCertificateKeyFile $CERTFILES/$EDITORDOMAIN/privkey.pem|g" $HTTPS_CONF
+  	sed -i "s|SSLCertificateFile /path/to/signed_certificate|SSLCertificateFile $CERTFILES/$EDITORDOMAIN/cert.pem|g" $HTTPS_CONF
+  	sed -i "s|SSLCertificateChainFile /path/to/intermediate_certificate|SSLCertificateChainFile $CERTFILES/$EDITORDOMAIN/chain.pem|g" $HTTPS_CONF
+    service apache2 restart
+    bash /var/scripts/test-new-config.sh
 
-##### START SECOND TRY
-# Check if $letsencryptpath exist, and if, then delete.
-	if [ -d "$letsencryptpath" ]; then
-  	rm -R "$letsencryptpath"
-fi
+  # Message
+  whiptail --msgbox "\
+  Succesfully installed Collabora online docker, now please head over to your Nextcloud apps and admin panel
+  and enable the Collabora online connector app and change the URL to: https://$EDITORDOMAIN:443\
+  " 10 60 1
 
-# Generate certs
-	cd "$dir_before_letsencrypt"
-	git clone https://github.com/letsencrypt/letsencrypt
-	cd "$letsencryptpath"
-	./letsencrypt-auto -d "$EDITORDOMAIN" -d "$DOMAIN1"
+  	exit 0
+  else
+          echo -e "\e[96m"
+          echo -e "It seems like no certs were generated, we do three more tries."
+          echo -e "\e[32m"
+          read -p "Press any key to continue... " -n1 -s
+          echo -e "\e[0m"
+  fi
 
-# Check if $certfiles exists
-if [ -d "$certfiles" ]; then
-# Activate new config
-	sed -i "s|SSLCertificateKeyFile /path/to/private/key|SSLCertificateKeyFile $certfiles/$EDITORDOMAIN/privkey.pem|g"
-	sed -i "s|SSLCertificateFile /path/to/signed_certificate|SSLCertificateFile $certfiles/$EDITORDOMAIN/cert.pem|g"
-	sed -i "s|SSLCertificateChainFile /path/to/intermediate_certificate|SSLCertificateChainFile $certfiles/$EDITORDOMAIN/chain.pem|g"
-##### original vhost also change the newly made certs
+  ##### START SECOND TRY
+  # Check if $LETSENCRYPTPATH exist, and if, then delete.
+  	if [ -d "$LETSENCRYPTPATH" ]; then
+    	rm -R "$LETSENCRYPTPATH"
+  fi
 
-	service apache2 restart
-	bash /var/scripts/test-new-config.sh
-# Message
-whiptail --msgbox "Succesfully installed Collabora online docker, now please head over to your Nextcloud apps and admin paneland enable the Collabora online connector app and change the URL to whatever subdomain you choose to run Collabora on." $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT
+  # Generate certs
+  	cd "$LETSENCRYPTDIR"
+  	git clone https://github.com/letsencrypt/letsencrypt
+  	cd "$LETSENCRYPTPATH"
+  	./letsencrypt-auto -d "$EDITORDOMAIN" -d "$CLEANDOMAIN"
 
-        exit 0
-else
-	echo -e "\e[96m"
-	echo -e "It seems like no certs were generated, something went wrong"
-	echo -e "\e[32m"
-	read -p "Press any key to continue... " -n1 -s
-	echo -e "\e[0m"
-fi
+  # Check if $CERTFILES exists
+  if [ -d "$CERTFILES" ]; then
 
-exit 0
+  # Activate new config
+  	sed -i "s|SSLCertificateKeyFile /path/to/private/key|SSLCertificateKeyFile $CERTFILES/$EDITORDOMAIN/privkey.pem|g" $HTTPS_CONF
+  	sed -i "s|SSLCertificateFile /path/to/signed_certificate|SSLCertificateFile $CERTFILES/$EDITORDOMAIN/cert.pem|g" $HTTPS_CONF
+  	sed -i "s|SSLCertificateChainFile /path/to/intermediate_certificate|SSLCertificateChainFile $CERTFILES/$EDITORDOMAIN/chain.pem|g" $HTTPS_CONF
+
+  # Add new certs to existing Vhost
+  sed -i "s|.*SSLCertificateKeyFile.*|SSLCertificateKeyFile $CERTFILES/$EDITORDOMAIN/privkey.pem|g"
+  sed -i "s|.*SSLCertificateFile.*|SSLCertificateFile $CERTFILES/$EDITORDOMAIN/cert.pem|g"
+  sed -i "s|.*SSLCertificateChainFile.*|SSLCertificateChainFile $CERTFILES/$EDITORDOMAIN/chain.pem|g"
+
+  # Restart apache and test config
+  service apache2 restart
+  bash /var/scripts/test-new-config.sh
+
+  # Message
+  whiptail --msgbox "\
+  Succesfully installed Collabora online docker, now please head over to your Nextcloud apps and admin panel
+  and enable the Collabora online connector app and change the URL to: $EDITORDOMAIN:443\
+  " 10 60 1
+
+  else
+  	echo -e "\e[96m"
+  	echo -e "It seems like no certs were generated, something went wrong"
+  	echo -e "\e[32m"
+  	read -p "Press any key to continue... " -n1 -s
+  	echo -e "\e[0m"
+  fi
+
+  exit 0
 }
 
 ################################ Spreed-webrtc 2.2
@@ -452,9 +447,15 @@ do_tools() {
     "T11 Disable IPV6" "Via sysctl.conf" \
     "T12 Find text" "In a given directory" \
     "T13 OOM fix" "Auto reboot on out of memory errors" \
-    "T14 Install virtualbox" \
-    "T15 Install virtualbox extension pack"
-    "T16 Install virtualbox guest additions"
+    "T14 Install Virtualbox" \
+    "T15 Install Virtualbox extension pack"
+    "T16 Install Virtualbox guest additions"
+    "T17 Install Webmin" \
+    "T18 Set dns to Google and OpenDns" "Try google first if no response after 1 sec. switch to next NS" \
+    "T19 Add progress bar" "Apply's to apt / apt-get update/install/upgrade" \
+    "T20 Boot to terminal by default" "Only if you use a GUI/desktop now" \
+    "T21 Boot to GUI/desktop by default" "Only if you have a GUI installed and have terminal as default" \
+    "T22 Delete line containing a string of text" "Warning, deletes every line containing the string!" \
     3>&1 1>&2 2>&3)
   RET=$?
   if [ $RET -eq 1 ]; then
@@ -477,6 +478,12 @@ do_tools() {
       T14\ *) do_virtualbox ;;
       T15\ *) do_vboxextpack ;;
       T16\ *) do_vboxguestadd ;;
+      T17\ *) do_webmin ;;
+      T18\ *) do_dns ;;
+      T19\ *) do_progressbar ;;
+      T20\ *) do_bootterminal ;;
+      T21\ *) do_bootgui ;;
+      T22\ *) do_stringdel ;;
     *) whiptail --msgbox "Programmer error: unrecognized option" 20 60 1 ;;
     esac || whiptail --msgbox "There was an error running option $FUN" 20 60 1
   fi
@@ -718,7 +725,6 @@ do_raspi_config() {
 ################################ Show folder size 3.7
 
 do_foldersize() {
-
 	if [ $(dpkg-query -W -f='${Status}' ncdu 2>/dev/null | grep -c "ok installed") -eq 1 ];
 then
         ncdu /
@@ -732,7 +738,6 @@ else
     } | whiptail --title "Progress" --gauge "Please wait while installing ncdu" 6 60 0
 
 	ncdu /
-
 fi
 }
 
@@ -820,7 +825,6 @@ do_find_string() {
 ################################ Reboot on out of memory 3.14
 
 do_oom() {
-
  if grep -q kernel.panic=10 "/etc/sysctl.d/oom_reboot.conf"; then
    sleep 0
  else
@@ -837,7 +841,7 @@ do_oom() {
  sysctl -p /etc/sysctl.d/oom_reboot.conf
  echo
 
-whiptail --msgbox "System will reboot on out of memory error..." 10 60 1
+whiptail --msgbox "System will now reboot on out of memory errors..." 10 60 1
 }
 
 ################################ Install virtualbox 3.15
@@ -846,8 +850,25 @@ do_virtualbox() {
 echo "deb http://download.virtualbox.org/virtualbox/debian xenial contrib" >> /etc/apt/sources.list
 wget -q https://www.virtualbox.org/download/oracle_vbox_2016.asc -O- | sudo apt-key add -
 wget -q https://www.virtualbox.org/download/oracle_vbox.asc -O- | sudo apt-key add -
-sudo aptitude update
-sudo aptitude install virtualbox-dkms dkms build-essential linux-headers-generic linux-headers-$(uname -r) virtualbox-5.1 -y
+
+# Install req packages
+    {
+    i=1
+    while read -r line; do
+        i=$(( $i + 1 ))
+        echo $i
+    done < <(apt-get update)
+  } | whiptail --title "Progress" --gauge "Please wait while updating..." 6 60 0
+
+# Install req packages
+    {
+    i=1
+    while read -r line; do
+        i=$(( $i + 1 ))
+        echo $i
+    done < <(apt-get install virtualbox-dkms dkms build-essential linux-headers-generic linux-headers-$(uname -r) virtualbox-5.1 -y)
+  } | whiptail --title "Progress" --gauge "Please wait while installing th required packages..." 6 60 0
+
 sudo modprobe vboxdrv
 
 whiptail --msgbox "Virtualbox is now installed..." 10 60 1
@@ -862,7 +883,7 @@ vboxmanage extpack install /var/scripts/http://download.virtualbox.org/virtualbo
 whiptail --msgbox "Virtualbox extension pack is installed..." 10 60 1
 }
 
-################################ Install virtualbox guest additions
+################################ Install virtualbox guest additions 3.17
 
 do_vboxguestadd() {
 apt-get update
@@ -879,11 +900,306 @@ rm -rf /mnt/tmp
 whiptail --msgbox "Virtualbox guest additions are now installed, make sure to reboot..." 10 60 1
 }
 
-################################
-################################
-################################
-################################
-################################
+################################ Install webmin 3.18
+
+do_webmin() {
+  echo "deb http://download.webmin.com/download/repository sarge contrib" >> /etc/apt/sources.list
+  cd /root
+  wget http://www.webmin.com/jcameron-key.asc
+  apt-key add jcameron-key.asc
+  apt-get update
+  apt-get install webmin -y
+  cd
+
+whiptail --msgbox "Webmin is now installed, access it at https://"$ADDRESS":10000..." 10 60 1
+}
+
+################################ Set dns to google and opendns 3.19
+
+do_dns() {
+  # Clear existing DNS servers
+  cat /dev/null > /etc/resolv.conf
+  cat /dev/null > /etc/resolvconf/resolv.conf.d/tail
+  cat /dev/null > /etc/resolvconf/resolv.conf.d/head
+  cat /dev/null > /etc/resolvconf/resolv.conf.d/base
+  cat /dev/null > /etc/resolvconf/resolv.conf.d/original
+  echo "options timeout:1 rotate attempts:1" > /etc/resolvconf/resolv.conf.d/tail
+  echo "nameserver 8.8.8.8 #Google NS1" >> /etc/resolvconf/resolv.conf.d/tail
+  echo "nameserver 8.8.4.4 #Google NS2" >> /etc/resolvconf/resolv.conf.d/tail
+  echo "nameserver 208.67.222.222 #OpenDNS1" >> /etc/resolvconf/resolv.conf.d/tail
+  echo "nameserver 208.67.220.220 #OpenDNS2" >> /etc/resolvconf/resolv.conf.d/tail
+
+whiptail --msgbox "Dns is now set to google, if no response in 1 second it switches to opendns..." 10 60 1
+}
+################################ Progress bar 3.20
+
+do_progressbar() {
+if grep -q Dpkg::Progress-Fancy "1"; "/etc/apt/apt.conf.d/99progressbar"; then
+  echo "Dpkg::Progress-Fancy "1";" > /etc/apt/apt.conf.d/99progressbar
+
+	whiptail --msgbox "You now have a fancy progress bar, outside this installer run apt or apt-get install <package>" $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT
+fi
+}
+
+################################ Boot terminal 3.21
+
+do_bootterminal() {
+if grep -q GRUB_CMDLINE_LINUX_DEFAULT="" "/etc/default/grub"; then
+  sed -i 's|GRUB_CMDLINE_LINUX_DEFAULT=""|GRUB_CMDLINE_LINUX_DEFAULT="text"|g' /etc/default/grub
+  update-grub
+fi
+}
+
+################################ Boot gui 3.22
+
+do_bootgui() {
+  if grep -q GRUB_CMDLINE_LINUX_DEFAULT="text" "/etc/default/grub"; then
+    sed -i 's|GRUB_CMDLINE_LINUX_DEFAULT="text"|GRUB_CMDLINE_LINUX_DEFAULT=""|g' /etc/default/grub
+  	update-grub
+  fi
+}
+
+################################ Swappiness 3.23
+
+do_swappiness() {
+SWAPPINESS=$(whiptail --inputbox "Set the swappiness value" 10 60 0 3>&1 1>&2 2>&3)
+
+if grep -q vm.swappiness "/etc/sysctl.conf"; then
+    sed -i '/vm.swappiness/d' /etc/sysctl.conf
+  	echo "vm.swappiness = $SWAPPINESS" >> /etc/sysctl.conf
+  	sysctl -p
+else
+  echo "vm.swappiness = $SWAPPINESS" >> /etc/sysctl.conf
+  sysctl -p
+fi
+
+}
+
+################################ Delete line containing string 3.24
+
+do_stringdel() {
+DELETESTRING=$(whiptail --inputbox "Which line containing the following string needs to be deleted?" 10 60 for example address 192.168.1.1 3>&1 1>&2 2>&3)
+DELETESTRINGFILE=$(whiptail --inputbox "In what file should we search?" 10 60 /file/dir 3>&1 1>&2 2>&3)
+
+sed -i "/$DELETESTRING/d" "$DELETESTRINGFILE"
+}
+
+################################################ Firewall 4
+
+do_firewall() {
+  FUN=$(whiptail --title "Multi Installer - https://www.techandme.se" --menu "Firewall options" $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT --cancel-button Back --ok-button Select \
+    "A1 Enable Firewall" "" \
+    "A2 Disable Firewall" "" \
+    "A3 Allow port Multiple" "Teamspeak" \
+    "A4 Allow port 32400" "Plex" \
+    "A5 Allow port 8989" "Sonarr" \
+    "A6 Allow port 5050" "Couchpotato" \
+    "A7 Allow port 8181" "Headphones" \
+    "A8 Allow port 8085" "HTPC Manager" \
+    "A9 Allow port 8080" "Mylar" \
+    "A10 Allow port 10000" "Webmin" \
+    "A11 Allow port 8080" "Sabnzbdplus" \
+    "A12 Allow port 9090" "Sabnzbdplus https" \
+    "A13 Allow port 2049" "NFS" \
+    "A14 Deny port Multiple" "Teamspeak" \
+    "A15 Deny port 32400" "Plex" \
+    "A16 Deny port 8989" "Sonarr" \
+    "A17 Deny port 5050" "Couchpotato" \
+    "A18 Deny port 8181" "Headphones" \
+    "A19 Deny port 8085" "HTPC Manager" \
+    "A20 Deny port 8080" "Mylar" \
+    "A21 Deny port 10000" "Webmin" \
+    "A22 Deny port 8080" "Sabnzbdplus" \
+    "A23 Deny port 9090" "Sabnzbdplus https" \
+    "A24 Deny port 2049" "NFS" \
+    3>&1 1>&2 2>&3)
+  RET=$?
+  if [ $RET -eq 1 ]; then
+    return 0
+  elif [ $RET -eq 0 ]; then
+    case "$FUN" in
+      A1\ *) do_ufw_enable ;;
+      A2\ *) do_ufw_disable ;;
+      A3\ *) do_allow_teamspeak ;;
+      A4\ *) do_allow_32400 ;;
+      A5\ *) do_allow_8989 ;;
+      A6\ *) do_allow_5050 ;;
+      A7\ *) do_allow_8181 ;;
+      A8\ *) do_allow_8085 ;;
+      A9\ *) do_allow_mylar ;;
+      A10\ *) do_allow_10000 ;;
+      A11\ *) do_allow_8080 ;;
+      A12\ *) do_allow_9090 ;;
+      A13\ *) do_allow_2049 ;;
+      A14\ *) do_deny_teamspeak ;;
+      A15\ *) do_deny_32400 ;;
+      A16\ *) do_deny_8989 ;;
+      A17\ *) do_deny_5050 ;;
+      A18\ *) do_deny_8181 ;;
+      A19\ *) do_deny_8085 ;;
+      A20\ *) do_deny_mylar ;;
+      A21\ *) do_deny_10000 ;;
+      A22\ *) do_deny_8080 ;;
+      A23\ *) do_deny_9090 ;;
+      A24\ *) do_deny_2049 ;;
+      *) whiptail --msgbox "Programmer error: unrecognized option" 20 60 1 ;;
+    esac || whiptail --msgbox "There was an error running option $FUN" 20 60 1
+  fi
+}
+
+######Firewall#######
+do_ufw_enable() {
+sudo ufw reset << EOF
+y
+EOF
+sudo ufw enable
+sudo ufw default deny incoming
+sudo ufw status
+sleep 2
+}
+######Firewall#######
+do_ufw_disable() {
+sudo ufw disable
+sudo ufw status
+sleep 2
+}
+######Firewall#######
+do_allow_32400() {
+sudo ufw allow 32400
+sudo ufw status
+sleep 2
+}
+######Firewall#######
+do_allow_10000() {
+sudo ufw allow 10000
+sudo ufw status
+sleep 2
+}
+######Firewall#######
+do_allow_5050() {
+sudo ufw allow 5050
+sudo ufw status
+sleep 2
+}
+######Firewall#######
+do_allow_9090() {
+sudo ufw allow 9090
+sudo ufw status
+sleep 2
+}
+######Firewall#######
+do_allow_8080() {
+sudo ufw allow 8080
+sudo ufw status
+sleep 2
+}
+######Firewall#######
+do_allow_8989() {
+sudo ufw allow 8989
+sudo ufw status
+sleep 2
+}
+######Firewall#######
+do_allow_8181() {
+sudo ufw allow 8181
+sudo ufw status
+sleep 2
+}
+######Firewall#######
+do_allow_8085() {
+sudo ufw allow 8085
+sudo ufw status
+sleep 2
+}
+######Firewall#######
+do_allow_mylar() {
+sudo ufw allow 8080
+sudo ufw status
+sleep 2
+}
+######Firewall#######
+do_allow_2049() {
+sudo ufw allow 2049
+sudo ufw status
+sleep 2
+}
+######Firewall#######
+do_allow_teamspeak() {
+sudo ufw allow 9987
+sudo ufw allow 10011
+sudo ufw allow 30033
+sudo ufw status
+sleep 2
+}
+######Firewall#######
+do_deny_32400() {
+sudo ufw deny 32400
+sudo ufw status
+sleep 2
+}
+######Firewall#######
+do_deny_10000() {
+sudo ufw deny 10000
+sudo ufw status
+sleep 2
+}
+######Firewall#######
+do_deny_5050() {
+sudo ufw deny 5050
+sudo ufw status
+sleep 2
+}
+######Firewall#######
+do_deny_9090() {
+sudo ufw deny 9090
+sudo ufw status
+sleep 2
+}
+######Firewall#######
+do_deny_8080() {
+sudo ufw deny 8080
+sudo ufw status
+sleep 2
+}
+######Firewall#######
+do_deny_8989() {
+sudo ufw deny 8989
+sudo ufw status
+sleep 2
+}
+######Firewall#######
+do_deny_8181() {
+sudo ufw deny 8181
+sudo ufw status
+sleep 2
+}
+######Firewall#######
+do_deny_8085() {
+sudo ufw deny 8085
+sudo ufw status
+sleep 2
+}
+######Firewall#######
+do_deny_mylar() {
+sudo ufw deny 8080
+sudo ufw status
+sleep 2
+}
+######Firewall#######
+do_deny_2049() {
+sudo ufw deny 2049
+sudo ufw status
+sleep 2
+}
+######Firewall#######
+do_deny_teamspeak() {
+sudo ufw deny 9987
+sudo ufw deny 10011
+sudo ufw deny 30033
+sudo ufw status
+sleep 2
+}
+
 ################################# Update
 
 do_update() {
@@ -946,10 +1262,11 @@ fi
 do_about() {
   whiptail --msgbox "\
 This tool is created by techandme.se for less skilled linux terminal users.
-It makes it easy just browsing the menu and installing or using system tools. Please post requests or suggestions here:
-lINK TO FOLLOW!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+It makes it easy just browsing the menu and installing or using system tools.
+Please post requests (with REQUEST in title) here: https://github.com/ezraholm50/MultiInstaller/issues
 Visit https://www.techandme.se for awsome free virtual machines,
-Nextcloud, ownCloud, Teamspeak, Wordpress etc.\
+Nextcloud, ownCloud, Teamspeak, Wordpress, Minecraft etc.
+Note that this tool is tested on Ubuntu 16.04 (should work on debian)\
 " $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT
 }
 
@@ -960,10 +1277,11 @@ while true; do
   FUN=$(whiptail --title "https://www.techandme.se" --menu "Multi Installer" $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT --cancel-button Finish --ok-button Select \
     "1 Apps" "Nextcloud" \
     "2 Tools" "Various tools" \
-    "3 Update & upgrade" "Updates and upgrades packages and get the latest version of this tool" \
-    "4 Reboot" "Reboots your machine" \
-    "5 Shutdown" "Shutdown your machine" \
-    "6 About Tech and Tool" "Information about this tool" \
+    "3 Firewall" "Enable/disable and open/close ports"
+    "4 Update & upgrade" "Updates and upgrades packages and get the latest version of this tool" \
+    "5 Reboot" "Reboots your machine" \
+    "6 Shutdown" "Shutdown your machine" \
+    "7 About Tech and Tool" "Information about this tool" \
     3>&1 1>&2 2>&3)
   RET=$?
   if [ $RET -eq 1 ]; then
@@ -971,11 +1289,12 @@ while true; do
   elif [ $RET -eq 0 ]; then
     case "$FUN" in
       1\ *) do_apps ;;
-      2\ *) do_tools;;
-      3\ *) do_update ;;
-      4\ *) do_reboot ;;
-      5\ *) do_poweroff ;;
-      6\ *) do_about ;;
+      2\ *) do_tools ;;
+      3\ *) do_firewall ;;
+      4\ *) do_update ;;
+      5\ *) do_reboot ;;
+      6\ *) do_poweroff ;;
+      7\ *) do_about ;;
       *) whiptail --msgbox "Programmer error: unrecognized option" 20 60 1 ;;
     esac || whiptail --msgbox "There was an error running option $FUN" 20 60 1
  else
