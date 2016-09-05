@@ -44,6 +44,12 @@
 #- 3.17 Install virtualbox guest additions
 #- 3.18 Install webmin
 #- 3.19 Set dns to google and opendns
+#- 3.20 Progrssbar
+#- 3.21 Boot terminal
+#- 3.22 Boot gui
+#- 3.23 Set swappiness
+#- 3.24 Delete line containing string
+#- 3.25 Upgrade kernel
 #- 4 Firewall
 #- 5 Update & upgrade
 #- 6 About this tool
@@ -456,6 +462,8 @@ do_tools() {
     "T20 Boot to terminal by default" "Only if you use a GUI/desktop now" \
     "T21 Boot to GUI/desktop by default" "Only if you have a GUI installed and have terminal as default" \
     "T22 Delete line containing a string of text" "Warning, deletes every line containing the string!" \
+    "T23 Set swappiness" \
+    "T24 Upgrade Ubuntu Kernel" "To the latest version" \
     3>&1 1>&2 2>&3)
   RET=$?
   if [ $RET -eq 1 ]; then
@@ -484,6 +492,8 @@ do_tools() {
       T20\ *) do_bootterminal ;;
       T21\ *) do_bootgui ;;
       T22\ *) do_stringdel ;;
+      T23\ *) do_swappiness ;;
+      T24\ *) do_ukupgrade ;;
     *) whiptail --msgbox "Programmer error: unrecognized option" 20 60 1 ;;
     esac || whiptail --msgbox "There was an error running option $FUN" 20 60 1
   fi
@@ -982,6 +992,14 @@ DELETESTRING=$(whiptail --inputbox "Which line containing the following string n
 DELETESTRINGFILE=$(whiptail --inputbox "In what file should we search?" 10 60 /file/dir 3>&1 1>&2 2>&3)
 
 sed -i "/$DELETESTRING/d" "$DELETESTRINGFILE"
+}
+
+################################ Kernel upgrade
+
+do_ukupgrade() {}
+mkdir -p /var/scripts
+wget https://raw.githubusercontent.com/muhasturk/ukupgrade/master/ukupgrade -P /var/scripts
+bash /var/scripts/ukupgrade
 }
 
 ################################################ Firewall 4
