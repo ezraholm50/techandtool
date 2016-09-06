@@ -9,8 +9,8 @@
 #- 1.3
 #- 1.4 Whiptail
 #- 1.5 Root check
-#- 1.6
-#- 1.7
+#- 1.6 Do finish
+#- 1.7 Ask to reboot
 #- 1.8
 #- 1.9
 #- 2 Apps
@@ -51,6 +51,7 @@
 #- 3.24 Delete line containing string
 #- 3.25 Upgrade kernel
 #- 3.26 Install Nextcloud
+#- 3.27 Install Zram ##############################
 #- 4 Firewall
 #- 5 Update & upgrade
 #- 6 About this tool
@@ -69,6 +70,7 @@ GATEWAY=$($IP route | awk '/default/ { print $3 }')
 
 ################################ Whiptail size 1.4
 
+INTERACTIVE=True
 calc_wt_size() {
   WT_HEIGHT=17
   WT_WIDTH=$(tput cols)
@@ -93,7 +95,7 @@ else
     {
     i=1
     while read -r line; do
-        i=$(( $i + 1 ))
+        i=$(( i + 1 ))
         echo $i
     done < <(apt-get install whiptail -y)
   } | whiptail --title "Progress" --gauge "Please wait while installing Whiptail..." 6 60 0
@@ -103,7 +105,7 @@ fi
 ################################################ Check if root 1.6
 
 if [ "$(whoami)" != "root" ]; then
-        whiptail --msgbox "Sorry you are not root. You must type: sudo bash techandtool.sh" 10 60 1
+        whiptail --msgbox "Sorry you are not root. You must type: sudo techandtool" 10 60 1
         exit
 fi
 
@@ -112,13 +114,27 @@ fi
 REPO="https://github.com/ezraholm50/vm/raw/master"
 SCRIPTS="/var/scripts"
 
+################################################ Do finish 1.9
+
+ASK_TO_REBOOT=0
+do_finish() {
+  if [ $ASK_TO_REBOOT -eq 1 ]; then
+    whiptail --yesno "Would you like to reboot now?" 20 60 2
+    if [ $? -eq 0 ]; then # yes
+      sync
+      reboot
+    fi
+  fi
+  exit 0
+}
+
 ################################################ Apps 2
 
 do_apps() {
-  FUN=$(whiptail --title "Tech and Tool - https://www.techandme.se" --menu "Apps" $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT \
+  FUN=$(whiptail --title "Tech and Tool - https://www.techandme.se" --menu "Apps" $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT --cancel-button Back --ok-button Select \
     "T1 Collabora" "Docker" \
     "T2 Spreed-webrtc" "Spreedme" \
-    "T3 Gpxpod" "" \
+    "T3 Gpxpod" \
     3>&1 1>&2 2>&3)
   RET=$?
   if [ $RET -eq 1 ]; then
@@ -139,8 +155,8 @@ do_collabora() {
   DOMAIN=$(whiptail --title "Techandme.se Collabora" --inputbox "Nextcloud url, make sure it looks like this: cloud\.yourdomain\.com" 10 60 cloud\.yourdomain\.com 3>&1 1>&2 2>&3)
   CLEANDOMAIN=$(whiptail --title "Techandme.se Collabora" --inputbox "Nextcloud url, now make sure it look normal" 10 60 cloud.yourdomain.com 3>&1 1>&2 2>&3)
   EDITORDOMAIN=$(whiptail --title "Techandme.se Collabora" --inputbox "Collabora subdomain eg: office.yourdomain.com" 10 60 3>&1 1>&2 2>&3)
-  HTTPS_EXIST="/etc/apache2/sites-available/'$EXISTINGDOMAIN'"
-  HTTPS_CONF="/etc/apache2/sites-available/'$EDITORDOMAIN'"
+  HTTPS_EXIST="/etc/apache2/sites-available/$EXISTINGDOMAIN"
+  HTTPS_CONF="/etc/apache2/sites-available/$EDITORDOMAIN"
   LETSENCRYPTDIR="/etc"
   LETSENCRYPTPATH="/etc/letsencrypt"
   CERTFILES="$LETSENCRYPTPATH"/live/"$EDITORDOMAIN"
@@ -180,7 +196,7 @@ do_collabora() {
       {
       i=1
       while read -r line; do
-          i=$(( $i + 1 ))
+          i=$(( i + 1 ))
           echo $i
       done < <(apt-get install apache2 -y)
       } | whiptail --title "Progress" --gauge "Please wait while installing Apache2" 6 60 0
@@ -285,11 +301,11 @@ HTTPS_CREATE
   if [ -d "$CERTFILES" ]; then
 
   # Activate new config
-  	sed -i "s|SSLCertificateKeyFile /path/to/private/key|SSLCertificateKeyFile $CERTFILES/$EDITORDOMAIN/privkey.pem|g" $HTTPS_CONF
-  	sed -i "s|SSLCertificateFile /path/to/signed_certificate|SSLCertificateFile $CERTFILES/$EDITORDOMAIN/cert.pem|g" $HTTPS_CONF
-  	sed -i "s|SSLCertificateChainFile /path/to/intermediate_certificate|SSLCertificateChainFile $CERTFILES/$EDITORDOMAIN/chain.pem|g" $HTTPS_CONF
+  	sed -i "s|SSLCertificateKeyFile /path/to/private/key|SSLCertificateKeyFile $CERTFILES/$EDITORDOMAIN/privkey.pem|g" "$HTTPS_CONF"
+  	sed -i "s|SSLCertificateFile /path/to/signed_certificate|SSLCertificateFile $CERTFILES/$EDITORDOMAIN/cert.pem|g" "$HTTPS_CONF"
+  	sed -i "s|SSLCertificateChainFile /path/to/intermediate_certificate|SSLCertificateChainFile $CERTFILES/$EDITORDOMAIN/chain.pem|g" "$HTTPS_CONF"
     service apache2 restart
-    bash /var/scripts/test-new-config.sh
+    bash $SCRIPTS/test-new-config.sh
 
   # Message
   whiptail --msgbox "\
@@ -322,9 +338,9 @@ HTTPS_CREATE
   if [ -d "$CERTFILES" ]; then
 
   # Activate new config
-  	sed -i "s|SSLCertificateKeyFile /path/to/private/key|SSLCertificateKeyFile $CERTFILES/$EDITORDOMAIN/privkey.pem|g" $HTTPS_CONF
-  	sed -i "s|SSLCertificateFile /path/to/signed_certificate|SSLCertificateFile $CERTFILES/$EDITORDOMAIN/cert.pem|g" $HTTPS_CONF
-  	sed -i "s|SSLCertificateChainFile /path/to/intermediate_certificate|SSLCertificateChainFile $CERTFILES/$EDITORDOMAIN/chain.pem|g" $HTTPS_CONF
+  	sed -i "s|SSLCertificateKeyFile /path/to/private/key|SSLCertificateKeyFile $CERTFILES/$EDITORDOMAIN/privkey.pem|g" "$HTTPS_CONF"
+  	sed -i "s|SSLCertificateFile /path/to/signed_certificate|SSLCertificateFile $CERTFILES/$EDITORDOMAIN/cert.pem|g" "$HTTPS_CONF"
+  	sed -i "s|SSLCertificateChainFile /path/to/intermediate_certificate|SSLCertificateChainFile $CERTFILES/$EDITORDOMAIN/chain.pem|g" "$HTTPS_CONF"
 
   # Add new certs to existing Vhost
   sed -i "s|.*SSLCertificateKeyFile.*|SSLCertificateKeyFile $CERTFILES/$EDITORDOMAIN/privkey.pem|g"
@@ -333,7 +349,7 @@ HTTPS_CREATE
 
   # Restart apache and test config
   service apache2 restart
-  bash /var/scripts/test-new-config.sh
+  bash $SCRIPTS/test-new-config.sh
 
   # Message
   whiptail --msgbox "\
@@ -425,6 +441,7 @@ VHOST
 service "$WEB" reload
 
 # Almost done
+echo
 echo "Please enable the app in Nextcloud/ownCloud..."
 echo
 echo "If there are any errors make sure to append /?debug to the url when visiting the spreedme app in the cloud"
@@ -440,64 +457,64 @@ do_gpxpod() {
 ################################################ Tools 3
 
 do_tools() {
-  FUN=$(whiptail --title "Tech and Tool - https://www.techandme.se" --menu "Tools" $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT \
-    "T1 Show LAN IP, Gateway, Netmask" "Ifconfig" \
-    "T2 Show WAN IP" "External IP address" \
-    "T3 Change Hostname" "" \
-    "T4 Internationalisation Options" "Change language, time, date and keyboard layout" \
-    "T5 Connect to WLAN" "Please have a wifi dongle/card plugged in before start" \
-    "T6 Show folder size" ""\
-    "T7 Show folder conten" "with permissions" \
-    "T8 Show connected devices" "blkid" \
-    "T9 Show disks usage" "df -h" \
-    "T10 Show system performance" "HTOP" \
-    "T11 Disable IPV6" "Via sysctl.conf" \
-    "T12 Find text" "In a given directory" \
-    "T13 OOM fix" "Auto reboot on out of memory errors" \
-    "T14 Install Virtualbox" \
-    "T15 Install Virtualbox extension pack"
-    "T16 Install Virtualbox guest additions"
-    "T17 Install Webmin" \
-    "T18 Set dns to Google and OpenDns" "Try google first if no response after 1 sec. switch to next NS" \
-    "T19 Add progress bar" "Apply's to apt / apt-get update/install/upgrade" \
-    "T20 Boot to terminal by default" "Only if you use a GUI/desktop now" \
-    "T21 Boot to GUI/desktop by default" "Only if you have a GUI installed and have terminal as default" \
-    "T22 Delete line containing a string of text" "Warning, deletes every line containing the string!" \
-    "T23 Set swappiness" \
-    "T24 Upgrade Ubuntu Kernel" "To the latest version" \
-    "T25 Install Nextcloud" "Must be a clean Ubuntu 16.04 server 64bit"
+  FUN=$(whiptail --title "Tech and tool - https://www.techandme.se" --menu "Tools" $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT --cancel-button "Back" --ok-button "Select" \
+  "T1 Show LAN IP, Gateway, Netmask" "Ifconfig" \
+  "T2 Show WAN IP" "External IP address" \
+  "T3 Change Hostname" \
+  "T4 Internationalisation Options" "Change language, time, date and keyboard layout" \
+  "T5 Connect to WLAN" "Please have a wifi dongle/card plugged in before start" \
+  "T6 Show folder size" \
+  "T7 Show folder conten" "with permissions" \
+  "T8 Show connected devices" "blkid" \
+  "T9 Show disks usage" "df -h" \
+  "T10 Show system performance" "HTOP" \
+  "T11 Disable IPV6" "Via sysctl.conf" \
+  "T12 Find text" "In a given directory" \
+  "T13 OOM fix" "Auto reboot on out of memory errors" \
+  "T14 Install Virtualbox" \
+  "T15 Install Virtualbox extension pack" \
+  "T16 Install Virtualbox guest additions" \
+  "T17 Install Webmin" \
+  "T18 Set dns to Google and OpenDns" "Try google first if no response after 1 sec. switch to next NS" \
+  "T19 Add progress bar" "Apply's to apt / apt-get update/install/upgrade" \
+  "T20 Boot to terminal by default" "Only if you use a GUI/desktop now" \
+  "T21 Boot to GUI/desktop by default" "Only if you have a GUI installed and have terminal as default" \
+  "T22 Delete line containing a string of text" "Warning, deletes every line containing the string!" \
+  "T23 Set swappiness" \
+  "T24 Upgrade Ubuntu Kernel" "To the latest version" \
+  "T25 Install Nextcloud" "Must be a clean Ubuntu 16.04 server 64bit" \
     3>&1 1>&2 2>&3)
   RET=$?
   if [ $RET -eq 1 ]; then
     return 0
   elif [ $RET -eq 0 ]; then
     case "$FUN" in
-      T1\ *) do_ifconfig ;;
-      T2\ *) do_wan_ip ;;
-      T3\ *) do_change_hostname ;;
-      T4\ *) do_internationalisation_menu ;;
-      T5\ *) do_wlan ;;
-      T6\ *) do_foldersize ;;
-      T7\ *) do_listdir ;;
-      T8\ *) do_blkid ;;
-      T9\ *) do_df ;;
-      T10\ *) do_htop ;;
-      T11\ *) do_disable_ipv6 ;;
-      T12\ *) do_find_string ;;
-      T13\ *) do_oom ;;
-      T14\ *) do_virtualbox ;;
-      T15\ *) do_vboxextpack ;;
-      T16\ *) do_vboxguestadd ;;
-      T17\ *) do_webmin ;;
-      T18\ *) do_dns ;;
-      T19\ *) do_progressbar ;;
-      T20\ *) do_bootterminal ;;
-      T21\ *) do_bootgui ;;
-      T22\ *) do_stringdel ;;
-      T23\ *) do_swappiness ;;
-      T24\ *) do_ukupgrade ;;
-      T25\ *) do_nextcloud ;;
-    *) whiptail --msgbox "Programmer error: unrecognized option" 20 60 1 ;;
+    T1\ *) do_ifconfig ;;
+    T2\ *) do_wan_ip ;;
+    T3\ *) do_change_hostname ;;
+    T4\ *) do_internationalisation_menu ;;
+    T5\ *) do_wlan ;;
+    T6\ *) do_foldersize ;;
+    T7\ *) do_listdir ;;
+    T8\ *) do_blkid ;;
+    T9\ *) do_df ;;
+    T10\ *) do_htop ;;
+    T11\ *) do_disable_ipv6 ;;
+    T12\ *) do_find_string ;;
+    T13\ *) do_oom ;;
+    T14\ *) do_virtualbox ;;
+    T15\ *) do_vboxextpack ;;
+    T16\ *) do_vboxguestadd ;;
+    T17\ *) do_webmin ;;
+    T18\ *) do_dns ;;
+    T19\ *) do_progressbar ;;
+    T20\ *) do_bootterminal ;;
+    T21\ *) do_bootgui ;;
+    T22\ *) do_stringdel ;;
+    T23\ *) do_swappiness ;;
+    T24\ *) do_ukupgrade ;;
+    T25\ *) do_nextcloud ;;
+      *) whiptail --msgbox "Programmer error: unrecognized option" 20 60 1 ;;
     esac || whiptail --msgbox "There was an error running option $FUN" 20 60 1
   fi
 }
@@ -536,7 +553,6 @@ No other symbols, punctuation characters, or blank spaces are permitted.\
   if [ $? -eq 0 ]; then
     echo "$NEW_HOSTNAME" > /etc/hostname
     sed -i "s/127.0.1.1.*$CURRENT_HOSTNAME/127.0.1.1\t$NEW_HOSTNAME/g" /etc/hosts
-    ASK_TO_REBOOT=1
   fi
 }
 
@@ -672,7 +688,6 @@ $PART_START
 p
 w
 EOF
-  ASK_TO_REBOOT=1
 
   # now set up an init.d script
 cat <<\EOF > /etc/init.d/resize2fs_once &&
@@ -706,6 +721,7 @@ EOF
   if [ "$INTERACTIVE" = True ]; then
     whiptail --msgbox "Root partition has been resized.\nThe filesystem will be enlarged upon the next reboot" 20 60 2
   fi
+  ASK_TO_REBOOT=1
 }
 
 ##################### External USB 3.62
@@ -720,7 +736,7 @@ do_rpi_update() {
 	    {
     i=1
     while read -r line; do
-        i=$(( $i + 1 ))
+        i=$(( i + 1 ))
         echo $i
     done < <(rpi-update)
     } | whiptail --title "Progress" --gauge "Please wait while updating your RPI firmware and kernel" 6 60 0
@@ -745,7 +761,7 @@ else
     {
     i=1
     while read -r line; do
-        i=$(( $i + 1 ))
+        i=$(( i + 1 ))
         echo $i
     done < <(apt-get install ncdu -y)
     } | whiptail --title "Progress" --gauge "Please wait while installing ncdu" 6 60 0
@@ -877,7 +893,7 @@ wget -q https://www.virtualbox.org/download/oracle_vbox.asc -O- | sudo apt-key a
     {
     i=1
     while read -r line; do
-        i=$(( $i + 1 ))
+        i=$(( i + 1 ))
         echo $i
     done < <(apt-get install virtualbox-dkms dkms build-essential linux-headers-generic linux-headers-$(uname -r) virtualbox-5.1 -y)
   } | whiptail --title "Progress" --gauge "Please wait while installing th required packages..." 6 60 0
@@ -890,8 +906,8 @@ whiptail --msgbox "Virtualbox is now installed..." 10 60 1
 ################################ Install virtualbox extension pack 3.16
 
 do_vboxextpack() {
-wget http://download.virtualbox.org/virtualbox/5.1.4/Oracle_VM_VirtualBox_Extension_Pack-5.1.4-110228.vbox-extpack -P /var/scripts/
-vboxmanage extpack install /var/scripts/http://download.virtualbox.org/virtualbox/5.1.4/Oracle_VM_VirtualBox_Extension_Pack-5.1.4-110228.vbox-extpack
+wget http://download.virtualbox.org/virtualbox/5.1.4/Oracle_VM_VirtualBox_Extension_Pack-5.1.4-110228.vbox-extpack -P $SCRIPTS/
+vboxmanage extpack install $SCRIPTS/http://download.virtualbox.org/virtualbox/5.1.4/Oracle_VM_VirtualBox_Extension_Pack-5.1.4-110228.vbox-extpack
 
 whiptail --msgbox "Virtualbox extension pack is installed..." 10 60 1
 }
@@ -911,6 +927,7 @@ umount /mnt/tmp
 rm -rf /mnt/tmp
 
 whiptail --msgbox "Virtualbox guest additions are now installed, make sure to reboot..." 10 60 1
+ASK_TO_REBOOT=1
 }
 
 ################################ Install webmin 3.18
@@ -924,7 +941,7 @@ do_webmin() {
   apt-get install webmin -y
   cd
 
-whiptail --msgbox "Webmin is now installed, access it at https://"$ADDRESS":10000..." 10 60 1
+whiptail --msgbox "Webmin is now installed, access it at https://$ADDRESS:10000..." 10 60 1
 }
 
 ################################ Set dns to google and opendns 3.19
@@ -999,24 +1016,24 @@ sed -i "/$DELETESTRING/d" "$DELETESTRINGFILE"
 
 ################################ Kernel upgrade 3.25
 
-do_ukupgrade() {}
-mkdir -p /var/scripts
-wget https://raw.githubusercontent.com/muhasturk/ukupgrade/master/ukupgrade -P /var/scripts
-bash /var/scripts/ukupgrade
+do_ukupgrade() {
+mkdir -p $SCRIPTS
+wget https://raw.githubusercontent.com/muhasturk/ukupgrade/master/ukupgrade -P $SCRIPTS
+bash $SCRIPTS/ukupgrade
 }
 
 ################################ Install nextcloud 3.26
 
-do_nextcloud() {}
-mkdir -p /var/scripts
-wget https://raw.githubusercontent.com/nextcloud/vm/master/nextcloud_install_production.sh -P /var/scripts
-bash /var/scripts/nextcloud_install_production.sh
+do_nextcloud() {
+mkdir -p $SCRIPTS
+wget https://raw.githubusercontent.com/nextcloud/vm/master/nextcloud_install_production.sh -P $SCRIPTS
+bash $SCRIPTS/nextcloud_install_production.sh
 }
 
 ################################################ Firewall 4
 
 do_firewall() {
-  FUN=$(whiptail --title "Multi Installer - https://www.techandme.se" --menu "Firewall options" $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT --cancel-button Back --ok-button Select \
+  FUN=$(whiptail --title "Tech and tool - https://www.techandme.se" --menu "Firewall options" $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT --cancel-button Back --ok-button Select \
     "A1 Enable Firewall" "" \
     "A2 Disable Firewall" "" \
     "A3 Allow port Multiple" "Teamspeak" \
@@ -1276,14 +1293,16 @@ do_update() {
 
 	dpkg --configure --pending
 
-	mkdir -p /var/scripts
+	mkdir -p $SCRIPTS
 
-	if [ -f /var/scripts/techandtool.sh ]
+	if [ -f $SCRIPTS/techandtool.sh ]
 then
-        rm /var/scripts/techandtool.sh
+        rm $SCRIPTS/techandtool.sh
+        rm /usr/sbin/techandtool
 fi
-        wget https://github.com/ezraholm50/vm/raw/master/static/techandtool.sh -P /var/scripts
-	exit | bash /var/scripts/techandtool.sh
+        wget https://github.com/ezraholm50/vm/raw/master/static/techandtool.sh -P $SCRIPTS
+        cp $SCRIPTS/techandtool.sh /usr/sbin/techandtool
+	exit | bash $SCRIPTS/techandtool.sh
 }
 
 ################################################ About
@@ -1291,11 +1310,15 @@ fi
 do_about() {
   whiptail --msgbox "\
 This tool is created by techandme.se for less skilled linux terminal users.
+
 It makes it easy just browsing the menu and installing or using system tools.
-Please post requests (with REQUEST in title) here: https://github.com/ezraholm50/MultiInstaller/issues
+
+Please post requests (with REQUEST in title) here: https://github.com/ezraholm50/techandtool/issues
+
+Note that this tool is tested on Ubuntu 16.04 (should work on debian)
+
 Visit https://www.techandme.se for awsome free virtual machines,
-Nextcloud, ownCloud, Teamspeak, Wordpress, Minecraft etc.
-Note that this tool is tested on Ubuntu 16.04 (should work on debian)\
+Nextcloud, ownCloud, Teamspeak, Wordpress, Minecraft etc.\
 " $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT
 }
 
@@ -1303,10 +1326,10 @@ Note that this tool is tested on Ubuntu 16.04 (should work on debian)\
 
 calc_wt_size
 while true; do
-  FUN=$(whiptail --title "https://www.techandme.se" --menu "Multi Installer" $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT --cancel-button Finish --ok-button Select \
+  FUN=$(whiptail --title "https://www.techandme.se" --menu "Tech and tool" $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT --cancel-button Finish --ok-button Select \
     "1 Apps" "Nextcloud" \
     "2 Tools" "Various tools" \
-    "3 Firewall" "Enable/disable and open/close ports"
+    "3 Firewall" "Enable/disable and open/close ports" \
     "4 Update & upgrade" "Updates and upgrades packages and get the latest version of this tool" \
     "5 Reboot" "Reboots your machine" \
     "6 Shutdown" "Shutdown your machine" \
