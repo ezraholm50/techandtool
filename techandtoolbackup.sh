@@ -5,15 +5,14 @@
 ##### Index ######
 #- 1 Variable
 #- 1.1 Network
-#- 1.2 Raspberry can get expand
+#- 1.2
 #- 1.3
-#- 1.4 Whiptail size
-#- 1.5 Whiptail check
-#- 1.6 Root check
-#- 1.7
-#- 1.8 Locations
-#- 1.9 Ask to reboot
-#- 1.10 Raspberry checks
+#- 1.4 Whiptail
+#- 1.5 Root check
+#- 1.6 Do finish
+#- 1.7 Ask to reboot
+#- 1.8
+#- 1.9
 #- 2 Apps
 #- 2.1 Collabora
 #- 2.2 Spreed-webrtc
@@ -69,43 +68,6 @@ ADDRESS=$($IP route get 1 | awk '{print $NF;exit}')
 NETMASK=$(ifconfig "$IFACE" | grep Mask | sed s/^.*Mask://)
 GATEWAY=$($IP route | awk '/default/ { print $3 }')
 
-################################ Raspberry can get expand 1.2
-
-get_can_expand() {
-  get_init_sys
-  if [ $SYSTEMD -eq 1 ]; then
-    ROOT_PART=$(mount | sed -n 's|^/dev/\(.*\) on / .*|\1|p')
-  else
-    if ! [ -h /dev/root ]; then
-      echo 1
-      exit
-    fi
-    ROOT_PART=$(readlink /dev/root)
-  fi
-
-  PART_NUM=${ROOT_PART#mmcblk0p}
-  if [ "$PART_NUM" = "$ROOT_PART" ]; then
-    echo 1
-    exit
-  fi
-
-  if [ "$PART_NUM" -ne 2 ]; then
-    echo 1
-    exit
-  fi
-
-  LAST_PART_NUM=$(parted /dev/mmcblk0 -ms unit s p | tail -n 1 | cut -f 1 -d:)
-  if [ $LAST_PART_NUM -ne $PART_NUM ]; then
-    echo 1
-    exit
-  fi
-  echo 0
-}
-
-################################ 1.3
-
-
-
 ################################ Whiptail size 1.4
 
 INTERACTIVE=True
@@ -136,18 +98,16 @@ else
         i=$(( i + 1 ))
         echo $i
     done < <(apt-get install whiptail -y)
-  } | whiptail --title "Progress" --gauge "Please wait while installing Whiptail..." $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT
+  } | whiptail --title "Progress" --gauge "Please wait while installing Whiptail..." 6 60 0
 
 fi
 
 ################################################ Check if root 1.6
 
 if [ "$(whoami)" != "root" ]; then
-        whiptail --msgbox "Sorry you are not root. You must type: sudo techandtool" $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT
+        whiptail --msgbox "Sorry you are not root. You must type: sudo techandtool" 10 60 1
         exit
 fi
-
-################################################ 1.7
 
 ################################################ Locations 1.8
 
@@ -168,76 +128,244 @@ do_finish() {
   exit 0
 }
 
-################################################ Raspberry checks 1.10
-
-is_pione() {
-   if grep -q "^Revision\s*:\s*00[0-9a-fA-F][0-9a-fA-F]$" /proc/cpuinfo; then
-      return 0
-   elif  grep -q "^Revision\s*:\s*[ 123][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F]0[0-36][0-9a-fA-F]$" /proc/cpuinfo ; then
-      return 0
-   else
-      return 1
-   fi
-}
-
-is_pitwo() {
-   grep -q "^Revision\s*:\s*[ 123][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F]04[0-9a-fA-F]$" /proc/cpuinfo
-   return $?
-}
-
-is_pizero() {
-   grep -q "^Revision\s*:\s*[ 123][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F]09[0-9a-fA-F]$" /proc/cpuinfo
-   return $?
-}
-
-get_pi_type() {
-   if is_pione; then
-      echo 1
-   elif is_pitwo; then
-      echo 2
-   else
-      echo 0
-   fi
-}
-
-get_init_sys() {
-  if command -v systemctl > /dev/null && systemctl | grep -q '\-\.mount'; then
-    SYSTEMD=1
-  elif [ -f /etc/init.d/cron ] && [ ! -h /etc/init.d/cron ]; then
-    SYSTEMD=0
-  else
-    echo "Unrecognised init system"
-    return 1
-  fi
-}
-
 ################################################ Apps 2
 
 do_apps() {
-  FUN=$(whiptail --title "Tech and Tool - Apps - https://www.techandme.se" --menu "Tech and tool" $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT --cancel-button Back --ok-button Select \
-  "P1 Collabora" "Docker" \
-  "P2 Spreed-webrtc" "Spreedme" \
-  "P3 Gpxpod" ""\
+  FUN=$(whiptail --title "Tech and Tool - https://www.techandme.se" --menu "Apps" $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT --cancel-button Back --ok-button Select \
+    "T1 Collabora" "Docker" \
+    "T2 Spreed-webrtc" "Spreedme" \
+    "T3 Gpxpod" \
     3>&1 1>&2 2>&3)
   RET=$?
   if [ $RET -eq 1 ]; then
     return 0
   elif [ $RET -eq 0 ]; then
     case "$FUN" in
-      P1\ *) do_collabora ;;
-      P2\ *) do_spreed_webrtc ;;
-      P3\ *) do_gpxpod ;;
+      T1\ *) do_collabora ;;
+      T2\ *) do_spreed_webrtc ;;
+      T3\ *) do_gpxpod ;;
       *) whiptail --msgbox "Programmer error: unrecognized option" 20 60 1 ;;
     esac || whiptail --msgbox "There was an error running option $FUN" 20 60 1
- else
-   exit 1
   fi
 }
 
 ################################ Collabora 2.1
 
 do_collabora() {
-echo "not yet"
+  DOMAIN=$(whiptail --title "Techandme.se Collabora" --inputbox "Nextcloud url, make sure it looks like this: cloud\.yourdomain\.com" 10 60 cloud\.yourdomain\.com 3>&1 1>&2 2>&3)
+  CLEANDOMAIN=$(whiptail --title "Techandme.se Collabora" --inputbox "Nextcloud url, now make sure it look normal" 10 60 cloud.yourdomain.com 3>&1 1>&2 2>&3)
+  EDITORDOMAIN=$(whiptail --title "Techandme.se Collabora" --inputbox "Collabora subdomain eg: office.yourdomain.com" 10 60 3>&1 1>&2 2>&3)
+  HTTPS_EXIST="/etc/apache2/sites-available/$EXISTINGDOMAIN"
+  HTTPS_CONF="/etc/apache2/sites-available/$EDITORDOMAIN"
+  LETSENCRYPTDIR="/etc"
+  LETSENCRYPTPATH="/etc/letsencrypt"
+  CERTFILES="$LETSENCRYPTPATH"/live/"$EDITORDOMAIN"
+
+  # Message
+  whiptail --msgbox "Please before you start make sure port 443 is directly forwarded to this machine or open!" 20 60 2
+
+  # Update & upgrade
+  apt-get update
+  apt-get upgrade -y
+  apt-get -f install -y
+
+  # Check if docker is installed
+  	if [ $(dpkg-query -W -f='${Status}' docker.io 2>/dev/null | grep -c "ok installed") -eq 1 ]; then
+  				echo "Docker.io is installed..."
+  else
+  				apt-get install docker.io -y
+  fi
+
+  	if [ $(dpkg-query -W -f='${Status}' git 2>/dev/null | grep -c "ok installed") -eq 1 ]; then
+  				echo "Git is installed..."
+  else
+  				apt-get install git -y
+  fi
+
+
+  # Install Collabora docker
+  docker pull collabora/code
+  docker run -t -d -p 127.0.0.1:9980:9980 -e "domain=$DOMAIN" --restart always --cap-add MKNOD collabora/code
+
+  # Install Apache2
+  	if [ $(dpkg-query -W -f='${Status}' apache2 2>/dev/null | grep -c "ok installed") -eq 1 ];
+  then
+          echo "Apache2 is installed..."
+  else
+
+      {
+      i=1
+      while read -r line; do
+          i=$(( i + 1 ))
+          echo $i
+      done < <(apt-get install apache2 -y)
+      } | whiptail --title "Progress" --gauge "Please wait while installing Apache2" 6 60 0
+
+  fi
+
+  # Enable Apache2 module's
+  a2enmod proxy
+  a2enmod proxy_wstunnel
+  a2enmod proxy_http
+  a2enmod ssl
+
+  # Create Vhost for Collabora online in Apache2
+  if [ -f "$HTTPS_CONF" ];
+  then
+          echo "Virtual Host exists"
+  else
+
+  	touch "$HTTPS_CONF"
+          cat << HTTPS_CREATE > "$HTTPS_CONF"
+  <VirtualHost *:443>
+    ServerName $EDITORDOMAIN
+
+    # SSL configuration, you may want to take the easy route instead and use Lets Encrypt!
+    SSLEngine on
+    SSLCertificateFile /path/to/signed_certificate
+    SSLCertificateChainFile /path/to/intermediate_certificate
+    SSLCertificateKeyFile /path/to/private/key
+    SSLProtocol             all -SSLv2 -SSLv3
+    SSLCipherSuite ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA:ECDHE-RSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA:DHE-RSA-AES256-SHA256:DHE-RSA-AES256-SHA:ECDHE-ECDSA-DES-CBC3-SHA:ECDHE-RSA-DES-CBC3-SHA:EDH-RSA-DES-CBC3-SHA:AES128-GCM-SHA256:AES256-GCM-SHA384:AES128-SHA256:AES256-SHA256:AES128-SHA:AES256-SHA:DES-CBC3-SHA:!DSS
+    SSLHonorCipherOrder     on
+
+    # Encoded slashes need to be allowed
+    AllowEncodedSlashes On
+
+    # Container uses a unique non-signed certificate
+    SSLProxyEngine On
+    SSLProxyVerify None
+    SSLProxyCheckPeerCN Off
+    SSLProxyCheckPeerName Off
+
+    # keep the host
+    ProxyPreserveHost On
+
+    # static html, js, images, etc. served from loolwsd
+    # loleaflet is the client part of LibreOffice Online
+    ProxyPass           /loleaflet https://127.0.0.1:9980/loleaflet retry=0
+    ProxyPassReverse    /loleaflet https://127.0.0.1:9980/loleaflet
+
+    # WOPI discovery URL
+    ProxyPass           /hosting/discovery https://127.0.0.1:9980/hosting/discovery retry=0
+    ProxyPassReverse    /hosting/discovery https://127.0.0.1:9980/hosting/discovery
+
+    # Main websocket
+    ProxyPass   /lool/ws      wss://127.0.0.1:9980/lool/ws
+
+    # Admin Console websocket
+    ProxyPass   /lool/adminws wss://127.0.0.1:9980/lool/adminws
+
+    # Download as, Fullscreen presentation and Image upload operations
+    ProxyPass           /lool https://127.0.0.1:9980/lool
+  ProxyPassReverse /lool https://127.0.0.1:9980/lool
+  </VirtualHost>
+HTTPS_CREATE
+
+  if [ -f "$HTTPS_CONF" ];
+  then
+          echo "$HTTPS_CONF was successfully created"
+          sleep 2
+  else
+  	echo "Unable to create vhost, exiting..."
+  	exit
+  fi
+
+  fi
+
+   # Let's Encrypt
+  ##### START FIRST TRY
+  # Stop Apache to aviod port conflicts
+          a2dissite 000-default.conf
+          sudo service apache2 stop
+
+  # Check if $LETSENCRYPTPATH exist, and if, then delete.
+  if [ -d "$LETSENCRYPTPATH" ]; then
+    	rm -R "$LETSENCRYPTPATH"
+  fi
+
+  # Generate certs
+  	cd "$LETSENCRYPTDIR"
+  	git clone https://github.com/letsencrypt/letsencrypt
+  	cd "$LETSENCRYPTPATH"
+          ./letsencrypt-auto certonly --standalone -d "$EDITORDOMAIN" -d "$CLEANDOMAIN"
+
+  # Use for testing
+  #./letsencrypt-auto --apache --server https://acme-staging.api.letsencrypt.org/directory -d EXAMPLE.COM
+  # Activate Apache again (Disabled during standalone)
+          service apache2 start
+          a2ensite 000-default.conf
+          service apache2 reload
+
+  # Check if $CERTFILES exists
+  if [ -d "$CERTFILES" ]; then
+
+  # Activate new config
+  	sed -i "s|SSLCertificateKeyFile /path/to/private/key|SSLCertificateKeyFile $CERTFILES/$EDITORDOMAIN/privkey.pem|g" "$HTTPS_CONF"
+  	sed -i "s|SSLCertificateFile /path/to/signed_certificate|SSLCertificateFile $CERTFILES/$EDITORDOMAIN/cert.pem|g" "$HTTPS_CONF"
+  	sed -i "s|SSLCertificateChainFile /path/to/intermediate_certificate|SSLCertificateChainFile $CERTFILES/$EDITORDOMAIN/chain.pem|g" "$HTTPS_CONF"
+    service apache2 restart
+    bash $SCRIPTS/test-new-config.sh
+
+  # Message
+  whiptail --msgbox "\
+  Succesfully installed Collabora online docker, now please head over to your Nextcloud apps and admin panel
+  and enable the Collabora online connector app and change the URL to: https://$EDITORDOMAIN:443\
+  " 10 60 1
+
+  	exit 0
+  else
+          echo -e "\e[96m"
+          echo -e "It seems like no certs were generated, we do three more tries."
+          echo -e "\e[32m"
+          read -p "Press any key to continue... " -n1 -s
+          echo -e "\e[0m"
+  fi
+
+  ##### START SECOND TRY
+  # Check if $LETSENCRYPTPATH exist, and if, then delete.
+  	if [ -d "$LETSENCRYPTPATH" ]; then
+    	rm -R "$LETSENCRYPTPATH"
+  fi
+
+  # Generate certs
+  	cd "$LETSENCRYPTDIR"
+  	git clone https://github.com/letsencrypt/letsencrypt
+  	cd "$LETSENCRYPTPATH"
+  	./letsencrypt-auto -d "$EDITORDOMAIN" -d "$CLEANDOMAIN"
+
+  # Check if $CERTFILES exists
+  if [ -d "$CERTFILES" ]; then
+
+  # Activate new config
+  	sed -i "s|SSLCertificateKeyFile /path/to/private/key|SSLCertificateKeyFile $CERTFILES/$EDITORDOMAIN/privkey.pem|g" "$HTTPS_CONF"
+  	sed -i "s|SSLCertificateFile /path/to/signed_certificate|SSLCertificateFile $CERTFILES/$EDITORDOMAIN/cert.pem|g" "$HTTPS_CONF"
+  	sed -i "s|SSLCertificateChainFile /path/to/intermediate_certificate|SSLCertificateChainFile $CERTFILES/$EDITORDOMAIN/chain.pem|g" "$HTTPS_CONF"
+
+  # Add new certs to existing Vhost
+  sed -i "s|.*SSLCertificateKeyFile.*|SSLCertificateKeyFile $CERTFILES/$EDITORDOMAIN/privkey.pem|g"
+  sed -i "s|.*SSLCertificateFile.*|SSLCertificateFile $CERTFILES/$EDITORDOMAIN/cert.pem|g"
+  sed -i "s|.*SSLCertificateChainFile.*|SSLCertificateChainFile $CERTFILES/$EDITORDOMAIN/chain.pem|g"
+
+  # Restart apache and test config
+  service apache2 restart
+  bash $SCRIPTS/test-new-config.sh
+
+  # Message
+  whiptail --msgbox "\
+  Succesfully installed Collabora online docker, now please head over to your Nextcloud apps and admin panel
+  and enable the Collabora online connector app and change the URL to: $EDITORDOMAIN:443\
+  " 10 60 1
+
+  else
+  	echo -e "\e[96m"
+  	echo -e "It seems like no certs were generated, something went wrong"
+  	echo -e "\e[32m"
+  	read -p "Press any key to continue... " -n1 -s
+  	echo -e "\e[0m"
+  fi
+
+  exit 0
 }
 
 ################################ Spreed-webrtc 2.2
@@ -247,12 +375,12 @@ ENCRYPTIONSECRET=$(openssl rand -hex 32)
 SESSIONSECRET=$(openssl rand -hex 32)
 SERVERTOKEN=$(openssl rand -hex 32)
 SHAREDSECRET=$(openssl rand -hex 32)
-DOMAIN=$(whiptail --title "Techandme.se Collabora online installer" --inputbox "Nextcloud url, make sure it looks like this: https://cloud.nextcloud.com" $WT_HEIGHT $WT_WIDTH https://yourdomain.com 3>&1 1>&2 2>&3)
-NCDIR=$(whiptail --title "Nextcloud directory" --inputbox "If you're not sure use the default setting" $WT_HEIGHT $WT_WIDTH /var/www/nextcloud 3>&1 1>&2 2>&3)
-WEB=$(whiptail --title "What webserver do you run" --inputbox "If you're not sure use the default setting" $WT_HEIGHT $WT_WIDTH apache2 3>&1 1>&2 2>&3)
-SPREEDDOMAIN=$(whiptail --title "Spreed domain" --inputbox "Leave empty for autodiscovery" $WT_HEIGHT $WT_WIDTH 3>&1 1>&2 2>&3)
-SPREEDPORT=$(whiptail --title "Spreed port" --inputbox "If you're not sure use the default setting" $WT_HEIGHT $WT_WIDTH 8443 3>&1 1>&2 2>&3)
-VHOST443=$(whiptail --title "Vhost 443 file location" --inputbox "If you're not sure use the default setting" $WT_HEIGHT $WT_WIDTH /etc/"$WEB"/sites-available/nextcloud_ssl_domain_self_signed.conf 3>&1 1>&2 2>&3)
+DOMAIN=$(whiptail --title "Techandme.se Collabora online installer" --inputbox "Nextcloud url, make sure it looks like this: https://cloud.nextcloud.com" 10 60 https://yourdomain.com 3>&1 1>&2 2>&3)
+NCDIR=$(whiptail --title "Nextcloud directory" --inputbox "If you're not sure use the default setting" 10 60 /var/www/nextcloud 3>&1 1>&2 2>&3)
+WEB=$(whiptail --title "What webserver do you run" --inputbox "If you're not sure use the default setting" 10 60 apache2 3>&1 1>&2 2>&3)
+SPREEDDOMAIN=$(whiptail --title "Spreed domain" --inputbox "Leave empty for autodiscovery" 10 60 3>&1 1>&2 2>&3)
+SPREEDPORT=$(whiptail --title "Spreed port" --inputbox "If you're not sure use the default setting" 10 60 8443 3>&1 1>&2 2>&3)
+VHOST443=$(whiptail --title "Vhost 443 file location" --inputbox "If you're not sure use the default setting" 10 60 /etc/"$WEB"/sites-available/nextcloud_ssl_domain_self_signed.conf 3>&1 1>&2 2>&3)
 #VHOST80="/etc/$WEB/sites-available/xxx"
 LISTENADDRESS="$ADDRESS"
 LISTENPORT="$SPREEDPORT"
@@ -329,38 +457,38 @@ do_gpxpod() {
 ################################################ Tools 3
 
 do_tools() {
-FUN=$(whiptail --title "Tech and Tool - Tools - https://www.techandme.se" --menu "Tech and tool" $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT --cancel-button Back --ok-button Select \
-"T1 Show LAN IP, Gateway, Netmask" "Ifconfig" \
-"T2 Show WAN IP" "External IP address" \
-"T3 Change Hostname" "" \
-"T4 Internationalisation Options" "Change language, time, date and keyboard layout" \
-"T5 Connect to WLAN" "Please have a wifi dongle/card plugged in before start" \
-"T6 Show folder size" "" \
-"T7 Show folder conten" "with permissions" \
-"T8 Show connected devices" "blkid" \
-"T9 Show disks usage" "df -h" \
-"T10 Show system performance" "HTOP" \
-"T11 Disable IPV6" "Via sysctl.conf" \
-"T12 Find text" "In a given directory" \
-"T13 OOM fix" "Auto reboot on out of memory errors" \
-"T14 Install Virtualbox" "" \
-"T15 Install Virtualbox extension pack" "" \
-"T16 Install Virtualbox guest additions" "" \
-"T17 Install Webmin" "Manage your headless server" \
-"T18 Set dns to Google and OpenDns" "Try google first if no response after 1 sec. switch to next NS" \
-"T19 Add progress bar" "Apply's to apt-get update, install & upgrade" \
-"T20 Boot to terminal by default" "Only if you use a GUI/desktop now" \
-"T21 Boot to GUI/desktop by default" "Only if you have a GUI installed and have terminal as default" \
-"T22 Delete line containing a string of text" "Warning, deletes every line containing the string!" \
-"T23 Set swappiness" "" \
-"T24 Upgrade Ubuntu Kernel" "To the latest version" \
-"T25 Install Nextcloud" "Must be a clean Ubuntu 16.04 server 64bit" \
-  3>&1 1>&2 2>&3)
-RET=$?
-if [ $RET -eq 1 ]; then
-  return 0
-elif [ $RET -eq 0 ]; then
-  case "$FUN" in
+  FUN=$(whiptail --title "Tech and tool - https://www.techandme.se" --menu "Tools" $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT --cancel-button "Back" --ok-button "Select" \
+  "T1 Show LAN IP, Gateway, Netmask" "Ifconfig" \
+  "T2 Show WAN IP" "External IP address" \
+  "T3 Change Hostname" \
+  "T4 Internationalisation Options" "Change language, time, date and keyboard layout" \
+  "T5 Connect to WLAN" "Please have a wifi dongle/card plugged in before start" \
+  "T6 Show folder size" \
+  "T7 Show folder conten" "with permissions" \
+  "T8 Show connected devices" "blkid" \
+  "T9 Show disks usage" "df -h" \
+  "T10 Show system performance" "HTOP" \
+  "T11 Disable IPV6" "Via sysctl.conf" \
+  "T12 Find text" "In a given directory" \
+  "T13 OOM fix" "Auto reboot on out of memory errors" \
+  "T14 Install Virtualbox" \
+  "T15 Install Virtualbox extension pack" \
+  "T16 Install Virtualbox guest additions" \
+  "T17 Install Webmin" \
+  "T18 Set dns to Google and OpenDns" "Try google first if no response after 1 sec. switch to next NS" \
+  "T19 Add progress bar" "Apply's to apt / apt-get update/install/upgrade" \
+  "T20 Boot to terminal by default" "Only if you use a GUI/desktop now" \
+  "T21 Boot to GUI/desktop by default" "Only if you have a GUI installed and have terminal as default" \
+  "T22 Delete line containing a string of text" "Warning, deletes every line containing the string!" \
+  "T23 Set swappiness" \
+  "T24 Upgrade Ubuntu Kernel" "To the latest version" \
+  "T25 Install Nextcloud" "Must be a clean Ubuntu 16.04 server 64bit" \
+    3>&1 1>&2 2>&3)
+  RET=$?
+  if [ $RET -eq 1 ]; then
+    return 0
+  elif [ $RET -eq 0 ]; then
+    case "$FUN" in
     T1\ *) do_ifconfig ;;
     T2\ *) do_wan_ip ;;
     T3\ *) do_change_hostname ;;
@@ -386,11 +514,9 @@ elif [ $RET -eq 0 ]; then
     T23\ *) do_swappiness ;;
     T24\ *) do_ukupgrade ;;
     T25\ *) do_nextcloud ;;
-    *) whiptail --msgbox "Programmer error: unrecognized option" 20 60 1 ;;
-  esac || whiptail --msgbox "There was an error running option $FUN" 20 60 1
-else
- exit 1
-fi
+      *) whiptail --msgbox "Programmer error: unrecognized option" 20 60 1 ;;
+    esac || whiptail --msgbox "There was an error running option $FUN" 20 60 1
+  fi
 }
 
 ################################ Network details 3.1
@@ -420,7 +546,7 @@ may contain only the ASCII letters 'a' through 'z' (case-insensitive),
 the digits '0' through '9', and the hyphen.
 Hostname labels cannot begin or end with a hyphen.
 No other symbols, punctuation characters, or blank spaces are permitted.\
-" $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT
+" 20 70 1
 
   CURRENT_HOSTNAME=$(cat < /etc/hostname | tr -d " \t\n\r")
   NEW_HOSTNAME=$(whiptail --inputbox "Please enter a hostname" 20 60 "$CURRENT_HOSTNAME" 3>&1 1>&2 2>&3)
@@ -613,7 +739,7 @@ do_rpi_update() {
         i=$(( i + 1 ))
         echo $i
     done < <(rpi-update)
-    } | whiptail --title "Progress" --gauge "Please wait while updating your RPI firmware and kernel" $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT
+    } | whiptail --title "Progress" --gauge "Please wait while updating your RPI firmware and kernel" 6 60 0
 }
 
 ##################### Raspi-config 3.64
@@ -638,7 +764,7 @@ else
         i=$(( i + 1 ))
         echo $i
     done < <(apt-get install ncdu -y)
-    } | whiptail --title "Progress" --gauge "Please wait while installing ncdu" $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT
+    } | whiptail --title "Progress" --gauge "Please wait while installing ncdu" 6 60 0
 
 	     ncdu /
 fi
@@ -681,7 +807,7 @@ do_htop() {
 #        i=$(( $i + 1 ))
 #        echo $i
 #    done < <(apt-get install htop -y)
-#    } | whiptail --title "Progress" --gauge "Please wait while installing htop" $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT
+#    } | whiptail --title "Progress" --gauge "Please wait while installing htop" 6 60 0
 #
 #fi
 #	htop
@@ -713,14 +839,14 @@ do_disable_ipv6() {
  sysctl -p
  echo
 
-whiptail --msgbox "IPV6 is now disabled..." $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT
+whiptail --msgbox "IPV6 is now disabled..." 10 60 1
 }
 
 ################################ Find string text 3.13
 
 do_find_string() {
-        STRINGTEXT=$(whiptail --inputbox "Text that you want to search for? eg. ip mismatch: 192.168.1.133" $WT_HEIGHT $WT_WIDTH 3>&1 1>&2 2>&3)
-        STRINGDIR=$(whiptail --inputbox "Directory you want to search in? eg. / for whole system or /home" $WT_HEIGHT $WT_WIDTH 3>&1 1>&2 2>&3)
+        STRINGTEXT=$(whiptail --inputbox "Text that you want to search for? eg. ip mismatch: 192.168.1.133" 10 60 3>&1 1>&2 2>&3)
+        STRINGDIR=$(whiptail --inputbox "Directory you want to search in? eg. / for whole system or /home" 10 60 3>&1 1>&2 2>&3)
         STRINGCMD=$(grep -Rl "$STRINGTEXT" "$STRINGDIR")
         whiptail --msgbox "$STRINGCMD" $WT_WIDTH $WT_MENU_HEIGHT
 }
@@ -744,7 +870,7 @@ do_oom() {
  sysctl -p /etc/sysctl.d/oom_reboot.conf
  echo
 
-whiptail --msgbox "System will now reboot on out of memory errors..." $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT
+whiptail --msgbox "System will now reboot on out of memory errors..." 10 60 1
 }
 
 ################################ Install virtualbox 3.15
@@ -761,7 +887,7 @@ wget -q https://www.virtualbox.org/download/oracle_vbox.asc -O- | sudo apt-key a
         i=$(( $i + 1 ))
         echo $i
     done < <(apt-get update)
-  } | whiptail --title "Progress" --gauge "Please wait while updating..." $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT
+  } | whiptail --title "Progress" --gauge "Please wait while updating..." 6 60 0
 
 # Install req packages
     {
@@ -770,11 +896,11 @@ wget -q https://www.virtualbox.org/download/oracle_vbox.asc -O- | sudo apt-key a
         i=$(( i + 1 ))
         echo $i
     done < <(apt-get install virtualbox-dkms dkms build-essential linux-headers-generic linux-headers-$(uname -r) virtualbox-5.1 -y)
-  } | whiptail --title "Progress" --gauge "Please wait while installing th required packages..." $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT
+  } | whiptail --title "Progress" --gauge "Please wait while installing th required packages..." 6 60 0
 
 sudo modprobe vboxdrv
 
-whiptail --msgbox "Virtualbox is now installed..." $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT
+whiptail --msgbox "Virtualbox is now installed..." 10 60 1
 }
 
 ################################ Install virtualbox extension pack 3.16
@@ -783,7 +909,7 @@ do_vboxextpack() {
 wget http://download.virtualbox.org/virtualbox/5.1.4/Oracle_VM_VirtualBox_Extension_Pack-5.1.4-110228.vbox-extpack -P $SCRIPTS/
 vboxmanage extpack install $SCRIPTS/http://download.virtualbox.org/virtualbox/5.1.4/Oracle_VM_VirtualBox_Extension_Pack-5.1.4-110228.vbox-extpack
 
-whiptail --msgbox "Virtualbox extension pack is installed..." $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT
+whiptail --msgbox "Virtualbox extension pack is installed..." 10 60 1
 }
 
 ################################ Install virtualbox guest additions 3.17
@@ -800,7 +926,7 @@ cd
 umount /mnt/tmp
 rm -rf /mnt/tmp
 
-whiptail --msgbox "Virtualbox guest additions are now installed, make sure to reboot..." $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT
+whiptail --msgbox "Virtualbox guest additions are now installed, make sure to reboot..." 10 60 1
 ASK_TO_REBOOT=1
 }
 
@@ -815,7 +941,7 @@ do_webmin() {
   apt-get install webmin -y
   cd
 
-whiptail --msgbox "Webmin is now installed, access it at https://$ADDRESS:10000..." $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT
+whiptail --msgbox "Webmin is now installed, access it at https://$ADDRESS:10000..." 10 60 1
 }
 
 ################################ Set dns to google and opendns 3.19
@@ -833,7 +959,7 @@ do_dns() {
   echo "nameserver 208.67.222.222 #OpenDNS1" >> /etc/resolvconf/resolv.conf.d/tail
   echo "nameserver 208.67.220.220 #OpenDNS2" >> /etc/resolvconf/resolv.conf.d/tail
 
-whiptail --msgbox "Dns is now set to google, if no response in 1 second it switches to opendns..." $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT
+whiptail --msgbox "Dns is now set to google, if no response in 1 second it switches to opendns..." 10 60 1
 }
 ################################ Progress bar 3.20
 
@@ -866,7 +992,7 @@ do_bootgui() {
 ################################ Swappiness 3.23
 
 do_swappiness() {
-SWAPPINESS=$(whiptail --inputbox "Set the swappiness value" $WT_HEIGHT $WT_WIDTH 0 3>&1 1>&2 2>&3)
+SWAPPINESS=$(whiptail --inputbox "Set the swappiness value" 10 60 0 3>&1 1>&2 2>&3)
 
 if grep -q vm.swappiness "/etc/sysctl.conf"; then
     sed -i '/vm.swappiness/d' /etc/sysctl.conf
@@ -881,8 +1007,8 @@ fi
 ################################ Delete line containing string 3.24
 
 do_stringdel() {
-DELETESTRING=$(whiptail --inputbox "Which line containing the following string needs to be deleted?" $WT_HEIGHT $WT_WIDTH for example address 192.168.1.1 3>&1 1>&2 2>&3)
-DELETESTRINGFILE=$(whiptail --inputbox "In what file should we search?" $WT_HEIGHT $WT_WIDTH /file/dir 3>&1 1>&2 2>&3)
+DELETESTRING=$(whiptail --inputbox "Which line containing the following string needs to be deleted?" 10 60 for example address 192.168.1.1 3>&1 1>&2 2>&3)
+DELETESTRINGFILE=$(whiptail --inputbox "In what file should we search?" 10 60 /file/dir 3>&1 1>&2 2>&3)
 
 sed -i "/$DELETESTRING/d" "$DELETESTRINGFILE"
 }
@@ -1129,7 +1255,7 @@ do_update() {
         i=$(( $i + 1 ))
         echo $i
     done < <( apt-get autoclean )
-    } | whiptail --title "Progress" --gauge "Please wait while auto cleaning" $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT
+    } | whiptail --title "Progress" --gauge "Please wait while auto cleaning" 6 60 0
 
     {
     i=1
@@ -1137,7 +1263,7 @@ do_update() {
         i=$(( $i + 1 ))
         echo $i
     done < <( apt-get autoremove -y )
-  } | whiptail --title "Progress" --gauge "Please wait while auto removing un-needed dependancies " $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT
+    } | whiptail --title "Progress" --gauge "Please wait while auto removing unneeded dependancies " 6 60 0
 
     {
     i=1
@@ -1145,7 +1271,7 @@ do_update() {
         i=$(( $i + 1 ))
         echo $i
     done < <( apt-get update )
-    } | whiptail --title "Progress" --gauge "Please wait while updating " $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT
+    } | whiptail --title "Progress" --gauge "Please wait while updating " 6 60 0
 
 
     {
@@ -1154,7 +1280,7 @@ do_update() {
         i=$(( $i + 1 ))
         echo $i
     done < <( apt-get upgrade -y )
-    } | whiptail --title "Progress" --gauge "Please wait while ugrading " $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT
+    } | whiptail --title "Progress" --gauge "Please wait while ugrading " 6 60 0
 
     {
     i=1
@@ -1162,7 +1288,7 @@ do_update() {
         i=$(( $i + 1 ))
         echo $i
     done < <( apt-get install -fy )
-    } | whiptail --title "Progress" --gauge "Please wait while forcing install of dependancies " $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT
+    } | whiptail --title "Progress" --gauge "Please wait while forcing install of dependancies " 6 60 0
 
 	dpkg --configure --pending
 
@@ -1197,10 +1323,9 @@ Nextcloud, ownCloud, Teamspeak, Wordpress, Minecraft etc.\
 
 ################################################ Interactive use loop
 
-get_init_sys
 calc_wt_size
 while true; do
-  FUN=$(whiptail --title "Tech and Tool - https://www.techandme.se" --menu "Tech and tool" $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT --cancel-button Finish --ok-button Select \
+  FUN=$(whiptail --title "https://www.techandme.se" --menu "Tech and tool" $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT --cancel-button Finish --ok-button Select \
     "1 Apps" "Nextcloud" \
     "2 Tools" "Various tools" \
     "3 Firewall" "Enable/disable and open/close ports" \
