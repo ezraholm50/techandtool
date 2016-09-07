@@ -35,3 +35,66 @@
       esac || whiptail --msgbox "There was an error running option $FUN" 20 60 1
     fi
   }
+
+
+  do_tools() {
+    FUN=$(whiptail --title "Tech and tool - https://www.techandme.se" --menu "Tools" $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT --cancel-button "Back" --ok-button "Select" \
+    "T1 Show LAN IP, Gateway, Netmask" "Ifconfig" \
+    "T2 Show WAN IP" "External IP address" \
+    "T3 Change Hostname" \
+    "T4 Internationalisation Options" "Change language, time, date and keyboard layout" \
+    "T5 Connect to WLAN" "Please have a wifi dongle/card plugged in before start" \
+    "T6 Show folder size" \
+    "T7 Show folder conten" "with permissions" \
+    "T8 Show connected devices" "blkid" \
+    "T9 Show disks usage" "df -h" \
+    "T10 Show system performance" "HTOP" \
+    "T11 Disable IPV6" "Via sysctl.conf" \
+    "T12 Find text" "In a given directory" \
+    "T13 OOM fix" "Auto reboot on out of memory errors" \
+    "T14 Install Virtualbox" \
+    "T15 Install Virtualbox extension pack" \
+    "T16 Install Virtualbox guest additions" \
+    "T17 Install Webmin" \
+    "T18 Set dns to Google and OpenDns" "Try google first if no response after 1 sec. switch to next NS" \
+    "T19 Add progress bar" "Apply's to apt / apt-get update/install/upgrade" \
+    "T20 Boot to terminal by default" "Only if you use a GUI/desktop now" \
+    "T21 Boot to GUI/desktop by default" "Only if you have a GUI installed and have terminal as default" \
+    "T22 Delete line containing a string of text" "Warning, deletes every line containing the string!" \
+    "T23 Set swappiness" \
+    "T24 Upgrade Ubuntu Kernel" "To the latest version" \
+    "T25 Install Nextcloud" "Must be a clean Ubuntu 16.04 server 64bit" \
+    3>&1 1>&2 2>&3)
+  RET=$?
+  if [ $RET -eq 1 ]; then
+    return 0
+  elif [ $RET -eq 0 ]; then
+    case "$FUN" in
+      T1\ *) do_ifconfig ;;
+      T2\ *) do_wan_ip ;;
+      T3\ *) do_change_hostname ;;
+      T4\ *) do_internationalisation_menu ;;
+      T5\ *) do_wlan ;;
+      T6\ *) do_foldersize ;;
+      T7\ *) do_listdir ;;
+      T8\ *) do_blkid ;;
+      T9\ *) do_df ;;
+      T10\ *) do_htop ;;
+      T11\ *) do_disable_ipv6 ;;
+      T12\ *) do_find_string ;;
+      T13\ *) do_oom ;;
+      T14\ *) do_virtualbox ;;
+      T15\ *) do_vboxextpack ;;
+      T16\ *) do_vboxguestadd ;;
+      T17\ *) do_webmin ;;
+      T18\ *) do_dns ;;
+      T19\ *) do_progressbar ;;
+      T20\ *) do_bootterminal ;;
+      T21\ *) do_bootgui ;;
+      T22\ *) do_stringdel ;;
+      T23\ *) do_swappiness ;;
+      T24\ *) do_ukupgrade ;;
+      T25\ *) do_nextcloud ;;
+      *) whiptail --msgbox "Programmer error: unrecognized option" 20 60 1 ;;
+      esac || whiptail --msgbox "There was an error running option $FUN" 20 60 1
+      fi

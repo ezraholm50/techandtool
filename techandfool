@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 #
 # Tech and Me, 2016 - www.techandme.se
 # Whiptail menu to install various Nextcloud app and do other useful stuf.
@@ -580,15 +580,10 @@ do_rpi_update() {
 ##################### Raspi-config 3.64
 
 do_raspi_config() {
-  if [ $(dpkg-query -W -f='${Status}' raspi-config 2>/dev/null | grep -c "ok installed") -eq 1 ]; then
-  raspi-config
-else
-  wget http://archive.raspberrypi.org/debian/pool/main/r/raspi-config/raspi-config_20160527_all.deb -P /tmp
-  apt-get install libnewt0.52 whiptail parted triggerhappy lua5.1
-  dpkg -i /tmp/raspi-config_20160527_all.deb
-  whiptail --msgbox "Raspi-config is now installed, run it by typing: sudo raspi-config" $WT_HEIGHT $WT_WIDTH
-  raspi-config
-fi
+	echo
+	echo "Not configured yet, sorry..."
+	echo
+	sleep 2
 }
 
 ################################ Show folder size 3.7
@@ -868,7 +863,6 @@ whiptail --title "This is your updated file" --textbox "$DELETESTRINGFILE" $WT_H
 do_ukupgrade() {
 mkdir -p $SCRIPTS
 wget https://raw.githubusercontent.com/muhasturk/ukupgrade/master/ukupgrade -P $SCRIPTS
-bash $SCRIPTS/ukupgrade
 
 whiptail --msgbox "Kernel upgraded..." $WT_HEIGHT $WT_WIDTH
 }
@@ -878,7 +872,6 @@ whiptail --msgbox "Kernel upgraded..." $WT_HEIGHT $WT_WIDTH
 do_nextcloud() {
 mkdir -p $SCRIPTS
 wget https://raw.githubusercontent.com/nextcloud/vm/master/nextcloud_install_production.sh -P $SCRIPTS
-bash $SCRIPTS/nextcloud_install_production.sh
 }
 
 ################################################ Firewall 4
@@ -1153,7 +1146,6 @@ then
 fi
         wget https://github.com/ezraholm50/vm/raw/master/static/techandtool.sh -P $SCRIPTS
         cp $SCRIPTS/techandtool.sh /usr/sbin/techandtool
-	exit | bash $SCRIPTS/techandtool.sh
 }
 
 ################################################ About
