@@ -953,11 +953,11 @@ fi
 ################################ Change SSH port 4.5
 
 do_ssh() {
-  	ufw allow 8822
+PORT=$(whiptail --title "New SSH port?" --inputbox "Navigate with TAB to hit ok to enter input" $WT_HEIGHT $WT_WIDTH)
+  	ufw allow $PORT/tcp
   	ufw deny 22
-  	sed -i 's|22|8822|g' /etc/ssh/sshd_config
-  	echo
-  	echo "After the reboot you can use port 8822 for SSH"
+  	sed -i "s|22|$PORT|g" /etc/ssh/sshd_config
+  whiptail --msgbox "SSH port is now changed to $PORT and your firewall rules are updated..." $WT_HEIGHT $WT_WIDTH
 }
 
 ################################ Install ClamAV 4.6
@@ -1298,8 +1298,10 @@ ASK_TO_REBOOT=1
 
 do_firewall() {
   FUN=$(whiptail  --backtitle "Firewall" --title "Tech and Tool - https://www.techandme.se" --menu "Firewall options" $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT --cancel-button Back --ok-button Select \
-    "A1 Enable Firewall" "" \
-    "A2 Disable Firewall" "" \
+    "A0 Enable Firewall" "" \
+    "A1 Disable Firewall" "" \
+    "A2 Show current rules" "" \
+    "!! Reset Firewall" "Be carefull only do this if you know what you're doing"
     "A3 Allow port Multiple" "Teamspeak" \
     "A4 Allow port 32400" "Plex" \
     "A5 Allow port 8989" "Sonarr" \
@@ -1328,8 +1330,10 @@ do_firewall() {
     return 0
   elif [ $RET -eq 0 ]; then
     case "$FUN" in
-      A1\ *) do_ufw_enable ;;
-      A2\ *) do_ufw_disable ;;
+      A0\ *) do_ufw_enable ;;
+      A1\ *) do_ufw_disable ;;
+      A2\ *) do_ufw_status ;;
+      !!\ *) do_ufw_reset ;;
       A3\ *) do_allow_teamspeak ;;
       A4\ *) do_allow_32400 ;;
       A5\ *) do_allow_8989 ;;
@@ -1357,11 +1361,18 @@ do_firewall() {
   fi
 }
 
+######################################################################################
+####################################TO DO#############################################
+# Tcp/udp
+# http/https
+# Phpmyadmin
+# Ufw delete xxx
+# Ufw reset
 ######Firewall#######
 do_ufw_enable() {
-sudo ufw reset << EOF
-y
-EOF
+#sudo ufw reset << EOF
+#y
+#EOF
 sudo ufw enable
 sudo ufw default deny incoming
 sudo ufw status
@@ -1372,6 +1383,17 @@ do_ufw_disable() {
 sudo ufw disable
 sudo ufw status
 sleep 2
+}
+######Firewall#######
+do_ufw_status() {
+STATUS=$(sudo ufw status)
+whiptail --msgbox "$STATUS" $WT_HEIGHT $WT_WIDTH
+}
+######Firewall#######
+do_ufw_reset() {
+sudo ufw reset << EOF
+y
+EOF
 }
 ######Firewall#######
 do_allow_32400() {
@@ -1509,7 +1531,6 @@ sudo ufw deny 30033
 sudo ufw status
 sleep 2
 }
-
 ################################# Update 6
 
 do_update() {
