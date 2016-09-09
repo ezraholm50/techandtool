@@ -1301,7 +1301,7 @@ do_firewall() {
     "A0 Enable Firewall" "" \
     "A1 Disable Firewall" "" \
     "A2 Show current rules" "" \
-    "!! Reset Firewall" "Be carefull only do this if you know what you're doing"
+    "!! Reset Firewall" "Be carefull only do this if you know what you're doing" \
     "A3 Allow port Multiple" "Teamspeak" \
     "A4 Allow port 32400" "Plex" \
     "A5 Allow port 8989" "Sonarr" \
