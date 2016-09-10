@@ -2,6 +2,8 @@
 #
 # Tech and Me, 2016 - www.techandme.se
 # Whiptail menu to install various Nextcloud app and do other useful stuf.
+# To do
+# Backup & restore, 2FA, ukupgrade, Collabora, Spreed, Gpxpod
 ##### Index ######
 # 1 Variable
 # 1.1 Network
@@ -148,10 +150,8 @@ calc_wt_size() {
 
 ################################################ Whiptail check 1.5
 
-	if [ $(dpkg-query -W -f='${Status}' whiptail 2>/dev/null | grep -c "ok installed") -eq 1 ];
-then
+	if [ $(dpkg-query -W -f='${Status}' whiptail 2>/dev/null | grep -c "ok installed") -eq 1 ]; then
         sleep 0
-
 else
 
     {
@@ -310,7 +310,7 @@ echo "This will help us troubleshoot the issues, you could also visit: mydomain.
 ################################ Gpxpod 2.3
 
 do_gpxpod() {
-	sleep 1
+	whiptail --msgbox "Under construction..." $WT_HEIGHT $WT_WIDTH
 }
 
 ################################################ Tools 3
@@ -587,7 +587,7 @@ EOF
 ##################### External USB 3.62
 
 do_external_usb() {
-	whiptail --msgbox "This option will be added soon!" $WT_HEIGHT $WT_WIDTH
+	whiptail --msgbox "Under construction..." $WT_HEIGHT $WT_WIDTH
 }
 
 ##################### RPI-update 3.63
@@ -643,7 +643,7 @@ fi
 ################################ Show folder content and permissions 3.8
 
 do_listdir() {
-	LISTDIR=$(whiptail --inputbox "Directory to list? Eg. /mnt/yourfolder" --title "Navigate with TAB to hit ok to enter input" $WT_HEIGHT $WT_WIDTH 3>&1 1>&2 2>&3)
+	LISTDIR=$(whiptail --inputbox "Directory to list? Eg. /mnt/yourfolder" $WT_HEIGHT $WT_WIDTH 3>&1 1>&2 2>&3)
 	LISTDIR1=$(ls -la "$LISTDIR")
 	whiptail --msgbox "$LISTDIR1" $WT_HEIGHT $WT_WIDTH --scrolltext --title "Scroll with your mouse or page up/down or arrow keys"
 }
@@ -876,7 +876,7 @@ fi
 ################################  Fail2Ban SSH 3.28
 
 do_fail2ban_ssh() {
-PORT1=$(whiptail --inputbox "SSH port? Default port is 22" --title "Navigate with TAB to hit ok to enter input" $WT_HEIGHT $WT_WIDTH 22)
+PORT1=$(whiptail --inputbox "SSH port? Default port is 22" $WT_HEIGHT $WT_WIDTH 22)
 
 if [ $(dpkg-query -W -f='${Status}' fail2ban 2>/dev/null | grep -c "ok installed") -eq 1 ]; then
       echo "Fail2Ban is already installed!"
@@ -918,7 +918,7 @@ if [ $(dpkg-query -W -f='${Status}' libpam-google-authenticator 2>/dev/null | gr
       echo "libpam-google-authenticator is already installed!"
 else
     apt-get install libpam-google-authenticator -y
-    USERNAME=$(whiptail --title "Navigate with TAB to hit ok to enter input" --inputbox "Username you want to enable 2 factor authentication for?" $WT_HEIGHT $WT_WIDTH)
+    USERNAME=$(whiptail --inputbox "Username you want to enable 2 factor authentication for?" $WT_HEIGHT $WT_WIDTH)
 sudo -u $USERNAME google-authenticator > /var/google-authenticator << EOF
 y
 y
@@ -1032,7 +1032,7 @@ do_install() {
 ################################ Install package 4.1
 
 do_install_package() {
-	PACKAGE=$(whiptail --inputbox "Package name?" --title "Navigate with TAB to hit ok to enter input" $WT_HEIGHT $WT_WIDTH)
+	PACKAGE=$(whiptail --inputbox "Package name?" $WT_HEIGHT $WT_WIDTH)
 
 	if [ $(dpkg-query -W -f='${Status}' $PACKAGE 2>/dev/null | grep -c "ok installed") -eq 1 ]; then
         echo "$PACKAGE is already installed!"
@@ -1090,7 +1090,7 @@ fi
 ################################ Change SSH port 4.5
 
 do_ssh() {
-PORT=$(whiptail --inputbox "New SSH port?" --title "Navigate with TAB to hit ok to enter input" $WT_HEIGHT $WT_WIDTH)
+PORT=$(whiptail --inputbox "New SSH port?" $WT_HEIGHT $WT_WIDTH)
   	ufw allow $PORT/tcp
   	ufw deny 22
   	sed -i "s|22|$PORT|g" /etc/ssh/sshd_config
@@ -1100,7 +1100,7 @@ PORT=$(whiptail --inputbox "New SSH port?" --title "Navigate with TAB to hit ok 
 ################################ Install ClamAV 4.6
 
 do_clamav() {
-TOMAIL=$(whiptail --inputbox "What email should receive mail when system is infected?" --title "Navigate with TAB to hit ok to enter input" $WT_HEIGHT $WT_WIDTH)
+TOMAIL=$(whiptail --inputbox "What email should receive mail when system is infected?" $WT_HEIGHT $WT_WIDTH)
 
   if [ $(dpkg-query -W -f='${Status}' clamav 2>/dev/null | grep -c "ok installed") -eq 1 ]; then
     apt-get remove clamav clamav-freshclam -y
