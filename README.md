@@ -9,6 +9,7 @@
 * ```sudo mkdir -p /var/scripts```
 * ```sudo wget https://github.com/ezraholm50/techandtool/raw/master/techandtool.sh -P /var/scripts```
 * ```sudo cp /var/scripts/techandtool.sh /usr/sbin/techandtool```
+* ```chmod +x /usr/sbin/techandtool```
 * ```sudo techandtool```
 * Every time you want to use the installer run: sudo techandtool
 
