@@ -160,14 +160,14 @@ else
         i=$(( i + 1 ))
         echo $i
     done < <(apt-get install whiptail -y)
-  } | whiptail --title "Progress" --gauge "Please wait while installing Whiptail..." $WT_HEIGHT $WT_WIDTH
+  } | whiptail --title "Progress" --gauge "Please wait while installing Whiptail..." $WT_HEIGHT $WT_WIDTH 0
 
 fi
 
 ################################################ Check if root 1.6
 
 if [ "$(whoami)" != "root" ]; then
-        whiptail --msgbox "Sorry you are not root. You must type: sudo techandtool" $WT_HEIGHT $WT_WIDTH
+        whiptail --msgbox "Sorry you are not root. You must type: sudo techandtool" $WT_HEIGHT $WT_WIDTH 0
         exit
 fi
 
@@ -600,7 +600,7 @@ do_rpi_update() {
         i=$(( i + 1 ))
         echo $i
     done < <(rpi-update)
-    } | whiptail --title "Progress" --gauge "Please wait while updating your RPI firmware and kernel" $WT_HEIGHT $WT_WIDTH
+  } | whiptail --title "Progress" --gauge "Please wait while updating your RPI firmware and kernel" $WT_HEIGHT $WT_WIDTH 0
 else
     apt-get install rpi-update -y
 
@@ -610,7 +610,7 @@ else
         i=$(( i + 1 ))
         echo $i
     done < <(rpi-update)
-    } | whiptail --title "Progress" --gauge "Please wait while updating your RPI firmware and kernel" $WT_HEIGHT $WT_WIDTH
+  } | whiptail --title "Progress" --gauge "Please wait while updating your RPI firmware and kernel" $WT_HEIGHT $WT_WIDTH 0
 fi
 }
 
@@ -675,7 +675,7 @@ else
         i=$(( $i + 1 ))
         echo $i
     done < <(apt-get install htop -y)
-  } | whiptail --title "Progress" --gauge "Please wait while installing Htop..." $WT_HEIGHT $WT_WIDTH
+  } | whiptail --title "Progress" --gauge "Please wait while installing Htop..." $WT_HEIGHT $WT_WIDTH 0
 
     htop
 fi
@@ -1163,9 +1163,12 @@ do_nginx() {
 then
         echo "Nginx server is already installed!"
 else
+  whiptail --msgbox "In order for Nginx to work, apache2 needs to be shutdown. We will shutdown apache2 if needed..."
+  service apache2 stop
   apt-get install nginx -y
   ufw allow 443/tcp
   ufw allow 80/tcp
+  dpkg --configure --pending
 
   whiptail --msgbox "Nginx is now installed, also port 443 and 80 are open in the firewall..." $WT_HEIGHT $WT_WIDTH
 fi
@@ -1422,7 +1425,7 @@ wget -q https://www.virtualbox.org/download/oracle_vbox.asc -O- | sudo apt-key a
         i=$(( $i + 1 ))
         echo $i
     done < <(apt-get update)
-  } | whiptail --title "Progress" --gauge "Please wait while updating..." $WT_HEIGHT $WT_WIDTH
+  } | whiptail --title "Progress" --gauge "Please wait while updating..." $WT_HEIGHT $WT_WIDTH 0
 
 # Install req packages
     {
@@ -1431,7 +1434,7 @@ wget -q https://www.virtualbox.org/download/oracle_vbox.asc -O- | sudo apt-key a
         i=$(( i + 1 ))
         echo $i
     done < <(apt-get install virtualbox-dkms dkms build-essential linux-headers-generic linux-headers-$(uname -r) virtualbox-5.1 -y)
-  } | whiptail --title "Progress" --gauge "Please wait while installing the required packages..." $WT_HEIGHT $WT_WIDTH
+  } | whiptail --title "Progress" --gauge "Please wait while installing the required packages..." $WT_HEIGHT $WT_WIDTH 0
 
 sudo modprobe vboxdrv
 
@@ -1721,7 +1724,7 @@ do_update() {
         i=$(( $i + 1 ))
         echo $i
     done < <(apt-get autoclean)
-    } | whiptail --title "Progress" --gauge "Please wait while auto cleaning" $WT_HEIGHT $WT_WIDTH
+  } | whiptail --title "Progress" --gauge "Please wait while auto cleaning" $WT_HEIGHT $WT_WIDTH 0
 
     {
     i=1
@@ -1729,7 +1732,7 @@ do_update() {
         i=$(( $i + 1 ))
         echo $i
     done < <(apt-get autoremove -y)
-    } | whiptail --title "Progress" --gauge "Please wait while auto removing un-needed dependancies" $WT_HEIGHT $WT_WIDTH
+  } | whiptail --title "Progress" --gauge "Please wait while auto removing un-needed dependancies" $WT_HEIGHT $WT_WIDTH 0
 
     {
     i=1
@@ -1737,7 +1740,7 @@ do_update() {
         i=$(( $i + 1 ))
         echo $i
     done < <(apt-get update)
-    } | whiptail --title "Progress" --gauge "Please wait while updating" $WT_HEIGHT $WT_WIDTH
+  } | whiptail --title "Progress" --gauge "Please wait while updating" $WT_HEIGHT $WT_WIDTH 0
 
     {
     i=1
@@ -1745,7 +1748,7 @@ do_update() {
         i=$(( $i + 1 ))
         echo $i
     done < <(apt-get upgrade -y)
-    } | whiptail --title "Progress" --gauge "Please wait while ugrading" $WT_HEIGHT $WT_WIDTH
+  } | whiptail --title "Progress" --gauge "Please wait while ugrading" $WT_HEIGHT $WT_WIDTH 0
 
     {
     i=1
@@ -1753,7 +1756,7 @@ do_update() {
         i=$(( $i + 1 ))
         echo $i
     done < <(apt-get install -fy)
-    } | whiptail --title "Progress" --gauge "Please wait while forcing install of dependancies" $WT_HEIGHT $WT_WIDTH
+  } | whiptail --title "Progress" --gauge "Please wait while forcing install of dependancies" $WT_HEIGHT $WT_WIDTH 0
 
     {
     i=1
@@ -1761,7 +1764,7 @@ do_update() {
         i=$(( $i + 1 ))
         echo $i
     done < <(apt-get dist-upgrade -y)
-    } | whiptail --title "Progress" --gauge "Please wait while doing dist-upgrade" $WT_HEIGHT $WT_WIDTH
+  } | whiptail --title "Progress" --gauge "Please wait while doing dist-upgrade" $WT_HEIGHT $WT_WIDTH 0
 
     {
     i=1
@@ -1769,7 +1772,7 @@ do_update() {
         i=$(( $i + 1 ))
         echo $i
     done < <(aptitude full-upgrade -y)
-    } | whiptail --title "Progress" --gauge "Please wait while upgrading with aptitude" $WT_HEIGHT $WT_WIDTH
+  } | whiptail --title "Progress" --gauge "Please wait while upgrading with aptitude" $WT_HEIGHT $WT_WIDTH 0
 
 	dpkg --configure --pending
 
