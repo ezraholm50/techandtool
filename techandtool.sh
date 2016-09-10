@@ -1733,12 +1733,18 @@ sleep 2
 
 do_update() {
 
+  if [ $(dpkg-query -W -f='${Status}' aptitude 2>/dev/null | grep -c "ok installed") -eq 1 ]; then
+        echo "Aptitude is already installed!"
+  else
+      apt-get install aptitude -y
+  fi
+
    {
     i=1
     while read -r line; do
         i=$(( $i + 1 ))
         echo $i
-    done < <( apt-get autoclean )
+    done < <(apt-get autoclean)
     } | whiptail --title "Progress" --gauge "Please wait while auto cleaning" $WT_HEIGHT $WT_WIDTH
 
     {
@@ -1746,33 +1752,48 @@ do_update() {
     while read -r line; do
         i=$(( $i + 1 ))
         echo $i
-    done < <( apt-get autoremove -y )
-  } | whiptail --title "Progress" --gauge "Please wait while auto removing un-needed dependancies " $WT_HEIGHT $WT_WIDTH
+    done < <(apt-get autoremove -y)
+    } | whiptail --title "Progress" --gauge "Please wait while auto removing un-needed dependancies" $WT_HEIGHT $WT_WIDTH
 
     {
     i=1
     while read -r line; do
         i=$(( $i + 1 ))
         echo $i
-    done < <( apt-get update )
-    } | whiptail --title "Progress" --gauge "Please wait while updating " $WT_HEIGHT $WT_WIDTH
-
-
-    {
-    i=1
-    while read -r line; do
-        i=$(( $i + 1 ))
-        echo $i
-    done < <( apt-get upgrade -y )
-    } | whiptail --title "Progress" --gauge "Please wait while ugrading " $WT_HEIGHT $WT_WIDTH
+    done < <(apt-get update)
+    } | whiptail --title "Progress" --gauge "Please wait while updating" $WT_HEIGHT $WT_WIDTH
 
     {
     i=1
     while read -r line; do
         i=$(( $i + 1 ))
         echo $i
-    done < <( apt-get install -fy )
-    } | whiptail --title "Progress" --gauge "Please wait while forcing install of dependancies " $WT_HEIGHT $WT_WIDTH
+    done < <(apt-get upgrade -y)
+    } | whiptail --title "Progress" --gauge "Please wait while ugrading" $WT_HEIGHT $WT_WIDTH
+
+    {
+    i=1
+    while read -r line; do
+        i=$(( $i + 1 ))
+        echo $i
+    done < <(apt-get install -fy)
+    } | whiptail --title "Progress" --gauge "Please wait while forcing install of dependancies" $WT_HEIGHT $WT_WIDTH
+
+    {
+    i=1
+    while read -r line; do
+        i=$(( $i + 1 ))
+        echo $i
+    done < <(apt-get dist-upgrade -y)
+    } | whiptail --title "Progress" --gauge "Please wait while doing dist-upgrade" $WT_HEIGHT $WT_WIDTH
+
+    {
+    i=1
+    while read -r line; do
+        i=$(( $i + 1 ))
+        echo $i
+    done < <(aptitude full-upgrade -y)
+    } | whiptail --title "Progress" --gauge "Please wait while upgrading with aptitude" $WT_HEIGHT $WT_WIDTH
 
 	dpkg --configure --pending
 
@@ -1785,7 +1806,7 @@ then
 fi
         wget https://github.com/ezraholm50/vm/raw/master/static/techandtool.sh -P $SCRIPTS
         cp $SCRIPTS/techandtool.sh /usr/sbin/techandtool
-	exit | bash $SCRIPTS/techandtool.sh
+        exit | bash $SCRIPTS/techandtool.sh
 }
 
 ################################################ About 7
