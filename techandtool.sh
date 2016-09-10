@@ -857,13 +857,7 @@ whiptail --msgbox "Backup finished, backup.tar.bz2 is located in /" $WT_HEIGHT $
 
 do_restore_backup() {
   if 		[ -f /backup.tar.bz2 ]; then
-  {
-  i=1
-  while read -r line; do
-      i=$(( $i + 1 ))
-      echo $i
-  done < <(tar xvpfj -P /backup.tar.bz2 -C /)
-} | whiptail --title "Progress" --gauge "Please wait while restoring your system..." $WT_HEIGHT $WT_WIDTH
+  tar xvpfj -P /backup.tar.bz2 -C /
 
   mkdir -p proc
   mkdir -p media
@@ -886,7 +880,6 @@ PORT1=$(whiptail --inputbox "SSH port? Default port is 22" --title "Navigate wit
 
 if [ $(dpkg-query -W -f='${Status}' fail2ban 2>/dev/null | grep -c "ok installed") -eq 1 ]; then
       echo "Fail2Ban is already installed!"
-      cp /etc/fail2ban/jail.conf /etc/fail2ban/jail.local
       sed -i 's|port     = ssh|port     = "$PORT1"|g' /etc/fail2ban/jail.local
       sed -i 's|bantime  = 600|bantime  = 1200|g' /etc/fail2ban/jail.local
       sed -i 's|maxretry = 3|maxretry = 5"|g' /etc/fail2ban/jail.local
@@ -906,28 +899,27 @@ fi
 ################################  Google auth SSH 3.29
 
 do_2fa() {
-USERNAME=$(whiptail --inputbox "Username you want to enable 2 factor authentication for?" --title "Navigate with TAB to hit ok to enter input" $WT_HEIGHT $WT_WIDTH)
+whiptail --msgbox "\
+WARNING\
+Please make sure to save the codes presented to you before logging out.
+Failing to do so, will lock you out of your system.
+You can at any time find the keys in /var/google-authenticator\
+" $WT_HEIGHT $WT_WIDTH
 
-  whiptail --msgbox "WARNING \
-  Please make sure to save the codes presented to you before logging out. \
-  Failing to do so, will lock you out of your system. \
-  You can at any time find the keys in /var/google-authenticator" $WT_HEIGHT $WT_WIDTH
-
-  if [ $(dpkg-query -W -f='${Status}' openssh-client 2>/dev/null | grep -c "ok installed") -eq 1 ];
+if [ $(dpkg-query -W -f='${Status}' openssh-server 2>/dev/null | grep -c "ok installed") -eq 1 ];
 then
-        echo "OpenSSH client is already installed!"
+        echo "OpenSSH server is already installed!"
 
 else
-  apt-get install openssh-client -y
-
-  whiptail --msgbox "SSH client is now installed..." $WT_HEIGHT $WT_WIDTH
+  apt-get install openssh-server -y
 fi
 
 if [ $(dpkg-query -W -f='${Status}' libpam-google-authenticator 2>/dev/null | grep -c "ok installed") -eq 1 ]; then
       echo "libpam-google-authenticator is already installed!"
 else
     apt-get install libpam-google-authenticator -y
-sudo -u $USERNAME google-authenticator > /root/google-authenticator << EOF
+    USERNAME=$(whiptail --title "Navigate with TAB to hit ok to enter input" --inputbox "Username you want to enable 2 factor authentication for?" $WT_HEIGHT $WT_WIDTH)
+sudo -u $USERNAME google-authenticator > /var/google-authenticator << EOF
 y
 y
 y
@@ -941,6 +933,7 @@ EOF
   echo "AuthenticationMethods password,publickey,keyboard-interactive" >> /etc/ssh/sshd_config
   sed -i 's|@include common-auth|#@include common-auth|g' /etc/pam.d/sshd
   service ssh restart
+  chmod 600 /var/google-authenticator
 
   whiptail --msgbox "SSH is now protected with 2FA, next you will see your codes, add them to the google auth. app. Please write down the keys on a piece of paper you see in the next screen. /var/google-authenticator holds your keys..." $WT_HEIGHT $WT_WIDTH
   whiptail --textbox "/var/google-authenticator" $WT_HEIGHT $WT_WIDTH --title "Please scroll down to the keys" --scrolltext
