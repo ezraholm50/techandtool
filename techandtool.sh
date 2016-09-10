@@ -323,7 +323,7 @@ FUN=$(whiptail --backtitle "Tools" --title "Tech and Tool - Tools - https://www.
 "T4 Internationalisation Options" "Change language, time, date and keyboard layout" \
 "T5 Connect to WLAN" "Please have a wifi dongle/card plugged in before start" \
 "T6 Show folder size" "Using ncdu" \
-"T7 Show folder conten" "with permissions" \
+"T7 Show folder content" "with permissions" \
 "T8 Show connected devices" "blkid" \
 "T9 Show disks usage" "df -h" \
 "T10 Show system performance" "HTOP" \
@@ -645,21 +645,21 @@ fi
 do_listdir() {
 	LISTDIR=$(whiptail --title "Directory to list? Eg. /mnt/yourfolder" --inputbox "Navigate with TAB to hit ok to enter input" $WT_HEIGHT $WT_WIDTH 3>&1 1>&2 2>&3)
 	LISTDIR1=$(ls -la "$LISTDIR")
-	whiptail --msgbox "$LISTDIR1" $WT_HEIGHT $WT_WIDTH
+	whiptail --msgbox "$LISTDIR1" $WT_HEIGHT $WT_WIDTH --scrolltext
 }
 
 ################################ Show connected devices 3.9
 
 do_blkid() {
   BLKID=$(blkid)
-  whiptail --msgbox "$BLKID" $WT_HEIGHT $WT_WIDTH
+  whiptail --msgbox "$BLKID" $WT_HEIGHT $WT_WIDTH --scrolltext
 }
 
 ################################ Show disk usage 3.10
 
 do_df() {
   DF=$(df -h)
-  whiptail --msgbox "$DF" $WT_HEIGHT $WT_WIDTH
+  whiptail --msgbox "$DF" $WT_HEIGHT $WT_WIDTH --scrolltext
 }
 
 ################################ Show system performance 3.11
