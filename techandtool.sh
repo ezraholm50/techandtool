@@ -721,13 +721,13 @@ do_find_string() {
 ################################ Reboot on out of memory 3.14
 
 do_oom() {
- if grep -q kernel.panic=10 "/etc/sysctl.d/oom_reboot.conf"; then
+ if grep -q "kernel.panic=10" "/etc/sysctl.d/oom_reboot.conf"; then
    sleep 0
  else
  echo "kernel.panic=10" >> /etc/sysctl.d/oom_reboot.conf
  fi
 
- if grep -q vm.panic_on_oom=1 "/etc/sysctl.d/oom_reboot.conf"; then
+ if grep -q "vm.panic_on_oom=1" "/etc/sysctl.d/oom_reboot.conf"; then
    sleep 0
  else
  echo "vm.panic_on_oom=1" >> /etc/sysctl.d/oom_reboot.conf
@@ -775,7 +775,7 @@ do_dns() {
 ################################ Progress bar 3.20
 
 do_progressbar() {
-if grep -q Dpkg::Progress-Fancy "1"; "/etc/apt/apt.conf.d/99progressbar"; then
+if grep -q "Dpkg::Progress-Fancy "1";" "/etc/apt/apt.conf.d/99progressbar"; then
   echo
   echo "Already installed..."
 else
@@ -788,7 +788,7 @@ fi
 ################################ Boot terminal 3.21
 
 do_bootterminal() {
-if grep -q GRUB_CMDLINE_LINUX_DEFAULT="" "/etc/default/grub"; then
+if grep -q "GRUB_CMDLINE_LINUX_DEFAULT=""" "/etc/default/grub"; then
   sed -i 's|GRUB_CMDLINE_LINUX_DEFAULT=""|GRUB_CMDLINE_LINUX_DEFAULT="text"|g' /etc/default/grub
   update-grub
   whiptail --msgbox "System now boots to terminal..." $WT_HEIGHT $WT_WIDTH
@@ -811,7 +811,7 @@ do_bootgui() {
 do_swappiness() {
 SWAPPINESS=$(whiptail --inputbox "Set the swappiness value" $WT_HEIGHT $WT_WIDTH 0 3>&1 1>&2 2>&3)
 
-if grep -q vm.swappiness "/etc/sysctl.conf"; then
+if grep -q "vm.swappiness" "/etc/sysctl.conf"; then
     sed -i '/vm.swappiness/d' /etc/sysctl.conf
   	echo "vm.swappiness = $SWAPPINESS" >> /etc/sysctl.conf
   	sysctl -p
@@ -848,15 +848,9 @@ whiptail --msgbox "Kernel upgraded..." $WT_HEIGHT $WT_WIDTH
 ################################  Backup system 3.26
 
 do_backup() {
-  {
-  i=1
-  while read -r line; do
-      i=$(( $i + 1 ))
-      echo $i
-  done < <(tar cvpjf /backup.tar.bz2 --exclude=/proc --exclude=/dev --exclude=/media --exclude=/lost+found --exclude=/backup.tar.bz2 --exclude=/mnt --exclude=/sys /)
-} | whiptail --title "Progress" --gauge "Please wait while backing up your system..." $WT_HEIGHT $WT_WIDTH
+tar cvpjf -P /backup.tar.bz2 --exclude=/proc --exclude=/dev --exclude=/media --exclude=/lost+found --exclude=/backup.tar.bz2 --exclude=/mnt --exclude=/sys /
 
-whiptail --msgbox "Backup finished..." $WT_HEIGHT $WT_WIDTH
+whiptail --msgbox "Backup finished, backup.tar.bz2 is located in /" $WT_HEIGHT $WT_WIDTH
 }
 
 ################################  Restore Backup 3.27
@@ -868,7 +862,7 @@ do_restore_backup() {
   while read -r line; do
       i=$(( $i + 1 ))
       echo $i
-  done < <(tar xvpfj backup.tar.bz2 -C /)
+  done < <(tar xvpfj -P /backup.tar.bz2 -C /)
 } | whiptail --title "Progress" --gauge "Please wait while restoring your system..." $WT_HEIGHT $WT_WIDTH
 
   mkdir -p proc
@@ -965,7 +959,7 @@ else
       apt-get install update-manager-core -y
 fi
 
-if grep -q Prompt "/etc/update-manager/release-upgrades"; then
+if grep -q "Prompt" "/etc/update-manager/release-upgrades"; then
   sed -i "/Prompt/d" "/etc/update-manager/release-upgrades"
   echo "Prompt=lts" >> /etc/update-manager/release-upgrades
 else
