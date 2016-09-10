@@ -337,6 +337,11 @@ FUN=$(whiptail --backtitle "Tools" --title "Tech and Tool - Tools - https://www.
 "T22 Delete line containing a string of text" "Warning, deletes every line containing the string!" \
 "T23 Set swappiness" "" \
 "T24 Upgrade Ubuntu Kernel" "To the latest version" \
+"T25 Backup your system" "" \
+"T26 Restore backup" "Made with the option above" \
+"T27 Protect SSH with Fail2Ban" "" \
+"T28 Protect SSH with Google 2 factor authentication" "" \
+"T29 Distribution upgrade" "Only LTS" \
   3>&1 1>&2 2>&3)
 RET=$?
 if [ $RET -eq 1 ]; then
@@ -363,6 +368,11 @@ elif [ $RET -eq 0 ]; then
     T22\ *) do_stringdel ;;
     T23\ *) do_swappiness ;;
     T24\ *) do_ukupgrade ;;
+    T25\ *) do_backup ;;
+    T26\ *) do_restore_backup ;;
+    T27\ *) do_fail2ban_ssh ;;
+    T28\ *) do_2fa ;;
+    T29\ *) do_ltsupgrade ;;
     *) whiptail --msgbox "Programmer error: unrecognized option" 20 60 1 ;;
   esac || whiptail --msgbox "There was an error running option $FUN" 20 60 1
 else
@@ -474,12 +484,12 @@ fi
 ################################ Raspberry specific 3.6
 
 do_Raspberry() {
-  FUN=$(whiptail --backtitle "Raspberry" --title "Tech and Tool - https://www.techandme.se" --menu "Raspberry" $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT \
-    "R1 Resize SD" "" \
-    "R2 External USB" "Use an USB HD/SSD as root" \
-    "R3 RPI-update" "Update the RPI firmware and kernel" \
-    "R4 Raspi-config" "Set various settings, not all are tested! Already safely overclocked!"
-  3>&1 1>&2 2>&3)
+  FUN=$(whiptail --backtitle "Raspberry" --title "Tech and Tool - https://www.techandme.se" --menu "Raspberry" $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT --cancel-button Back --ok-button Select \
+  "R1 Resize SD" "" \
+  "R2 External USB" "Use an USB HD/SSD as root" \
+  "R3 RPI-update" "Update the RPI firmware and kernel" \
+  "R4 Raspi-config" "Set various settings, not all are tested! Already safely overclocked!" \
+    3>&1 1>&2 2>&3)
   RET=$?
   if [ $RET -eq 1 ]; then
     return 0
@@ -569,28 +579,39 @@ esac
 EOF
   chmod +x /etc/init.d/resize2fs_once &&
   update-rc.d resize2fs_once defaults &&
-  if [ "$INTERACTIVE" = True ]; then
-    whiptail --msgbox "Root partition has been resized.\nThe filesystem will be enlarged upon the next reboot" 20 60 2
-  fi
+
+  whiptail --msgbox "Root partition has been resized.\nThe filesystem will be enlarged upon the next reboot" $WT_HEIGHT $WT_WIDTH
   ASK_TO_REBOOT=1
 }
 
 ##################### External USB 3.62
 
 do_external_usb() {
-	sleep 1
+	whiptail --msgbox "This option will be added soon!" $WT_HEIGHT $WT_WIDTH
 }
 
 ##################### RPI-update 3.63
 
 do_rpi_update() {
-	    {
+  if [ $(dpkg-query -W -f='${Status}' rpi-update 2>/dev/null | grep -c "ok installed") -eq 1 ]; then
+    {
     i=1
     while read -r line; do
         i=$(( i + 1 ))
         echo $i
     done < <(rpi-update)
     } | whiptail --title "Progress" --gauge "Please wait while updating your RPI firmware and kernel" $WT_HEIGHT $WT_WIDTH
+else
+    apt-get install rpi-update -y
+
+	  {
+    i=1
+    while read -r line; do
+        i=$(( i + 1 ))
+        echo $i
+    done < <(rpi-update)
+    } | whiptail --title "Progress" --gauge "Please wait while updating your RPI firmware and kernel" $WT_HEIGHT $WT_WIDTH
+fi
 }
 
 ##################### Raspi-config 3.64
@@ -600,7 +621,7 @@ do_raspi_config() {
   raspi-config
 else
   wget http://archive.raspberrypi.org/debian/pool/main/r/raspi-config/raspi-config_20160527_all.deb -P /tmp
-  apt-get install libnewt0.52 whiptail parted triggerhappy lua5.1
+  apt-get install libnewt0.52 whiptail parted triggerhappy lua5.1 -y
   dpkg -i /tmp/raspi-config_20160527_all.deb
   whiptail --msgbox "Raspi-config is now installed, run it by typing: sudo raspi-config" $WT_HEIGHT $WT_WIDTH
   raspi-config
@@ -612,7 +633,7 @@ fi
 do_foldersize() {
 	if [ $(dpkg-query -W -f='${Status}' ncdu 2>/dev/null | grep -c "ok installed") -eq 1 ];
 then
-        ncdu /
+      ncdu /
 else
     {
     i=1
@@ -692,7 +713,7 @@ do_disable_ipv6() {
  sysctl -p
  echo
 
-whiptail --msgbox "IPV6 is now disabled..." $WT_HEIGHT $WT_WIDTH
+ whiptail --msgbox "IPV6 is now disabled..." $WT_HEIGHT $WT_WIDTH
 }
 
 ################################ Find string text 3.13
@@ -723,7 +744,7 @@ do_oom() {
  sysctl -p /etc/sysctl.d/oom_reboot.conf
  echo
 
-whiptail --msgbox "System will now reboot on out of memory errors..." $WT_HEIGHT $WT_WIDTH
+ whiptail --msgbox "System will now reboot on out of memory errors..." $WT_HEIGHT $WT_WIDTH
 }
 
 ################################ 3.15
@@ -755,7 +776,7 @@ do_dns() {
   resolvconf -u
   ifdown -a; ifup -a
 
-whiptail --msgbox "Dns is now set to google, if no response in 1 second it switches to opendns..." $WT_HEIGHT $WT_WIDTH
+  whiptail --msgbox "Dns is now set to google, if no response in 1 second it switches to opendns..." $WT_HEIGHT $WT_WIDTH
 }
 
 ################################ Progress bar 3.20
@@ -787,6 +808,7 @@ do_bootgui() {
   if grep -q GRUB_CMDLINE_LINUX_DEFAULT="text" "/etc/default/grub"; then
     sed -i 's|GRUB_CMDLINE_LINUX_DEFAULT="text"|GRUB_CMDLINE_LINUX_DEFAULT=""|g' /etc/default/grub
   	update-grub
+
     whiptail --msgbox "System now boots to desktop..." $WT_HEIGHT $WT_WIDTH
   fi
 }
@@ -800,10 +822,12 @@ if grep -q vm.swappiness "/etc/sysctl.conf"; then
     sed -i '/vm.swappiness/d' /etc/sysctl.conf
   	echo "vm.swappiness = $SWAPPINESS" >> /etc/sysctl.conf
   	sysctl -p
+
     whiptail --msgbox "Swappiness is set..." $WT_HEIGHT $WT_WIDTH
 else
   echo "vm.swappiness = $SWAPPINESS" >> /etc/sysctl.conf
   sysctl -p
+
   whiptail --msgbox "Swappiness is set..." $WT_HEIGHT $WT_WIDTH
 fi
 }
@@ -828,9 +852,141 @@ bash $SCRIPTS/ukupgrade
 whiptail --msgbox "Kernel upgraded..." $WT_HEIGHT $WT_WIDTH
 }
 
-################################  3.26
+################################  Backup system 3.26
 
+do_backup() {
+  {
+  i=1
+  while read -r line; do
+      i=$(( $i + 1 ))
+      echo $i
+  done < <(tar cvpjf /backup.tar.bz2 --exclude=/proc --exclude=/dev --exclude=/media --exclude=/lost+found --exclude=/backup.tar.bz2 --exclude=/mnt --exclude=/sys /)
+} | whiptail --title "Progress" --gauge "Please wait while backing up your system..." $WT_HEIGHT $WT_WIDTH
 
+whiptail --msgbox "Backup finished..." $WT_HEIGHT $WT_WIDTH
+}
+
+################################  Restore Backup 3.27
+
+do_restore_backup() {
+  if 		[ -f /backup.tar.bz2 ]; then
+  {
+  i=1
+  while read -r line; do
+      i=$(( $i + 1 ))
+      echo $i
+  done < <(tar xvpfj backup.tar.bz2 -C /)
+} | whiptail --title "Progress" --gauge "Please wait while restoring your system..." $WT_HEIGHT $WT_WIDTH
+
+  mkdir -p proc
+  mkdir -p media
+  mkdir -p lost+found
+  mkdir -p mnt
+  mkdir -p sys
+  mkdir -p dev
+
+  whiptail --msgbox "Restoring the backup is finished..." $WT_HEIGHT $WT_WIDTH
+  ASK_TO_REBOOT=1
+else
+  whiptail --msgbox "Could not find the backup file make sure you made the backup..." $WT_HEIGHT $WT_WIDTH
+fi
+}
+
+################################  Fail2Ban SSH 3.28
+
+do_fail2ban_ssh() {
+PORT1=$(whiptail --title "SSH port? Default port is 22" --inputbox "Navigate with TAB to hit ok to enter input" $WT_HEIGHT $WT_WIDTH 22)
+
+if [ $(dpkg-query -W -f='${Status}' fail2ban 2>/dev/null | grep -c "ok installed") -eq 1 ]; then
+      echo "Fail2Ban is already installed!"
+      cp /etc/fail2ban/jail.conf /etc/fail2ban/jail.local
+      sed -i 's|port     = ssh|port     = "$PORT1"|g' /etc/fail2ban/jail.local
+      sed -i 's|bantime  = 600|bantime  = 1200|g' /etc/fail2ban/jail.local
+      sed -i 's|maxretry = 3|maxretry = 5"|g' /etc/fail2ban/jail.local
+      service fail2ban restart
+      whiptail --msgbox "SSH is now protected with Fail2Ban..." $WT_HEIGHT $WT_WIDTH
+else
+      apt-get install fail2ban -y
+      cp /etc/fail2ban/jail.conf /etc/fail2ban/jail.local
+      sed -i 's|port     = ssh|port     = "$PORT1"|g' /etc/fail2ban/jail.local
+      sed -i 's|bantime  = 600|bantime  = 1200|g' /etc/fail2ban/jail.local
+      sed -i 's|maxretry = 3|maxretry = 5"|g' /etc/fail2ban/jail.local
+      service fail2ban restart
+      whiptail --msgbox "SSH is now protected with Fail2Ban..." $WT_HEIGHT $WT_WIDTH
+fi
+}
+
+################################  Google auth SSH 3.29
+
+do_2fa() {
+USERNAME=$(whiptail --title "Username you want to enable 2 factor authentication for?" --inputbox "Navigate with TAB to hit ok to enter input" $WT_HEIGHT $WT_WIDTH)
+
+  whiptail --msgbox "WARNING \
+  Please make sure to save the codes presented to you before logging out. \
+  Failing to do so, will lock you out of your system. \
+  You can at any time find the keys in /var/google-authenticator" $WT_HEIGHT $WT_WIDTH
+
+  if [ $(dpkg-query -W -f='${Status}' openssh-client 2>/dev/null | grep -c "ok installed") -eq 1 ];
+then
+        echo "OpenSSH client is already installed!"
+
+else
+  apt-get install openssh-client -y
+
+  whiptail --msgbox "SSH client is now installed..." $WT_HEIGHT $WT_WIDTH
+fi
+
+if [ $(dpkg-query -W -f='${Status}' libpam-google-authenticator 2>/dev/null | grep -c "ok installed") -eq 1 ]; then
+      echo "libpam-google-authenticator is already installed!"
+else
+    apt-get install libpam-google-authenticator -y
+sudo -u $USERNAME google-authenticator > /root/google-authenticator << EOF
+y
+y
+y
+n
+y
+EOF
+
+  echo "auth required pam_google_authenticator.so" >> /etc/pam.d/sshd
+  sed -i 's|ChallengeResponseAuthentication no|ChallengeResponseAuthentication yes|g' /etc/ssh/sshd_config
+  service ssh restart
+  echo "AuthenticationMethods password,publickey,keyboard-interactive" >> /etc/ssh/sshd_config
+  sed -i 's|@include common-auth|#@include common-auth|g' /etc/pam.d/sshd
+  service ssh restart
+
+  whiptail --msgbox "SSH is now protected with 2FA, next you will see your codes, add them to the google auth. app. Please write down the keys on a piece of paper you see in the next screen. /var/google-authenticator holds your keys..." $WT_HEIGHT $WT_WIDTH
+  whiptail --textbox "/var/google-authenticator" $WT_HEIGHT $WT_WIDTH --title "Please scroll down to the keys" --scrolltext
+fi
+}
+
+################################ Do distribution upgrade 3.30
+
+do_ltsupgrade() {
+  apt-get update
+  apt-get dist-upgrade -y
+
+if [ $(dpkg-query -W -f='${Status}' update-manager-core 2>/dev/null | grep -c "ok installed") -eq 1 ]; then
+      echo "update-manager-core is already installed!"
+else
+      apt-get install update-manager-core -y
+fi
+
+if grep -q Prompt "/etc/update-manager/release-upgrades"; then
+  sed -i "/Prompt/d" "/etc/update-manager/release-upgrades"
+  echo "Prompt=lts" >> /etc/update-manager/release-upgrades
+else
+  echo "Prompt=lts" >> /etc/update-manager/release-upgrades
+fi
+
+do-release-upgrade -d << EOF
+y
+y
+y
+EOF
+
+ASK_TO_REBOOT=1
+}
 
 ################################################ Install 4
 
@@ -898,8 +1054,7 @@ do_install() {
 do_install_package() {
 	PACKAGE=$(whiptail --title "Package name?" --inputbox "Navigate with TAB to hit ok to enter input" $WT_HEIGHT $WT_WIDTH)
 
-	if [ $(dpkg-query -W -f='${Status}' $PACKAGE 2>/dev/null | grep -c "ok installed") -eq 1 ];
-then
+	if [ $(dpkg-query -W -f='${Status}' $PACKAGE 2>/dev/null | grep -c "ok installed") -eq 1 ]; then
         echo "$PACKAGE is already installed!"
 
 else
@@ -929,12 +1084,13 @@ do_install_SSH_server() {
   if [ $(dpkg-query -W -f='${Status}' openssh-server 2>/dev/null | grep -c "ok installed") -eq 1 ];
 then
         echo "OpenSSH server is already installed!"
+        sed -i 's|PermitEmptyPasswords yes|PermitEmptyPasswords no|g' /etc/ssh/sshd_config
 
 else
   apt-get install openssh-server -y
+  sed -i 's|PermitEmptyPasswords yes|PermitEmptyPasswords no|g' /etc/ssh/sshd_config
   whiptail --msgbox "SSH server is now installed..." $WT_HEIGHT $WT_WIDTH
 fi
-  	sed -i 's|PermitEmptyPasswords yes|PermitEmptyPasswords no|g' /etc/ssh/sshd_config
 }
 
 ################################ Install SSH client 4.4
@@ -946,6 +1102,7 @@ then
 
 else
   apt-get install openssh-client -y
+
   whiptail --msgbox "SSH client is now installed..." $WT_HEIGHT $WT_WIDTH
 fi
 }
@@ -963,18 +1120,49 @@ PORT=$(whiptail --title "New SSH port?" --inputbox "Navigate with TAB to hit ok 
 ################################ Install ClamAV 4.6
 
 do_clamav() {
-  if [ $(dpkg-query -W -f='${Status}' clamav 2>/dev/null | grep -c "ok installed") -eq 1 ];
-then
-        echo "ClamAV is already installed!"
-else
-  apt-get install clamav -y
-  mkdir -p /infected
-  chmod -R nobody:nogroup /infected
-  chown -R 000 /infected
-  echo "freshclam; clamscan -r --move=/infected / && chown -R nodbody:nogroup /infected && chmod -R 000 /infected " >> /etc/cron.daily/clamscan.sh
-  chmod 754 /etc/cron.daily/clamscan.sh
+TOMAIL=$(whiptail --title "What email should receive mail when system is infected?" --inputbox "Navigate with TAB to hit ok to enter input" $WT_HEIGHT $WT_WIDTH)
+
+  if [ $(dpkg-query -W -f='${Status}' clamav 2>/dev/null | grep -c "ok installed") -eq 1 ]; then
+    apt-get remove clamav clamav-freshclam -y
+  fi
+
+  apt-get install clamav clamav-freshclam heirloom-mailx -y
+  service ClamAV-freshclam start
+  mkdir -p /var/scripts
+
+  cat <<-CLAMSCAN > "/var/scripts/clamscan_daily.sh"
+  #!/bin/bash
+  LOGFILE="/var/log/clamav/clamav-$(date +'%Y-%m-%d').log";
+  EMAIL_MSG="Please see the log file attached.";
+  EMAIL_FROM="www.techandme.se@gmail.com";
+  EMAIL_TO="$TOMAIL";
+  DIRTOSCAN="/";
+
+  for S in ${DIRTOSCAN}; do
+   DIRSIZE=$(du -sh "$S" 2>/dev/null | cut -f1);
+
+   echo "Starting a daily scan of "$S" directory.
+   Amount of data to be scanned is "$DIRSIZE".";
+
+   clamscan -ri "$S" >> "$LOGFILE";
+
+   # get the value of "Infected lines"
+   MALWARE=$(tail "$LOGFILE"|grep Infected|cut -d" " -f3);
+
+   # if the value is not equal to zero, send an email with the log file attached
+   if [ "$MALWARE" -ne "0" ];then
+   # using heirloom-mailx below
+   echo "$EMAIL_MSG"|mail -a "$LOGFILE" -s "Malware Found" -r "www.techandme.se@gmail.com" "$EMAIL_TO";
+   fi
+  done
+
+  exit 0
+CLAMSCAN
+
+  chmod 0755 /root/clamscan_daily.sh
+  ln /root/clamscan_daily.sh /etc/cron.daily/clamscan_daily
+
   whiptail --msgbox "ClamAV is now installed..." $WT_HEIGHT $WT_WIDTH
-fi
 }
 
 ################################ Install Fail2Ban 4.7
@@ -997,9 +1185,10 @@ then
         echo "Nginx server is already installed!"
 else
   apt-get install nginx -y
-  ufw allow 443
-  ufw allow 80
-  whiptail --msgbox "Nginx is now installed..." $WT_HEIGHT $WT_WIDTH
+  ufw allow 443/tcp
+  ufw allow 80/tcp
+
+  whiptail --msgbox "Nginx is now installed, also port 443 and 80 are open in the firewall..." $WT_HEIGHT $WT_WIDTH
 fi
 }
 
@@ -1033,7 +1222,7 @@ echo    "| Next you will need to copy/paste 3 things to a safe location       |"
 echo    "|                                                                    |"
 echo -e "|         \e[0mLOGIN, PASSWORD, SECURITY TOKEN\e[32m                            |"
 echo    "|                                                                    |"
-echo -e "|         \e[0mIF YOU FAIL TO DO SO, YOU HAVE TO REINSTALL YOUR SYSTEM\e[32m    |"
+echo -e "|         \e[0mIF YOU FAIL TO DO SO, YOU HAVE TO REINSTALL TEAMSPEAK\e[32m    |"
 echo -e "|         \e[0mIn 30 Sec the script will continue, so be quick!/e[32m           |"
 echo    "+--------------------------------------------------------------------+"
 echo
@@ -1051,15 +1240,11 @@ function ask_yes_or_no() {
         *)     echo "no" ;;
     esac
 }
-if [[ "yes" == $(ask_yes_or_no "Did you copy all the details?") ]]
-then
-	sleep 1
-	echo
-else
-      sleep 30
-      echo "I will give you another 30 seconds, please hurry!"
-      echo
-fi
+
+ufw allow 9987/udp
+ufw allow 30033/tcp
+ufw allow 10011/tcp
+ufw allow 41144/tcp
 
 whiptail --msgbox "Teamspeak is now installed..." $WT_HEIGHT $WT_WIDTH
 }
@@ -1073,6 +1258,7 @@ then
 
 else
   apt-get install nfs-common -y
+
   whiptail --msgbox 'Installed! Auto mount like this: echo "<nfs-server-IP>:/   /mount_point   nfs    auto  0  0" >> /etc/fstab' $WT_HEIGHT $WT_WIDTH
 fi
 }
@@ -1087,6 +1273,7 @@ then
 else
   apt-get install nfs-kernel-server -y
   ufw allow 2049
+
   whiptail --msgbox "Installed! You can broadcast your NFS server and set it up in webmin (when installed): https://$ADDRESS:10000" $WT_HEIGHT $WT_WIDTH
 fi
 }
@@ -1133,14 +1320,16 @@ fi
   	cd
 }
 
-################################ Install 4.14
-
-
-
 ################################ Install Network-manager 4.15
 
 do_install_networkmanager() {
-  echo "to come!"
+  if [ $(dpkg-query -W -f='${Status}' network-manager 2>/dev/null | grep -c "ok installed") -eq 1 ];
+  then
+        echo "network-manager is already installed!"
+  else
+        apt-get install network-manager -y
+        whiptail --msgbox "Network-manager is now installed..." $WT_HEIGHT $WT_WIDTH
+  fi
 }
 
 ################################ Install Nextcloud 4.16
@@ -1154,7 +1343,20 @@ bash $SCRIPTS/nextcloud_install_production.sh
 ################################ Install OpenVpn 4.17
 
 do_openvpn() {
-  echo "to come!"
+if [ $(dpkg-query -W -f='${Status}' openvpn 2>/dev/null | grep -c "ok installed") -eq 1 ]; then
+  echo "OpenVpn is already installed!"
+else
+  apt-get install openvpn -y
+
+  if [ $(dpkg-query -W -f='${Status}' network-manager-openvpn 2>/dev/null | grep -c "ok installed") -eq 1 ];
+  then
+        echo "network-manager-openvpn is already installed!"
+  else
+        apt-get install network-manager-openvpn -y
+  fi
+
+  whiptail --msgbox "OpenVpn is now installed..." $WT_HEIGHT $WT_WIDTH
+fi
 }
 
 ################################ Install Plex 4.18
@@ -1260,7 +1462,7 @@ wget -q https://www.virtualbox.org/download/oracle_vbox.asc -O- | sudo apt-key a
         i=$(( i + 1 ))
         echo $i
     done < <(apt-get install virtualbox-dkms dkms build-essential linux-headers-generic linux-headers-$(uname -r) virtualbox-5.1 -y)
-  } | whiptail --title "Progress" --gauge "Please wait while installing th required packages..." $WT_HEIGHT $WT_WIDTH
+  } | whiptail --title "Progress" --gauge "Please wait while installing the required packages..." $WT_HEIGHT $WT_WIDTH
 
 sudo modprobe vboxdrv
 
@@ -1377,12 +1579,14 @@ sudo ufw enable
 sudo ufw default deny incoming
 sudo ufw status
 sleep 2
+whiptail --msgbox "Firewall is now enabled..." $WT_HEIGHT $WT_WIDTH
 }
 ######Firewall#######
 do_ufw_disable() {
 sudo ufw disable
 sudo ufw status
 sleep 2
+whiptail --msgbox "Firewall is now disabled, you are at risk..." $WT_HEIGHT $WT_WIDTH
 }
 ######Firewall#######
 do_ufw_status() {
@@ -1394,6 +1598,7 @@ do_ufw_reset() {
 sudo ufw reset << EOF
 y
 EOF
+whiptail --msgbox "Firewall is now reset please set your rules..." $WT_HEIGHT $WT_WIDTH
 }
 ######Firewall#######
 do_allow_32400() {
