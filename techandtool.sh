@@ -635,15 +635,8 @@ do_foldersize() {
 then
       ncdu /
 else
-    {
-    i=1
-    while read -r line; do
-        i=$(( i + 1 ))
-        echo $i
-    done < <(apt-get install ncdu -y)
-    } | whiptail --title "Progress" --gauge "Please wait while installing ncdu" $WT_HEIGHT $WT_WIDTH
-
-	     ncdu /
+      apt-get install ncdu -y
+	    ncdu /
 fi
 }
 
