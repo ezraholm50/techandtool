@@ -643,23 +643,23 @@ fi
 ################################ Show folder content and permissions 3.8
 
 do_listdir() {
-	LISTDIR=$(whiptail --title "Directory to list? Eg. /mnt/yourfolder" --inputbox "Navigate with TAB to hit ok to enter input" $WT_HEIGHT $WT_WIDTH 3>&1 1>&2 2>&3)
+	LISTDIR=$(whiptail --inputbox "Directory to list? Eg. /mnt/yourfolder" --title "Navigate with TAB to hit ok to enter input" $WT_HEIGHT $WT_WIDTH 3>&1 1>&2 2>&3)
 	LISTDIR1=$(ls -la "$LISTDIR")
-	whiptail --msgbox "$LISTDIR1" $WT_HEIGHT $WT_WIDTH --scrolltext
+	whiptail --msgbox "$LISTDIR1" $WT_HEIGHT $WT_WIDTH --scrolltext --title "Scroll with your mouse or page up/down or arrow keys"
 }
 
 ################################ Show connected devices 3.9
 
 do_blkid() {
   BLKID=$(blkid)
-  whiptail --msgbox "$BLKID" $WT_HEIGHT $WT_WIDTH --scrolltext
+  whiptail --msgbox "$BLKID" $WT_HEIGHT $WT_WIDTH --scrolltext --title "Scroll with your mouse or page up/down or arrow keys"
 }
 
 ################################ Show disk usage 3.10
 
 do_df() {
   DF=$(df -h)
-  whiptail --msgbox "$DF" $WT_HEIGHT $WT_WIDTH --scrolltext
+  whiptail --msgbox "$DF" $WT_HEIGHT $WT_WIDTH --scrolltext --title "Scroll with your mouse or page up/down or arrow keys"
 }
 
 ################################ Show system performance 3.11
@@ -684,19 +684,19 @@ fi
 ################################ Disable IPV6 3.12
 
 do_disable_ipv6() {
- if grep -q net.ipv6.conf.all.disable_ipv6 = 1 "/etc/sysctl.conf"; then
+ if grep -q "net.ipv6.conf.all.disable_ipv6 = 1" "/etc/sysctl.conf"; then
    sleep 0
  else
  echo "net.ipv6.conf.all.disable_ipv6 = 1" >> /etc/sysctl.conf
  fi
 
- if grep -q net.ipv6.conf.default.disable_ipv6 = 1 "/etc/sysctl.conf"; then
+ if grep -q "net.ipv6.conf.default.disable_ipv6 = 1" "/etc/sysctl.conf"; then
    sleep 0
  else
  echo "net.ipv6.conf.default.disable_ipv6 = 1" >> /etc/sysctl.conf
  fi
 
-  if grep -q net.ipv6.conf.lo.disable_ipv6 = 1 = 1 "/etc/sysctl.conf"; then
+  if grep -q "net.ipv6.conf.lo.disable_ipv6 = 1" "/etc/sysctl.conf"; then
    sleep 0
  else
  echo "net.ipv6.conf.lo.disable_ipv6 = 1" >> /etc/sysctl.conf
@@ -888,7 +888,7 @@ fi
 ################################  Fail2Ban SSH 3.28
 
 do_fail2ban_ssh() {
-PORT1=$(whiptail --title "SSH port? Default port is 22" --inputbox "Navigate with TAB to hit ok to enter input" $WT_HEIGHT $WT_WIDTH 22)
+PORT1=$(whiptail --inputbox "SSH port? Default port is 22" --title "Navigate with TAB to hit ok to enter input" $WT_HEIGHT $WT_WIDTH 22)
 
 if [ $(dpkg-query -W -f='${Status}' fail2ban 2>/dev/null | grep -c "ok installed") -eq 1 ]; then
       echo "Fail2Ban is already installed!"
@@ -912,7 +912,7 @@ fi
 ################################  Google auth SSH 3.29
 
 do_2fa() {
-USERNAME=$(whiptail --title "Username you want to enable 2 factor authentication for?" --inputbox "Navigate with TAB to hit ok to enter input" $WT_HEIGHT $WT_WIDTH)
+USERNAME=$(whiptail --inputbox "Username you want to enable 2 factor authentication for?" --title "Navigate with TAB to hit ok to enter input" $WT_HEIGHT $WT_WIDTH)
 
   whiptail --msgbox "WARNING \
   Please make sure to save the codes presented to you before logging out. \
@@ -1045,7 +1045,7 @@ do_install() {
 ################################ Install package 4.1
 
 do_install_package() {
-	PACKAGE=$(whiptail --title "Package name?" --inputbox "Navigate with TAB to hit ok to enter input" $WT_HEIGHT $WT_WIDTH)
+	PACKAGE=$(whiptail --inputbox "Package name?" --title "Navigate with TAB to hit ok to enter input" $WT_HEIGHT $WT_WIDTH)
 
 	if [ $(dpkg-query -W -f='${Status}' $PACKAGE 2>/dev/null | grep -c "ok installed") -eq 1 ]; then
         echo "$PACKAGE is already installed!"
@@ -1103,7 +1103,7 @@ fi
 ################################ Change SSH port 4.5
 
 do_ssh() {
-PORT=$(whiptail --title "New SSH port?" --inputbox "Navigate with TAB to hit ok to enter input" $WT_HEIGHT $WT_WIDTH)
+PORT=$(whiptail --inputbox "New SSH port?" --title "Navigate with TAB to hit ok to enter input" $WT_HEIGHT $WT_WIDTH)
   	ufw allow $PORT/tcp
   	ufw deny 22
   	sed -i "s|22|$PORT|g" /etc/ssh/sshd_config
@@ -1113,7 +1113,7 @@ PORT=$(whiptail --title "New SSH port?" --inputbox "Navigate with TAB to hit ok 
 ################################ Install ClamAV 4.6
 
 do_clamav() {
-TOMAIL=$(whiptail --title "What email should receive mail when system is infected?" --inputbox "Navigate with TAB to hit ok to enter input" $WT_HEIGHT $WT_WIDTH)
+TOMAIL=$(whiptail --inputbox "What email should receive mail when system is infected?" --title "Navigate with TAB to hit ok to enter input" $WT_HEIGHT $WT_WIDTH)
 
   if [ $(dpkg-query -W -f='${Status}' clamav 2>/dev/null | grep -c "ok installed") -eq 1 ]; then
     apt-get remove clamav clamav-freshclam -y
