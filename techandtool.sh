@@ -160,14 +160,14 @@ else
         i=$(( i + 1 ))
         echo $i
     done < <(apt-get install whiptail -y)
-  } | whiptail --title "Progress" --gauge "Please wait while installing Whiptail..." $WT_HEIGHT $WT_WIDTH
+  } | whiptail --title "Progress" --gauge "Please wait while installing Whiptail..." $WT_HEIGHT $WT_WIDTH 0
 
 fi
 
 ################################################ Check if root 1.6
 
 if [ "$(whoami)" != "root" ]; then
-        whiptail --msgbox "Sorry you are not root. You must type: sudo techandtool" $WT_HEIGHT $WT_WIDTH
+        whiptail --msgbox "Sorry you are not root. You must type: sudo techandtool" $WT_HEIGHT $WT_WIDTH 0
         exit
 fi
 
@@ -600,7 +600,7 @@ do_rpi_update() {
         i=$(( i + 1 ))
         echo $i
     done < <(rpi-update)
-    } | whiptail --title "Progress" --gauge "Please wait while updating your RPI firmware and kernel" $WT_HEIGHT $WT_WIDTH
+  } | whiptail --title "Progress" --gauge "Please wait while updating your RPI firmware and kernel" $WT_HEIGHT $WT_WIDTH 0
 else
     apt-get install rpi-update -y
 
@@ -610,7 +610,7 @@ else
         i=$(( i + 1 ))
         echo $i
     done < <(rpi-update)
-    } | whiptail --title "Progress" --gauge "Please wait while updating your RPI firmware and kernel" $WT_HEIGHT $WT_WIDTH
+  } | whiptail --title "Progress" --gauge "Please wait while updating your RPI firmware and kernel" $WT_HEIGHT $WT_WIDTH 0
 fi
 }
 
@@ -675,7 +675,7 @@ else
         i=$(( $i + 1 ))
         echo $i
     done < <(apt-get install htop -y)
-  } | whiptail --title "Progress" --gauge "Please wait while installing Htop..." $WT_HEIGHT $WT_WIDTH
+  } | whiptail --title "Progress" --gauge "Please wait while installing Htop..." $WT_HEIGHT $WT_WIDTH 0
 
     htop
 fi
@@ -876,11 +876,11 @@ fi
 ################################  Fail2Ban SSH 3.28
 
 do_fail2ban_ssh() {
-PORT1=$(whiptail --inputbox "SSH port? Default port is 22" $WT_HEIGHT $WT_WIDTH 22)
+PORT1=$(whiptail --inputbox "SSH port? Default port is 22" $WT_HEIGHT $WT_WIDTH 22 3>&1 1>&2 2>&3)
 
 if [ $(dpkg-query -W -f='${Status}' fail2ban 2>/dev/null | grep -c "ok installed") -eq 1 ]; then
       echo "Fail2Ban is already installed!"
-      sed -i 's|port     = ssh|port     = "$PORT1"|g' /etc/fail2ban/jail.local
+      sed -i "s|port     = ssh|port     = $PORT1|g" /etc/fail2ban/jail.local
       sed -i 's|bantime  = 600|bantime  = 1200|g' /etc/fail2ban/jail.local
       sed -i 's|maxretry = 3|maxretry = 5"|g' /etc/fail2ban/jail.local
       service fail2ban restart
@@ -888,7 +888,7 @@ if [ $(dpkg-query -W -f='${Status}' fail2ban 2>/dev/null | grep -c "ok installed
 else
       apt-get install fail2ban -y
       cp /etc/fail2ban/jail.conf /etc/fail2ban/jail.local
-      sed -i 's|port     = ssh|port     = "$PORT1"|g' /etc/fail2ban/jail.local
+      sed -i "s|port     = ssh|port     = $PORT1|g" /etc/fail2ban/jail.local
       sed -i 's|bantime  = 600|bantime  = 1200|g' /etc/fail2ban/jail.local
       sed -i 's|maxretry = 3|maxretry = 5"|g' /etc/fail2ban/jail.local
       service fail2ban restart
@@ -899,6 +899,8 @@ fi
 ################################  Google auth SSH 3.29
 
 do_2fa() {
+USERNAME=$(whiptail --inputbox "Username you want to enable 2 factor authentication for?" $WT_HEIGHT $WT_WIDTH 3>&1 1>&2 2>&3)
+
 whiptail --msgbox "\
 WARNING\
 Please make sure to save the codes presented to you before logging out.
@@ -918,7 +920,6 @@ if [ $(dpkg-query -W -f='${Status}' libpam-google-authenticator 2>/dev/null | gr
       echo "libpam-google-authenticator is already installed!"
 else
     apt-get install libpam-google-authenticator -y
-    USERNAME=$(whiptail --inputbox "Username you want to enable 2 factor authentication for?" $WT_HEIGHT $WT_WIDTH)
 sudo -u $USERNAME google-authenticator > /var/google-authenticator << EOF
 y
 y
@@ -1032,13 +1033,12 @@ do_install() {
 ################################ Install package 4.1
 
 do_install_package() {
-	PACKAGE=$(whiptail --inputbox "Package name?" $WT_HEIGHT $WT_WIDTH)
+	PACKAGE=$(whiptail --inputbox "Package name?" $WT_HEIGHT $WT_WIDTH 3>&1 1>&2 2>&3)
 
 	if [ $(dpkg-query -W -f='${Status}' $PACKAGE 2>/dev/null | grep -c "ok installed") -eq 1 ]; then
         echo "$PACKAGE is already installed!"
-
 else
-	apt-get install $PACKAGE -y
+	apt-get install "$PACKAGE" -y
   whiptail --msgbox "$PACKAGE is now installed..." $WT_HEIGHT $WT_WIDTH
 fi
 }
@@ -1090,8 +1090,8 @@ fi
 ################################ Change SSH port 4.5
 
 do_ssh() {
-PORT=$(whiptail --inputbox "New SSH port?" $WT_HEIGHT $WT_WIDTH)
-  	ufw allow $PORT/tcp
+PORT=$(whiptail --inputbox "New SSH port?" $WT_HEIGHT $WT_WIDTH 3>&1 1>&2 2>&3)
+  	ufw allow "$PORT"/tcp
   	ufw deny 22
   	sed -i "s|22|$PORT|g" /etc/ssh/sshd_config
   whiptail --msgbox "SSH port is now changed to $PORT and your firewall rules are updated..." $WT_HEIGHT $WT_WIDTH
@@ -1100,7 +1100,7 @@ PORT=$(whiptail --inputbox "New SSH port?" $WT_HEIGHT $WT_WIDTH)
 ################################ Install ClamAV 4.6
 
 do_clamav() {
-TOMAIL=$(whiptail --inputbox "What email should receive mail when system is infected?" $WT_HEIGHT $WT_WIDTH)
+TOMAIL=$(whiptail --inputbox "What email should receive mail when system is infected?" $WT_HEIGHT $WT_WIDTH 3>&1 1>&2 2>&3)
 
   if [ $(dpkg-query -W -f='${Status}' clamav 2>/dev/null | grep -c "ok installed") -eq 1 ]; then
     apt-get remove clamav clamav-freshclam -y
@@ -1148,8 +1148,7 @@ CLAMSCAN
 ################################ Install Fail2Ban 4.7
 
 do_fail2ban() {
-  if [ $(dpkg-query -W -f='${Status}' fail2ban 2>/dev/null | grep -c "ok installed") -eq 1 ];
-then
+  if [ $(dpkg-query -W -f='${Status}' fail2ban 2>/dev/null | grep -c "ok installed") -eq 1 ]; then
         echo "Fail2ban server is already installed!"
 else
   apt-get install fail2ban -y
@@ -1164,9 +1163,12 @@ do_nginx() {
 then
         echo "Nginx server is already installed!"
 else
+  whiptail --msgbox "In order for Nginx to work, apache2 needs to be shutdown. We will shutdown apache2 if needed..."
+  service apache2 stop
   apt-get install nginx -y
   ufw allow 443/tcp
   ufw allow 80/tcp
+  dpkg --configure --pending
 
   whiptail --msgbox "Nginx is now installed, also port 443 and 80 are open in the firewall..." $WT_HEIGHT $WT_WIDTH
 fi
@@ -1232,10 +1234,8 @@ whiptail --msgbox "Teamspeak is now installed..." $WT_HEIGHT $WT_WIDTH
 ################################ Install NFS client 4.10
 
 do_install_nfs_client() {
-  if [ $(dpkg-query -W -f='${Status}' nfs-common 2>/dev/null | grep -c "ok installed") -eq 1 ];
-then
+  if [ $(dpkg-query -W -f='${Status}' nfs-common 2>/dev/null | grep -c "ok installed") -eq 1 ]; then
         echo "NFS client is already installed!"
-
 else
   apt-get install nfs-common -y
 
@@ -1246,8 +1246,7 @@ fi
 ################################ Install NFS server 4.11
 
 do_install_nfs_server() {
-  if [ $(dpkg-query -W -f='${Status}' nfs-kernel-server 2>/dev/null | grep -c "ok installed") -eq 1 ];
-then
+  if [ $(dpkg-query -W -f='${Status}' nfs-kernel-server 2>/dev/null | grep -c "ok installed") -eq 1 ]; then
         echo "NFS server is already installed!"
 
 else
@@ -1303,8 +1302,7 @@ fi
 ################################ Install Network-manager 4.15
 
 do_install_networkmanager() {
-  if [ $(dpkg-query -W -f='${Status}' network-manager 2>/dev/null | grep -c "ok installed") -eq 1 ];
-  then
+  if [ $(dpkg-query -W -f='${Status}' network-manager 2>/dev/null | grep -c "ok installed") -eq 1 ]; then
         echo "network-manager is already installed!"
   else
         apt-get install network-manager -y
@@ -1328,8 +1326,7 @@ if [ $(dpkg-query -W -f='${Status}' openvpn 2>/dev/null | grep -c "ok installed"
 else
   apt-get install openvpn -y
 
-  if [ $(dpkg-query -W -f='${Status}' network-manager-openvpn 2>/dev/null | grep -c "ok installed") -eq 1 ];
-  then
+  if [ $(dpkg-query -W -f='${Status}' network-manager-openvpn 2>/dev/null | grep -c "ok installed") -eq 1 ]; then
         echo "network-manager-openvpn is already installed!"
   else
         apt-get install network-manager-openvpn -y
@@ -1342,15 +1339,13 @@ fi
 ################################ Install Plex 4.18
 
 do_install_plex() {
-  if [ $(dpkg-query -W -f='${Status}' wget 2>/dev/null | grep -c "ok installed") -eq 1 ];
-then
+  if [ $(dpkg-query -W -f='${Status}' wget 2>/dev/null | grep -c "ok installed") -eq 1 ]; then
         echo "Wget is already installed!"
 else
   apt-get install wget -y
 fi
 
-if [ $(dpkg-query -W -f='${Status}' nfs-kernel-server 2>/dev/null | grep -c "ok installed") -eq 1 ];
-then
+if [ $(dpkg-query -W -f='${Status}' nfs-kernel-server 2>/dev/null | grep -c "ok installed") -eq 1 ]; then
       echo "Git is already installed!"
 else
 apt-get install git -y
@@ -1360,8 +1355,7 @@ fi
 	dpkg -i /tmp/plexmediaserver_0.9.16.6.1993-5089475_amd64.deb
 	cd /root
 
-if 		[ -d /root/plexupdate ];
-then
+if 		[ -d /root/plexupdate ]; then
 	rm -r /root/plexupdate
 fi
 
@@ -1390,8 +1384,7 @@ whiptail --msgbox "Plex is now installed..." $WT_HEIGHT $WT_WIDTH
 ################################ Install VNC server 4.19
 
 do_install_vnc() {
-  if [ $(dpkg-query -W -f='${Status}' thightvncserver 2>/dev/null | grep -c "ok installed") -eq 1 ];
-then
+  if [ $(dpkg-query -W -f='${Status}' thightvncserver 2>/dev/null | grep -c "ok installed") -eq 1 ]; then
         echo "VNC is already installed!"
 else
   apt-get install xorg lxde-core tightvncserver -y
@@ -1409,8 +1402,7 @@ fi
 ################################ Install Zram-config 4.20
 
 do_install_zram() {
-if [ $(dpkg-query -W -f='${Status}' zram-config 2>/dev/null | grep -c "ok installed") -eq 1 ];
-then
+if [ $(dpkg-query -W -f='${Status}' zram-config 2>/dev/null | grep -c "ok installed") -eq 1 ]; then
       echo "Zram is already installed!"
 else
 apt-get install zram-config -y
@@ -1433,7 +1425,7 @@ wget -q https://www.virtualbox.org/download/oracle_vbox.asc -O- | sudo apt-key a
         i=$(( $i + 1 ))
         echo $i
     done < <(apt-get update)
-  } | whiptail --title "Progress" --gauge "Please wait while updating..." $WT_HEIGHT $WT_WIDTH
+  } | whiptail --title "Progress" --gauge "Please wait while updating..." $WT_HEIGHT $WT_WIDTH 0
 
 # Install req packages
     {
@@ -1442,7 +1434,7 @@ wget -q https://www.virtualbox.org/download/oracle_vbox.asc -O- | sudo apt-key a
         i=$(( i + 1 ))
         echo $i
     done < <(apt-get install virtualbox-dkms dkms build-essential linux-headers-generic linux-headers-$(uname -r) virtualbox-5.1 -y)
-  } | whiptail --title "Progress" --gauge "Please wait while installing the required packages..." $WT_HEIGHT $WT_WIDTH
+  } | whiptail --title "Progress" --gauge "Please wait while installing the required packages..." $WT_HEIGHT $WT_WIDTH 0
 
 sudo modprobe vboxdrv
 
@@ -1732,7 +1724,7 @@ do_update() {
         i=$(( $i + 1 ))
         echo $i
     done < <(apt-get autoclean)
-    } | whiptail --title "Progress" --gauge "Please wait while auto cleaning" $WT_HEIGHT $WT_WIDTH
+  } | whiptail --title "Progress" --gauge "Please wait while auto cleaning" 6 60 0
 
     {
     i=1
@@ -1740,7 +1732,7 @@ do_update() {
         i=$(( $i + 1 ))
         echo $i
     done < <(apt-get autoremove -y)
-    } | whiptail --title "Progress" --gauge "Please wait while auto removing un-needed dependancies" $WT_HEIGHT $WT_WIDTH
+  } | whiptail --title "Progress" --gauge "Please wait while auto removing un-needed dependancies" 6 60 0
 
     {
     i=1
@@ -1748,7 +1740,7 @@ do_update() {
         i=$(( $i + 1 ))
         echo $i
     done < <(apt-get update)
-    } | whiptail --title "Progress" --gauge "Please wait while updating" $WT_HEIGHT $WT_WIDTH
+  } | whiptail --title "Progress" --gauge "Please wait while updating" 6 60 0
 
     {
     i=1
@@ -1756,7 +1748,7 @@ do_update() {
         i=$(( $i + 1 ))
         echo $i
     done < <(apt-get upgrade -y)
-    } | whiptail --title "Progress" --gauge "Please wait while ugrading" $WT_HEIGHT $WT_WIDTH
+  } | whiptail --title "Progress" --gauge "Please wait while ugrading" 6 60 0
 
     {
     i=1
@@ -1764,7 +1756,7 @@ do_update() {
         i=$(( $i + 1 ))
         echo $i
     done < <(apt-get install -fy)
-    } | whiptail --title "Progress" --gauge "Please wait while forcing install of dependancies" $WT_HEIGHT $WT_WIDTH
+  } | whiptail --title "Progress" --gauge "Please wait while forcing install of dependancies" 6 60 0
 
     {
     i=1
@@ -1772,7 +1764,7 @@ do_update() {
         i=$(( $i + 1 ))
         echo $i
     done < <(apt-get dist-upgrade -y)
-    } | whiptail --title "Progress" --gauge "Please wait while doing dist-upgrade" $WT_HEIGHT $WT_WIDTH
+  } | whiptail --title "Progress" --gauge "Please wait while doing dist-upgrade" 6 60 0
 
     {
     i=1
@@ -1780,7 +1772,7 @@ do_update() {
         i=$(( $i + 1 ))
         echo $i
     done < <(aptitude full-upgrade -y)
-    } | whiptail --title "Progress" --gauge "Please wait while upgrading with aptitude" $WT_HEIGHT $WT_WIDTH
+  } | whiptail --title "Progress" --gauge "Please wait while upgrading with aptitude" 6 60 0
 
 	dpkg --configure --pending
 

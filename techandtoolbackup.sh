@@ -1724,7 +1724,7 @@ do_update() {
         i=$(( $i + 1 ))
         echo $i
     done < <(apt-get autoclean)
-  } | whiptail --title "Progress" --gauge "Please wait while auto cleaning" $WT_HEIGHT $WT_WIDTH 0
+  } | whiptail --title "Progress" --gauge "Please wait while auto cleaning" 6 60 0
 
     {
     i=1
@@ -1732,7 +1732,7 @@ do_update() {
         i=$(( $i + 1 ))
         echo $i
     done < <(apt-get autoremove -y)
-  } | whiptail --title "Progress" --gauge "Please wait while auto removing un-needed dependancies" $WT_HEIGHT $WT_WIDTH 0
+  } | whiptail --title "Progress" --gauge "Please wait while auto removing un-needed dependancies" 6 60 0
 
     {
     i=1
@@ -1740,7 +1740,7 @@ do_update() {
         i=$(( $i + 1 ))
         echo $i
     done < <(apt-get update)
-  } | whiptail --title "Progress" --gauge "Please wait while updating" $WT_HEIGHT $WT_WIDTH 0
+  } | whiptail --title "Progress" --gauge "Please wait while updating" 6 60 0
 
     {
     i=1
@@ -1748,7 +1748,7 @@ do_update() {
         i=$(( $i + 1 ))
         echo $i
     done < <(apt-get upgrade -y)
-  } | whiptail --title "Progress" --gauge "Please wait while ugrading" $WT_HEIGHT $WT_WIDTH 0
+  } | whiptail --title "Progress" --gauge "Please wait while ugrading" 6 60 0
 
     {
     i=1
@@ -1756,7 +1756,7 @@ do_update() {
         i=$(( $i + 1 ))
         echo $i
     done < <(apt-get install -fy)
-  } | whiptail --title "Progress" --gauge "Please wait while forcing install of dependancies" $WT_HEIGHT $WT_WIDTH 0
+  } | whiptail --title "Progress" --gauge "Please wait while forcing install of dependancies" 6 60 0
 
     {
     i=1
@@ -1764,7 +1764,7 @@ do_update() {
         i=$(( $i + 1 ))
         echo $i
     done < <(apt-get dist-upgrade -y)
-  } | whiptail --title "Progress" --gauge "Please wait while doing dist-upgrade" $WT_HEIGHT $WT_WIDTH 0
+  } | whiptail --title "Progress" --gauge "Please wait while doing dist-upgrade" 6 60 0
 
     {
     i=1
@@ -1772,7 +1772,7 @@ do_update() {
         i=$(( $i + 1 ))
         echo $i
     done < <(aptitude full-upgrade -y)
-  } | whiptail --title "Progress" --gauge "Please wait while upgrading with aptitude" $WT_HEIGHT $WT_WIDTH 0
+  } | whiptail --title "Progress" --gauge "Please wait while upgrading with aptitude" 6 60 0
 
 	dpkg --configure --pending
 
