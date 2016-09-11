@@ -1735,7 +1735,7 @@ do_update() {
     while read -r line; do
         i=$(( $i + 1 ))
         echo $i
-    done < <(apt-get autoclean)
+    done < <(sleep 1 && apt-get autoclean)
   } | whiptail --title "Progress" --gauge "Please wait while auto cleaning" 6 60 0
 
     {
@@ -1743,7 +1743,7 @@ do_update() {
     while read -r line; do
         i=$(( $i + 1 ))
         echo $i
-    done < <(apt-get autoremove -y)
+    done < <(sleep 1 && apt-get autoremove -y)
   } | whiptail --title "Progress" --gauge "Please wait while auto removing un-needed dependancies" 6 60 0
 
     {
@@ -1759,7 +1759,7 @@ do_update() {
     while read -r line; do
         i=$(( $i + 1 ))
         echo $i
-    done < <(apt-get upgrade -y)
+    done < <(sleep 1 && apt-get upgrade -y)
   } | whiptail --title "Progress" --gauge "Please wait while upgrading" 6 60 0
 
     {
@@ -1767,7 +1767,7 @@ do_update() {
     while read -r line; do
         i=$(( $i + 1 ))
         echo $i
-    done < <(apt-get install -fy)
+    done < <(sleep 1 && apt-get install -fy)
   } | whiptail --title "Progress" --gauge "Please wait while forcing install of dependancies" 6 60 0
 
     {
@@ -1775,7 +1775,7 @@ do_update() {
     while read -r line; do
         i=$(( $i + 1 ))
         echo $i
-    done < <(apt-get dist-upgrade -y)
+    done < <(sleep 1 && apt-get dist-upgrade -y)
   } | whiptail --title "Progress" --gauge "Please wait while doing dist-upgrade" 6 60 0
 
     {
