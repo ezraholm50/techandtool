@@ -1790,16 +1790,20 @@ do_update() {
 
 	mkdir -p $SCRIPTS
 
-	if [ -f $SCRIPTS/techandtool.sh ]
-then
+if [ -f $SCRIPTS/techandtool.sh ]; then
         rm $SCRIPTS/techandtool.sh
-        rm /usr/sbin/techandtool
+fi
+
+if [ -f rm /usr/sbin/techandtool ]; then
+        /usr/sbin/techandtool
 fi
         sudo mkdir -p $SCRIPTS
         sudo wget https://github.com/ezraholm50/techandtool/raw/master/techandtool.sh -P $SCRIPTS
         sudo cp $SCRIPTS/techandtool.sh /usr/sbin/techandtool
         chmod +x /usr/sbin/techandtool
-        exit; sleep 3; techandtool
+        printf "Sleeping 2 seconds before reloading\n" &&
+        sleep 2 &&
+        exec sudo techandtool
 }
 
 ################################################ About 7
