@@ -234,8 +234,6 @@ else
           printf "Sleeping 2 seconds before reloading\n" &&
           sleep 2 &&
           exec sudo techandtool
-    else
-          whiptail --msgbox "You can update the tool later via the main menu..." $WT_HEIGHT $WT_WIDTH
     fi
 
 fi
