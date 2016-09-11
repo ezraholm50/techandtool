@@ -192,7 +192,7 @@ fi
 
 ################################ Update notification 1.7
 
-CURRENTVERSION=$(grep -o "VERSION" /home/wzm/Github/techandtool/techandtool.sh)
+CURRENTVERSION=$(grep -o "VERSION" /usr/sbin/techandtool)
 GITHUBVERSION=$(grep -o "VERSION" /tmp/version)
 SCRIPTS="/var/scripts"
 
