@@ -1,9 +1,14 @@
 #!/bin/bash
 #
+# VERSION=1.0.0
+#
 # Tech and Me, 2016 - www.techandme.se
+#
 # Whiptail menu to install various Nextcloud app and do other useful stuf.
+#
 # To do
 # Backup & restore, 2FA, ukupgrade, Collabora, Spreed, Gpxpod
+#
 ##### Index ######
 # 1 Variable / requirements
 # 1.1 Network
@@ -12,7 +17,7 @@
 # 1.4 Whiptail size
 # 1.5 Whiptail check
 # 1.6 Root check
-# 1.7
+# 1.7 Update notification
 # 1.8 Locations
 # 1.9 Ask to reboot
 # 1.10
@@ -83,7 +88,6 @@
 # 5 Update & upgrade
 # 6 About this tool
 # 7 Tech and Tool
-
 ################################################ Variable 1
 ################################ Network 1.1
 
@@ -183,9 +187,54 @@ if [ "$(whoami)" != "root" ]; then
         exit
 fi
 
-################################################ 1.7
+################################ Update notification 1.7
 
+CURRENTVERSION=$(grep -o "VERSION" /home/wzm/Github/techandtool/techandtool.sh)
+GITHUBVERSION=$(grep -o "VERSION" /tmp/version)
 
+if [ $(dpkg-query -W -f='${Status}' wget 2>/dev/null | grep -c "ok installed") -eq 1 ]; then
+      echo "Wget is already installed..."
+else
+    apt-get install curl -y
+fi
+
+  if [ -f /tmp/version ]; then
+          rm /tmp/version
+  fi
+
+    wget https://raw.githubusercontent.com/ezraholm50/techandtool/master/version -P /tmp/
+
+if [ "$CURRENTVERSION" == "$GITHUBVERSION" ]; then
+
+  whiptail --yesno "A new version of this tool is available, download it now?" 20 60 2
+  if [ $? -eq 0 ]; then # yes
+
+  if [ -f $SCRIPTS/techandtool.sh ]; then
+          rm $SCRIPTS/techandtool.sh
+  fi
+
+  if [ -f /usr/sbin/techandtool ]; then
+          /usr/sbin/techandtool
+  fi
+          sudo mkdir -p $SCRIPTS
+          sudo wget https://github.com/ezraholm50/techandtool/raw/master/techandtool.sh -P $SCRIPTS
+          sudo cp $SCRIPTS/techandtool.sh /usr/sbin/techandtool
+          chmod +x /usr/sbin/techandtool
+
+          if [ -f $SCRIPTS/techandtool.sh ]; then
+                  rm $SCRIPTS/techandtool.sh
+          fi
+
+          printf "Sleeping 2 seconds before reloading\n" &&
+          sleep 2 &&
+          exec sudo techandtool
+    else
+          whiptail --msgbox "You can update the tool later via the main menu..." $WT_HEIGHT $WT_WIDTH
+    fi
+else
+          echo "Tool is up to date..."
+
+fi
 
 ################################################ Locations 1.8
 
@@ -1800,6 +1849,11 @@ fi
         sudo wget https://github.com/ezraholm50/techandtool/raw/master/techandtool.sh -P $SCRIPTS
         sudo cp $SCRIPTS/techandtool.sh /usr/sbin/techandtool
         chmod +x /usr/sbin/techandtool
+
+        if [ -f $SCRIPTS/techandtool.sh ]; then
+                rm $SCRIPTS/techandtool.sh
+        fi
+
         printf "Sleeping 2 seconds before reloading\n" &&
         sleep 2 &&
         exec sudo techandtool

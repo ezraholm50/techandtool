@@ -98,3 +98,22 @@
       *) whiptail --msgbox "Programmer error: unrecognized option" 20 60 1 ;;
       esac || whiptail --msgbox "There was an error running option $FUN" 20 60 1
       fi
+
+
+      do_system() {
+        SYSINFO=$(landscape-sysinfo)
+        UPDATESAV=$(bash /etc/update-motd.d/90-updates-available)
+        FSCK=$(bash /etc/update-motd.d/98-fsck-at-reboot)
+        REBOOT=$(bash /etc/update-motd.d/98-reboot-required )
+        RELEASE=$(bash /etc/update-motd.d/91-release-upgrade)
+        HEADER=$(bash /etc/update-motd.d/00-header)
+
+        whiptail --title "System Information" --msgbox "\
+        $HEADER
+        $SYSINFO
+        $UPDATESAV
+        $FSCK
+        $REBOOT
+        $RELEASE\
+        " $WT_HEIGHT $WT_WIDTH
+      }
