@@ -1869,7 +1869,7 @@ do_sysinfo() {
   RELEASE=$(bash /etc/update-motd.d/91-release-upgrade)
   HEADER=$(bash /etc/update-motd.d/00-header)
 
-  whiptail --title "System Information"--msgbox "\
+  whiptail --title "System Information" --msgbox "\
   $HEADER
   $SYSINFO
   $UPDATESAV
