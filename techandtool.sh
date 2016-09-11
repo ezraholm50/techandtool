@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# VERSION=0.9
+# VERSION=1.0.0
 #
 # Tech and Me, 2016 - www.techandme.se
 #
@@ -134,20 +134,23 @@ get_can_expand() {
 
 ################################ Fix nasty locale error over SSH 1.3
 
-if grep -q "#SendEnv LANG LC_*" "/etc/ssh/ssh_config"; then
-  echo "Fix already applied..."
-else
-sed -i "s|SendEnv|#SendEnv|g" /etc/ssh/ssh_config
-service ssh restart
-fi
+if [ $(dpkg-query -W -f='${Status}' openssh-server 2>/dev/null | grep -c "ok installed") -eq 1 ]; then
 
-if grep -q "#AcceptEnv LANG LC_*" "/etc/ssh/sshd_config"; then
-  echo "Fix already applied..."
-else
-sed -i "s|AcceptEnv|#AcceptEnv|g" /etc/ssh/sshd_config
-service ssh restart
-fi
+  if grep -q "#SendEnv LANG LC_*" "/etc/ssh/ssh_config"; then
+    echo "Fix already applied..."
+  else
+    sed -i "s|SendEnv|#SendEnv|g" /etc/ssh/ssh_config
+    service ssh restart
+  fi
 
+  if grep -q "#AcceptEnv LANG LC_*" "/etc/ssh/sshd_config"; then
+    echo "Fix already applied..."
+  else
+    sed -i "s|AcceptEnv|#AcceptEnv|g" /etc/ssh/sshd_config
+    service ssh restart
+  fi
+
+fi
 ################################ Whiptail size 1.4
 
 INTERACTIVE=True
@@ -191,22 +194,25 @@ fi
 
 CURRENTVERSION=$(grep -o "VERSION" /home/wzm/Github/techandtool/techandtool.sh)
 GITHUBVERSION=$(grep -o "VERSION" /tmp/version)
+SCRIPTS="/var/scripts"
 
 if [ $(dpkg-query -W -f='${Status}' wget 2>/dev/null | grep -c "ok installed") -eq 1 ]; then
       echo "Wget is already installed..."
 else
-    apt-get install curl -y
+    apt-get install wget -y
 fi
 
   if [ -f /tmp/version ]; then
           rm /tmp/version
   fi
 
-    wget https://raw.githubusercontent.com/ezraholm50/techandtool/master/version -P /tmp/
+    wget -q https://raw.githubusercontent.com/ezraholm50/techandtool/master/version -P /tmp/
 
 if [ "$CURRENTVERSION" == "$GITHUBVERSION" ]; then
+          echo "Tool is up to date..."
+else
 
-  whiptail --yesno "A new version of this tool is available, download it now?" 20 60 2
+  whiptail --yesno "A new version of this tool is available, download it now?" --title "Update Notification!" 10 60 2
   if [ $? -eq 0 ]; then # yes
 
   if [ -f $SCRIPTS/techandtool.sh ]; then
@@ -214,10 +220,10 @@ if [ "$CURRENTVERSION" == "$GITHUBVERSION" ]; then
   fi
 
   if [ -f /usr/sbin/techandtool ]; then
-          /usr/sbin/techandtool
+          rm /usr/sbin/techandtool
   fi
           sudo mkdir -p $SCRIPTS
-          sudo wget https://github.com/ezraholm50/techandtool/raw/master/techandtool.sh -P $SCRIPTS
+          sudo wget -q https://github.com/ezraholm50/techandtool/raw/master/techandtool.sh -P $SCRIPTS
           sudo cp $SCRIPTS/techandtool.sh /usr/sbin/techandtool
           chmod +x /usr/sbin/techandtool
 
@@ -231,15 +237,12 @@ if [ "$CURRENTVERSION" == "$GITHUBVERSION" ]; then
     else
           whiptail --msgbox "You can update the tool later via the main menu..." $WT_HEIGHT $WT_WIDTH
     fi
-else
-          echo "Tool is up to date..."
 
 fi
 
 ################################################ Locations 1.8
 
 REPO="https://github.com/ezraholm50/vm/raw/master"
-SCRIPTS="/var/scripts"
 
 ################################################ Do finish 1.9
 
@@ -1033,6 +1036,15 @@ ASK_TO_REBOOT=1
 ################################################ Install 4
 
 do_install() {
+
+  {
+  i=1
+  while read -r line; do
+      i=$(( $i + 1 ))
+      echo $i
+  done < <(apt-get update)
+} | whiptail --title "Progress" --gauge "Please wait while updating" 6 60 0
+
   FUN=$(whiptail --backtitle "Install software packages" --title "Tech and Tool - https://www.techandme.se" --menu "Tech and tool" $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT --cancel-button Back --ok-button Select \
       "I1 Install Package" "User defined" \
       "I2 Install Webmin" "Graphical interface to manage headless systems" \
