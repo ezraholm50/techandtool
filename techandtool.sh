@@ -202,8 +202,8 @@ else
     apt-get install wget -y
 fi
 
-  if [ -f /tmp/version* ]; then
-          rm /tmp/version*
+  if [ -f /tmp/ver* ]; then
+          rm /tmp/ver*
   fi
 
     wget -q https://raw.githubusercontent.com/ezraholm50/techandtool/master/version -P /tmp/
@@ -215,25 +215,23 @@ else
   whiptail --yesno "A new version of this tool is available, download it now?" --title "Update Notification!" 10 60 2
   if [ $? -eq 0 ]; then # yes
 
-  if [ -f $SCRIPTS/techandtool.sh* ]; then
-          rm $SCRIPTS/techandtool.sh*
+  if [ -f $SCRIPTS/techandtool* ]; then
+          rm $SCRIPTS/techandtool*
   fi
 
   if [ -f /usr/sbin/techandtool ]; then
           rm /usr/sbin/techandtool
   fi
-          sudo mkdir -p $SCRIPTS
-          sudo wget -q https://github.com/ezraholm50/techandtool/raw/master/techandtool.sh -P $SCRIPTS
-          sudo cp $SCRIPTS/techandtool.sh /usr/sbin/techandtool
+          mkdir -p $SCRIPTS
+          wget -q https://github.com/ezraholm50/techandtool/raw/master/techandtool.sh -P $SCRIPTS
+          cp $SCRIPTS/techandtool.sh /usr/sbin/techandtool
           chmod +x /usr/sbin/techandtool
 
           if [ -f $SCRIPTS/techandtool.sh ]; then
                   rm $SCRIPTS/techandtool.sh
           fi
-
-          printf "Sleeping 2 seconds before reloading\n" &&
-          sleep 2 &&
-          exec sudo techandtool
+          
+          exec techandtool
     fi
 
 fi
