@@ -1723,7 +1723,6 @@ sleep 2
 ################################# Update 6
 
 do_update() {
-
   if [ $(dpkg-query -W -f='${Status}' aptitude 2>/dev/null | grep -c "ok installed") -eq 1 ]; then
         echo "Aptitude is already installed!"
   else
@@ -1806,7 +1805,22 @@ fi
         exec sudo techandtool
 }
 
-################################################ About 7
+################################################ Reboot 7
+
+do_reboot() {
+	ASK_TO_REBOOT=1
+}
+
+################################################ Poweroff 8
+
+do_poweroff() {
+    whiptail --yesno "Would you like to shutdown now?" 20 60 2
+    if [ $? -eq 0 ]; then # yes
+      shutdown now
+    fi
+}
+
+################################################ About 9
 
 do_about() {
   whiptail --msgbox "\
@@ -1823,7 +1837,39 @@ Nextcloud, ownCloud, Teamspeak, Wordpress, Minecraft etc.\
 " $WT_HEIGHT $WT_WIDTH
 }
 
-################################################ Main menu 8
+################################################ System info 10
+
+do_system() {
+if [ $(dpkg-query -W -f='${Status}' landscape-common 2>/dev/null | grep -c "ok installed") -eq 1 ]; then
+        echo "Landscape-common is already installed..."
+else
+  {
+   i=1
+   while read -r line; do
+       i=$(( $i + 1 ))
+       echo $i
+   done < <(apt-get update && apt-get install landscape-common -y)
+ } | whiptail --title "Progress" --gauge "Please wait while installing landscape..." 6 60 0
+fi
+
+  SYSINFO=$(landscape-sysinfo)
+  UPDATESAV=$(bash /etc/update-motd.d/90-updates-available)
+  FSCK=$(bash /etc/update-motd.d/98-fsck-at-reboot)
+  REBOOT=$(bash /etc/update-motd.d/98-reboot-required )
+  RELEASE=$(bash /etc/update-motd.d/91-release-upgrade)
+  HEADER=$(bash /etc/update-motd.d/00-header)
+
+  whiptail --title "System Information" --msgbox "\
+  $HEADER
+  $SYSINFO
+  $UPDATESAV
+  $FSCK
+  $REBOOT
+  $RELEASE\
+  " $WT_HEIGHT $WT_WIDTH
+}
+
+################################################ Main menu 11
 
 calc_wt_size
 while true; do
@@ -1853,36 +1899,10 @@ while true; do
       7\ *) do_reboot ;;
       8\ *) do_poweroff ;;
       9\ *) do_about ;;
-      10\ *) do_sysinfo ;;
+      10\ *) do_system ;;
       *) whiptail --msgbox "Programmer error: unrecognized option" 20 60 1 ;;
     esac || whiptail --msgbox "There was an error running option $FUN" 20 60 1
  else
    exit 1
   fi
 done
-
-do_sysinfo() {
-  SYSINFO=$(landscape-sysinfo)
-  UPDATESAV=$(bash /etc/update-motd.d/90-updates-available)
-  FSCK=$(bash /etc/update-motd.d/98-fsck-at-reboot)
-  REBOOT=$(bash /etc/update-motd.d/98-reboot-required )
-  RELEASE=$(bash /etc/update-motd.d/91-release-upgrade)
-  HEADER=$(bash /etc/update-motd.d/00-header)
-
-  whiptail --title "System Information" --msgbox "\
-  $HEADER
-  $SYSINFO
-  $UPDATESAV
-  $FSCK
-  $REBOOT
-  $RELEASE\
-  " $WT_HEIGHT $WT_WIDTH
-}
-
-do_reboot() {
-	reboot
-}
-
-do_poweroff() {
-	shutdown now
-}
