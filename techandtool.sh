@@ -1837,7 +1837,7 @@ while true; do
     "7 Reboot" "Reboots your machine" \
     "8 Shutdown" "Shutdown your machine" \
     "9 About Tech and Tool" "Information about this tool" \
-    "10 System Information" "" \
+    "10 System Information" "Show available updates, releases and sys info" \
     3>&1 1>&2 2>&3)
   RET=$?
   if [ $RET -eq 1 ]; then
@@ -1870,12 +1870,12 @@ do_sysinfo() {
   HEADER=$(bash /etc/update-motd.d/00-header)
 
   whiptail --title "System Information"--msgbox "\
+  $HEADER
   $SYSINFO
   $UPDATESAV
   $FSCK
   $REBOOT
-  $RELEASE
-  $HEADER\
+  $RELEASE\
   " $WT_HEIGHT $WT_WIDTH
 }
 
