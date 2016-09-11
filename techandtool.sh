@@ -202,8 +202,8 @@ else
     apt-get install wget -y
 fi
 
-  if [ -f /tmp/version ]; then
-          rm /tmp/version
+  if [ -f /tmp/version* ]; then
+          rm /tmp/version*
   fi
 
     wget -q https://raw.githubusercontent.com/ezraholm50/techandtool/master/version -P /tmp/
@@ -215,8 +215,8 @@ else
   whiptail --yesno "A new version of this tool is available, download it now?" --title "Update Notification!" 10 60 2
   if [ $? -eq 0 ]; then # yes
 
-  if [ -f $SCRIPTS/techandtool.sh ]; then
-          rm $SCRIPTS/techandtool.sh
+  if [ -f $SCRIPTS/techandtool.sh* ]; then
+          rm $SCRIPTS/techandtool.sh*
   fi
 
   if [ -f /usr/sbin/techandtool ]; then
