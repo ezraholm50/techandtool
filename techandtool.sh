@@ -160,14 +160,14 @@ else
         i=$(( i + 1 ))
         echo $i
     done < <(apt-get install whiptail -y)
-  } | whiptail --title "Progress" --gauge "Please wait while installing Whiptail..." $WT_HEIGHT $WT_WIDTH 0
+  } | whiptail --title "Progress" --gauge "Please wait while installing Whiptail..." 6 60 0
 
 fi
 
 ################################################ Check if root 1.6
 
 if [ "$(whoami)" != "root" ]; then
-        whiptail --msgbox "Sorry you are not root. You must type: sudo techandtool" $WT_HEIGHT $WT_WIDTH 0
+        whiptail --msgbox "Sorry you are not root. You must type: sudo techandtool" $WT_HEIGHT $WT_WIDTH
         exit
 fi
 
@@ -600,7 +600,7 @@ do_rpi_update() {
         i=$(( i + 1 ))
         echo $i
     done < <(rpi-update)
-  } | whiptail --title "Progress" --gauge "Please wait while updating your RPI firmware and kernel" $WT_HEIGHT $WT_WIDTH 0
+  } | whiptail --title "Progress" --gauge "Please wait while updating your RPI firmware and kernel" 6 60 0
 else
     apt-get install rpi-update -y
 
@@ -610,7 +610,7 @@ else
         i=$(( i + 1 ))
         echo $i
     done < <(rpi-update)
-  } | whiptail --title "Progress" --gauge "Please wait while updating your RPI firmware and kernel" $WT_HEIGHT $WT_WIDTH 0
+  } | whiptail --title "Progress" --gauge "Please wait while updating your RPI firmware and kernel" 6 60 0
 fi
 }
 
@@ -675,7 +675,7 @@ else
         i=$(( $i + 1 ))
         echo $i
     done < <(apt-get install htop -y)
-  } | whiptail --title "Progress" --gauge "Please wait while installing Htop..." $WT_HEIGHT $WT_WIDTH 0
+  } | whiptail --title "Progress" --gauge "Please wait while installing Htop..." 6 60 0
 
     htop
 fi
@@ -1425,7 +1425,7 @@ wget -q https://www.virtualbox.org/download/oracle_vbox.asc -O- | sudo apt-key a
         i=$(( $i + 1 ))
         echo $i
     done < <(apt-get update)
-  } | whiptail --title "Progress" --gauge "Please wait while updating..." $WT_HEIGHT $WT_WIDTH 0
+  } | whiptail --title "Progress" --gauge "Please wait while updating..." 6 60 0
 
 # Install req packages
     {
@@ -1434,7 +1434,7 @@ wget -q https://www.virtualbox.org/download/oracle_vbox.asc -O- | sudo apt-key a
         i=$(( i + 1 ))
         echo $i
     done < <(apt-get install virtualbox-dkms dkms build-essential linux-headers-generic linux-headers-$(uname -r) virtualbox-5.1 -y)
-  } | whiptail --title "Progress" --gauge "Please wait while installing the required packages..." $WT_HEIGHT $WT_WIDTH 0
+  } | whiptail --title "Progress" --gauge "Please wait while installing the required packages..." 6 60 0
 
 sudo modprobe vboxdrv
 
@@ -1748,7 +1748,7 @@ do_update() {
         i=$(( $i + 1 ))
         echo $i
     done < <(apt-get upgrade -y)
-  } | whiptail --title "Progress" --gauge "Please wait while ugrading" 6 60 0
+  } | whiptail --title "Progress" --gauge "Please wait while upgrading" 6 60 0
 
     {
     i=1
@@ -1785,7 +1785,7 @@ then
 fi
         wget https://github.com/ezraholm50/vm/raw/master/static/techandtool.sh -P $SCRIPTS
         cp $SCRIPTS/techandtool.sh /usr/sbin/techandtool
-        exit | bash $SCRIPTS/techandtool.sh
+        exit && techandtool
 }
 
 ################################################ About 7
