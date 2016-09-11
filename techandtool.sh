@@ -131,15 +131,17 @@ get_can_expand() {
 ################################ Fix nasty locale error over SSH 1.3
 
 if grep -q "#SendEnv LANG LC_*" "/etc/ssh/ssh_config"; then
-  sleep 0
+  echo "Fix already applied..."
 else
 sed -i "s|SendEnv|#SendEnv|g" /etc/ssh/ssh_config
+service ssh restart
 fi
 
 if grep -q "#AcceptEnv LANG LC_*" "/etc/ssh/sshd_config"; then
-  sleep 0
+  echo "Fix already applied..."
 else
 sed -i "s|AcceptEnv|#AcceptEnv|g" /etc/ssh/sshd_config
+service ssh restart
 fi
 
 ################################ Whiptail size 1.4
@@ -161,7 +163,7 @@ calc_wt_size() {
 ################################################ Whiptail check 1.5
 
 	if [ $(dpkg-query -W -f='${Status}' whiptail 2>/dev/null | grep -c "ok installed") -eq 1 ]; then
-        sleep 0
+        echo "Whiptail is already installed..."
 else
 
     {
@@ -695,19 +697,19 @@ fi
 
 do_disable_ipv6() {
  if grep -q "net.ipv6.conf.all.disable_ipv6 = 1" "/etc/sysctl.conf"; then
-   sleep 0
+   echo "Already applied..."
  else
  echo "net.ipv6.conf.all.disable_ipv6 = 1" >> /etc/sysctl.conf
  fi
 
  if grep -q "net.ipv6.conf.default.disable_ipv6 = 1" "/etc/sysctl.conf"; then
-   sleep 0
+   echo "Already applied..."
  else
  echo "net.ipv6.conf.default.disable_ipv6 = 1" >> /etc/sysctl.conf
  fi
 
   if grep -q "net.ipv6.conf.lo.disable_ipv6 = 1" "/etc/sysctl.conf"; then
-   sleep 0
+   echo "Already applied..."
  else
  echo "net.ipv6.conf.lo.disable_ipv6 = 1" >> /etc/sysctl.conf
  fi
@@ -732,13 +734,13 @@ do_find_string() {
 
 do_oom() {
  if grep -q "kernel.panic=10" "/etc/sysctl.d/oom_reboot.conf"; then
-   sleep 0
+   echo "Already applied..."
  else
  echo "kernel.panic=10" >> /etc/sysctl.d/oom_reboot.conf
  fi
 
  if grep -q "vm.panic_on_oom=1" "/etc/sysctl.d/oom_reboot.conf"; then
-   sleep 0
+   echo "Already applied..."
  else
  echo "vm.panic_on_oom=1" >> /etc/sysctl.d/oom_reboot.conf
  fi
@@ -1383,7 +1385,7 @@ fi
   AUTOSTART=yes
 	PLEX
 if 		[ -f /etc/cron.daily/plex.sh ]; then
-   sleep 0
+   echo "Already applied..."
 else
 	echo "bash /root/plexupdate/plexupdate.sh" >> /etc/cron.daily/plex.sh
 	chmod 754 /etc/cron.daily/plex.sh
@@ -1793,11 +1795,11 @@ then
         rm $SCRIPTS/techandtool.sh
         rm /usr/sbin/techandtool
 fi
-        sudo mkdir -p /var/scripts
-        wget https://github.com/ezraholm50/vm/raw/master/static/techandtool.sh -P $SCRIPTS
-        cp $SCRIPTS/techandtool.sh /usr/sbin/techandtool
+        sudo mkdir -p $SCRIPTS
+        sudo wget https://github.com/ezraholm50/techandtool/raw/master/techandtool.sh -P $SCRIPTS
+        sudo cp $SCRIPTS/techandtool.sh /usr/sbin/techandtool
         chmod +x /usr/sbin/techandtool
-        exit && techandtool
+        exit; sleep 3; techandtool
 }
 
 ################################################ About 7
