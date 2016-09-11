@@ -1877,6 +1877,7 @@ do_sysinfo() {
   $RELEASE
   $HEADER\
   " $WT_HEIGHT $WT_WIDTH
+}
 
 do_reboot() {
 	reboot
