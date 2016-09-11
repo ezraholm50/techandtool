@@ -5,10 +5,10 @@
 # To do
 # Backup & restore, 2FA, ukupgrade, Collabora, Spreed, Gpxpod
 ##### Index ######
-# 1 Variable
+# 1 Variable / requirements
 # 1.1 Network
 # 1.2 Raspberry - can get expand
-# 1.3
+# 1.3 Fix nasty locale error over SSH
 # 1.4 Whiptail size
 # 1.5 Whiptail check
 # 1.6 Root check
@@ -128,9 +128,19 @@ get_can_expand() {
   echo 0
 }
 
-################################ 1.3
+################################ Fix nasty locale error over SSH 1.3
 
+if grep -q "#SendEnv LANG LC_*" "/etc/ssh/ssh_config"; then
+  sleep 0
+else
+sed -i "s|SendEnv|#SendEnv|g" /etc/ssh/ssh_config
+fi
 
+if grep -q "#AcceptEnv LANG LC_*" "/etc/ssh/sshd_config"; then
+  sleep 0
+else
+sed -i "s|AcceptEnv|#AcceptEnv|g" /etc/ssh/sshd_config
+fi
 
 ################################ Whiptail size 1.4
 
@@ -1783,8 +1793,10 @@ then
         rm $SCRIPTS/techandtool.sh
         rm /usr/sbin/techandtool
 fi
+        sudo mkdir -p /var/scripts
         wget https://github.com/ezraholm50/vm/raw/master/static/techandtool.sh -P $SCRIPTS
         cp $SCRIPTS/techandtool.sh /usr/sbin/techandtool
+        chmod +x /usr/sbin/techandtool
         exit && techandtool
 }
 
