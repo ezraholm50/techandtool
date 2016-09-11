@@ -216,7 +216,7 @@ do_apps() {
   FUN=$(whiptail --backtitle "Apps" --title "Tech and Tool - https://www.techandme.se" --menu "Tech and tool" $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT --cancel-button Back --ok-button Select \
   "P1 Collabora" "Docker" \
   "P2 Spreed-webrtc" "Spreedme" \
-  "P3 Gpxpod" ""\
+  "P3 Gpxpod" "" \
     3>&1 1>&2 2>&3)
   RET=$?
   if [ $RET -eq 1 ]; then
@@ -1837,6 +1837,7 @@ while true; do
     "7 Reboot" "Reboots your machine" \
     "8 Shutdown" "Shutdown your machine" \
     "9 About Tech and Tool" "Information about this tool" \
+    "10 System Information" "" \
     3>&1 1>&2 2>&3)
   RET=$?
   if [ $RET -eq 1 ]; then
@@ -1852,12 +1853,30 @@ while true; do
       7\ *) do_reboot ;;
       8\ *) do_poweroff ;;
       9\ *) do_about ;;
+      10\ *) do_sysinfo ;;
       *) whiptail --msgbox "Programmer error: unrecognized option" 20 60 1 ;;
     esac || whiptail --msgbox "There was an error running option $FUN" 20 60 1
  else
    exit 1
   fi
 done
+
+do_sysinfo() {
+  SYSINFO=$(landscape-sysinfo)
+  UPDATESAV=$(bash /etc/update-motd.d/90-updates-available)
+  FSCK=$(bash /etc/update-motd.d/98-fsck-at-reboot)
+  REBOOT=$(bash /etc/update-motd.d/98-reboot-required )
+  RELEASE=$(bash /etc/update-motd.d/91-release-upgrade)
+  HEADER=$(bash /etc/update-motd.d/00-header)
+
+  whiptail --title "System Information"--msgbox "\
+  $SYSINFO
+  $UPDATESAV
+  $FSCK
+  $REBOOT
+  $RELEASE
+  $HEADER\
+  " $WT_HEIGHT $WT_WIDTH
 
 do_reboot() {
 	reboot
