@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# VERSION=1.0.0
+# VERSION=0.9
 #
 # Tech and Me, 2016 - www.techandme.se
 #
