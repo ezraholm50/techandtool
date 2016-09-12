@@ -1870,27 +1870,23 @@ do_update() {
 
 	dpkg --configure --pending
 
-	mkdir -p $SCRIPTS
+  if [ -f $SCRIPTS/techandtool* ]; then
+          rm $SCRIPTS/techandtool*
+  fi
 
-if [ -f $SCRIPTS/techandtool.sh ]; then
-        rm $SCRIPTS/techandtool.sh
-fi
+  if [ -f /usr/sbin/techandtool ]; then
+          rm /usr/sbin/techandtool
+  fi
+          mkdir -p $SCRIPTS
+          wget -q https://github.com/ezraholm50/techandtool/raw/master/techandtool.sh -P $SCRIPTS
+          cp $SCRIPTS/techandtool.sh /usr/sbin/techandtool
+          chmod +x /usr/sbin/techandtool
 
-if [ -f rm /usr/sbin/techandtool ]; then
-        /usr/sbin/techandtool
-fi
-        sudo mkdir -p $SCRIPTS
-        sudo wget https://github.com/ezraholm50/techandtool/raw/master/techandtool.sh -P $SCRIPTS
-        sudo cp $SCRIPTS/techandtool.sh /usr/sbin/techandtool
-        chmod +x /usr/sbin/techandtool
+          if [ -f $SCRIPTS/techandtool.sh ]; then
+                  rm $SCRIPTS/techandtool.sh
+          fi
 
-        if [ -f $SCRIPTS/techandtool.sh ]; then
-                rm $SCRIPTS/techandtool.sh
-        fi
-
-        printf "Sleeping 2 seconds before reloading\n" &&
-        sleep 2 &&
-        exec sudo techandtool
+          exec techandtool
 }
 
 ################################################ Reboot 7
