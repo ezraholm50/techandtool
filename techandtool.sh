@@ -20,14 +20,14 @@
 # 1.7 Update notification
 # 1.8 Locations
 # 1.9 Ask to reboot
-# 1.10
+# 1.10 Vacant
 # 2 Apps
 # 2.1 Collabora
 # 2.2 Spreed-webrtc
 # 2.3 Gpxpod
-# 2.4
-# 2.5
-# 2.6
+# 2.4 Vacant
+# 2.5 Vacant
+# 2.6 Vacant
 # 3 Tools
 # 3.1 Show LAN details
 # 3.2 Show WAN details
@@ -47,10 +47,10 @@
 # 3.12 Disable IPV6
 # 3.13 Find string in files
 # 3.14 Reboot on out of memory
-# 3.15
-# 3.16
-# 3.17
-# 3.18
+# 3.15 Vacant
+# 3.16 Vacant
+# 3.17 Vacant
+# 3.18 Vacant
 # 3.19 Set dns to google and opendns
 # 3.20 Progressbar
 # 3.21 Boot terminal
@@ -58,8 +58,8 @@
 # 3.23 Set swappiness
 # 3.24 Delete line containing string
 # 3.25 Upgrade kernel
-# 3.26
-# 3.27
+# 3.26 Vacant
+# 3.27 Vacant
 # 4 Install packages menu
 # 4.1 Install packages
 # 4.2 Install Webmin
@@ -74,7 +74,7 @@
 # 4.11 Install NFS server
 # 4.12 Install DDclient
 # 4.13 Install Atomic-Toolkit
-# 4.14 Install
+# 4.14 Install Vacant
 # 4.15 Install Network-manager
 # 4.16 Install Nextcloud
 # 4.17 Install OpenVpn
@@ -135,7 +135,6 @@ get_can_expand() {
 ################################ Fix nasty locale error over SSH 1.3
 
 if [ $(dpkg-query -W -f='${Status}' openssh-server 2>/dev/null | grep -c "ok installed") -eq 1 ]; then
-
   if grep -q "#SendEnv LANG LC_*" "/etc/ssh/ssh_config"; then
     echo "Fix already applied..."
   else
@@ -149,8 +148,8 @@ if [ $(dpkg-query -W -f='${Status}' openssh-server 2>/dev/null | grep -c "ok ins
     sed -i "s|AcceptEnv|#AcceptEnv|g" /etc/ssh/sshd_config
     service ssh restart
   fi
-
 fi
+
 ################################ Whiptail size 1.4
 
 INTERACTIVE=True
