@@ -1937,7 +1937,7 @@ else
 fi
 
   HEADER=$(bash /etc/update-motd.d/00-header)
-  VERSION=$(grep "# VERSION =" "/usr/sbin/techandtool")
+  VERSION=$(grep -m1 "# VERSION =" "/usr/sbin/techandtool")
   SYSINFO=$(landscape-sysinfo)
   UPDATESAV=$(bash /etc/update-motd.d/90-updates-available)
   FSCK=$(bash /etc/update-motd.d/98-fsck-at-reboot)
