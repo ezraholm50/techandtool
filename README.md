@@ -14,7 +14,6 @@
 * Every time you want to use the installer run: sudo techandtool
 
 # This script can:
-***** Index ******
 * 1 Variable / requirements
 * 1.1 Network
 * 1.2 Raspberry - can get expand
@@ -27,9 +26,9 @@
 * 1.9 Ask to reboot
 * 1.10 Vacant
 * 2 Apps
-* 2.1 Collabora
-* 2.2 Spreed-webrtc
-* 2.3 Gpxpod
+* 2.1 Collabora (Under construction)
+* 2.2 Spreed-webrtc (Under construction)
+* 2.3 Gpxpod (Under construction)
 * 2.4 Vacant
 * 2.5 Vacant
 * 2.6 Vacant
@@ -41,7 +40,7 @@
 * 3.5 Connect to WLAN
 * 3.6 Raspberry specific
 * 3.61 Resize root fs
-* 3.62 External USB HD
+* 3.62 External USB HD (Under construction)
 * 3.63 RPI-update
 * 3.64 Raspi-config
 * 3.7 Show folder size

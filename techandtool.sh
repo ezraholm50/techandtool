@@ -1418,8 +1418,8 @@ else
 apt-get install git -y
 fi
 
-  wget https://downloads.plex.tv/plex-media-server/0.9.16.6.1993-5089475/plexmediaserver_0.9.16.6.1993-5089475_amd64.deb -P /tmp/
-	dpkg -i /tmp/plexmediaserver_0.9.16.6.1993-5089475_amd64.deb
+  wget https://downloads.plex.tv/plex-media-server/1.1.3.2700-6f64a8d/plexmediaserver_1.1.3.2700-6f64a8d_amd64.deb -P /tmp/
+	dpkg -i /tmp/plexmediaserver_1.1.3.2700-6f64a8d_amd64.deb
 	cd /root
 
 if 		[ -d /root/plexupdate ]; then
