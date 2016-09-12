@@ -1,2 +1,0 @@
-apt-get install dkms build-essential linux-headers-generic linux-headers-$(uname -r)
-update-grub
