@@ -214,8 +214,8 @@ else
   whiptail --yesno "A new version of this tool is available, download it now?" --title "Update Notification!" 10 60 2
   if [ $? -eq 0 ]; then # yes
 
-  if [ -f $SCRIPTS/techandtool* ]; then
-          rm $SCRIPTS/techandtool*
+  if [ -f $SCRIPTS/techandtool.sh ]; then
+          rm $SCRIPTS/techandtool.sh
   fi
 
   if [ -f /usr/sbin/techandtool ]; then
@@ -1870,8 +1870,8 @@ do_update() {
 
 	dpkg --configure --pending
 
-  if [ -f $SCRIPTS/techandtool* ]; then
-          rm $SCRIPTS/techandtool*
+  if [ -f $SCRIPTS/techandtool.sh ]; then
+          rm $SCRIPTS/techandtool.sh
   fi
 
   if [ -f /usr/sbin/techandtool ]; then
