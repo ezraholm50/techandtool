@@ -1945,7 +1945,9 @@ fi
 
   whiptail --title "System Information" --msgbox "\
   $HEADER
+
   $SYSINFO
+  
   $UPDATESAV
   $FSCK
   $REBOOT
