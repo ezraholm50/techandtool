@@ -191,8 +191,8 @@ fi
 
 ################################ Update notification 1.7
 
-CURRENTVERSION=$(grep "VERSION" /usr/sbin/techandtool)
-GITHUBVERSION=$(grep "VERSION" /tmp/version)
+CURRENTVERSION=$(grep "# VERSION=" /usr/sbin/techandtool)
+GITHUBVERSION=$(grep "# VERSION=" /tmp/version)
 SCRIPTS="/var/scripts"
 
 if [ $(dpkg-query -W -f='${Status}' wget 2>/dev/null | grep -c "ok installed") -eq 1 ]; then
