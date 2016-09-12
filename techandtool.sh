@@ -192,53 +192,52 @@ fi
 
 ################################ Update notification 1.7
 
-#CURRENTVERSION=$(grep -o "VERSION" /usr/sbin/techandtool)
-#GITHUBVERSION=$(grep -o "VERSION" /tmp/version)
-#SCRIPTS="/var/scripts"
+CURRENTVERSION=$(grep "VERSION" /usr/sbin/techandtool)
+GITHUBVERSION=$(grep "VERSION" /tmp/version)
+SCRIPTS="/var/scripts"
 
-#if [ $(dpkg-query -W -f='${Status}' wget 2>/dev/null | grep -c "ok installed") -eq 1 ]; then
-#      echo "Wget is already installed..."
-#else
-#    apt-get install wget -y
-#fi
+if [ $(dpkg-query -W -f='${Status}' wget 2>/dev/null | grep -c "ok installed") -eq 1 ]; then
+      echo "Wget is already installed..."
+else
+    apt-get install wget -y
+fi
 
-#  if [ -f /tmp/ver* ]; then
-#          rm /tmp/ver*
-#  fi
+  if [ -f /tmp/ver* ]; then
+          rm /tmp/ver*
+  fi
 
-#    wget -q https://raw.githubusercontent.com/ezraholm50/techandtool/master/version -P /tmp/
+    wget -q https://raw.githubusercontent.com/ezraholm50/techandtool/master/version -P /tmp/
 
-#if [ "$CURRENTVERSION" == "$GITHUBVERSION" ]; then
-#          echo "Tool is up to date..."
-#else
+if [ "$CURRENTVERSION" == "$GITHUBVERSION" ]; then
+          echo "Tool is up to date..."
+else
 
-#  whiptail --yesno "A new version of this tool is available, download it now?" --title "Update Notification!" 10 60 2
-#  if [ $? -eq 0 ]; then # yes
+  whiptail --yesno "A new version of this tool is available, download it now?" --title "Update Notification!" 10 60 2
+  if [ $? -eq 0 ]; then # yes
 
-#  if [ -f $SCRIPTS/techandtool* ]; then
-#          rm $SCRIPTS/techandtool*
-#  fi
+  if [ -f $SCRIPTS/techandtool* ]; then
+          rm $SCRIPTS/techandtool*
+  fi
 
-#  if [ -f /usr/sbin/techandtool ]; then
-#          rm /usr/sbin/techandtool
-#  fi
-#          mkdir -p $SCRIPTS
-#          wget -q https://github.com/ezraholm50/techandtool/raw/master/techandtool.sh -P $SCRIPTS
-#          cp $SCRIPTS/techandtool.sh /usr/sbin/techandtool
-#          chmod +x /usr/sbin/techandtool
+  if [ -f /usr/sbin/techandtool ]; then
+          rm /usr/sbin/techandtool
+  fi
+          mkdir -p $SCRIPTS
+          wget -q https://github.com/ezraholm50/techandtool/raw/master/techandtool.sh -P $SCRIPTS
+          cp $SCRIPTS/techandtool.sh /usr/sbin/techandtool
+          chmod +x /usr/sbin/techandtool
 
-#          if [ -f $SCRIPTS/techandtool.sh ]; then
-#                  rm $SCRIPTS/techandtool.sh
-#          fi
+          if [ -f $SCRIPTS/techandtool.sh ]; then
+                  rm $SCRIPTS/techandtool.sh
+          fi
 
-#          exec techandtool
-#    fi
-
-#fi
+          exec techandtool
+    fi
+fi
 
 ################################################ Locations 1.8
 
-REPO="https://github.com/ezraholm50/vm/raw/master"
+
 
 ################################################ Do finish 1.9
 
