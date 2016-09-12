@@ -74,7 +74,7 @@
 # 4.11 Install NFS server
 # 4.12 Install DDclient
 # 4.13 Install Atomic-Toolkit
-# 4.14 Install Vacant
+# 4.14 Install Plesk
 # 4.15 Install Network-manager
 # 4.16 Install Nextcloud
 # 4.17 Install OpenVpn
@@ -1062,6 +1062,7 @@ do_install() {
       "I20 Install Virtualbox" "Virtualize any OS Windows, ubuntu etc." \
       "I21 Install Virtualbox extension pack" "Expand Virtualbox's capability's" \
       "I22 Install Virtualbox guest additions" "Enables features such as USB, shared folders etc. in side the guest" \
+      "I23 Install Plesk" "Hosting platform, ONLY for a clean Ubuntu 14.04 server!" \
     3>&1 1>&2 2>&3)
   RET=$?
   if [ $RET -eq 1 ]; then
@@ -1090,6 +1091,7 @@ do_install() {
       I20\ *) do_virtualbox ;;
       I21\ *) do_vboxextpack ;;
       I22\ *) do_vboxguestadd ;;
+      I23\ *) do_plesk ;;
       *) whiptail --msgbox "Programmer error: unrecognized option" 20 60 1 ;;
     esac || whiptail --msgbox "There was an error running option $FUN" 20 60 1
  else
@@ -1364,6 +1366,32 @@ fi
     cd ~/AtoMiC-ToolKit
   	bash setup.sh
   	cd
+}
+
+################################ Install Plesk 4.14
+
+do_plesk() {
+
+  {
+  i=1
+  while read -r line; do
+      i=$(( $i + 1 ))
+      echo $i
+  done < <(apt-get update)
+} | whiptail --title "Progress" --gauge "Please wait while updating" 6 60 0
+
+apt-get remove apparmor -y
+wget -O - http://autoinstall.plesk.com/one-click-installer | sh
+/etc/init.d/psa status
+apt-get install mcrypt -y
+apt-get install php-mcrypt -y
+apt-get install php-ioncube-loader -y
+apt-get install php-apc -y
+apt-get install php-memcached memcached -y
+apt-get install php-imap -y
+phpenmod imap
+do_update
+service apache2 restart
 }
 
 ################################ Install Network-manager 4.15

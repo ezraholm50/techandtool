@@ -78,7 +78,7 @@
 * 4.11 Install NFS server
 * 4.12 Install DDclient
 * 4.13 Install Atomic-Toolkit
-* 4.14 Install Vacant
+* 4.14 Install Plesk
 * 4.15 Install Network-manager
 * 4.16 Install Nextcloud
 * 4.17 Install OpenVpn
