@@ -89,6 +89,9 @@
 # 6 About this tool
 # 7 Tech and Tool
 ################################################ Variable 1
+
+
+
 ################################ Network 1.1
 
 IFCONFIG=$(ifconfig)
@@ -1943,7 +1946,7 @@ fi
   REBOOT=$(bash /etc/update-motd.d/98-reboot-required )
   RELEASE=$(bash /etc/update-motd.d/91-release-upgrade)
 
-  whiptail --title "System Information" --msgbox "\
+  whiptail --title "System Information - Scroll down for more info" --msgbox "\
   $HEADER\
 
   $SYSINFO\
