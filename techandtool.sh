@@ -1937,7 +1937,6 @@ else
 fi
 
   HEADER=$(bash /etc/update-motd.d/00-header)
-  VERSION=$(grep -m1 "# VERSION =" "/usr/sbin/techandtool")
   SYSINFO=$(landscape-sysinfo)
   UPDATESAV=$(bash /etc/update-motd.d/90-updates-available)
   FSCK=$(bash /etc/update-motd.d/98-fsck-at-reboot)
@@ -1946,7 +1945,6 @@ fi
 
   whiptail --title "System Information" --msgbox "\
   $HEADER
-  Tech and tool: $VERSION
   $SYSINFO
   $UPDATESAV
   $FSCK
