@@ -191,7 +191,7 @@ fi
 
 ################################ Update notification 1.7
 
-CURRENTVERSION=$(grep "# VERSION=" /usr/sbin/techandtool)
+CURRENTVERSION=$(grep -m1 "# VERSION=" /usr/sbin/techandtool)
 GITHUBVERSION=$(grep "# VERSION=" /tmp/version)
 SCRIPTS="/var/scripts"
 
