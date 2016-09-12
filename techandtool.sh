@@ -1945,13 +1945,13 @@ fi
   RELEASE=$(bash /etc/update-motd.d/91-release-upgrade)
 
   whiptail --title "System Information" --msgbox "\
-  "$HEADER"
-  "Tech and tool: $VERSION"
-  "$SYSINFO"
-  "$UPDATESAV"
-  "$FSCK"
-  "$REBOOT"
-  "$RELEASE"\
+  $HEADER
+  Tech and tool: $VERSION
+  $SYSINFO
+  $UPDATESAV
+  $FSCK
+  $REBOOT
+  $RELEASE\
   " "$WT_HEIGHT" "$WT_WIDTH"
 }
 
