@@ -157,10 +157,10 @@ calc_wt_size() {
   WT_HEIGHT=17
   WT_WIDTH=$(tput cols)
 
-  if [ -z "$WT_WIDTH" ] || [ "$WT_WIDTH" -lt 60 ]; then
+  if [ -z ""$WT_WIDTH"" ] || [ ""$WT_WIDTH"" -lt 60 ]; then
     WT_WIDTH=80
   fi
-  if [ "$WT_WIDTH" -gt 178 ]; then
+  if [ ""$WT_WIDTH"" -gt 178 ]; then
     WT_WIDTH=120
   fi
   WT_MENU_HEIGHT=$((WT_HEIGHT-7))
@@ -185,7 +185,7 @@ fi
 ################################################ Check if root 1.6
 
 if [ "$(whoami)" != "root" ]; then
-        whiptail --msgbox "Sorry you are not root. You must type: sudo techandtool" $WT_HEIGHT $WT_WIDTH
+        whiptail --msgbox "Sorry you are not root. You must type: sudo techandtool" "$WT_HEIGHT" "$WT_WIDTH"
         exit
 fi
 
@@ -259,7 +259,7 @@ do_finish() {
 ################################################ Apps 2
 
 do_apps() {
-  FUN=$(whiptail --backtitle "Apps" --title "Tech and Tool - https://www.techandme.se" --menu "Tech and tool" $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT --cancel-button Back --ok-button Select \
+  FUN=$(whiptail --backtitle "Apps" --title "Tech and Tool - https://www.techandme.se" --menu "Tech and tool" "$WT_HEIGHT" "$WT_WIDTH" $WT_MENU_HEIGHT --cancel-button Back --ok-button Select \
   "P1 Collabora" "Docker" \
   "P2 Spreed-webrtc" "Spreedme" \
   "P3 Gpxpod" "" \
@@ -282,7 +282,7 @@ do_apps() {
 ################################ Collabora 2.1
 
 do_collabora() {
-  whiptail --msgbox "Under construction..." $WT_HEIGHT $WT_WIDTH
+  whiptail --msgbox "Under construction..." "$WT_HEIGHT" "$WT_WIDTH"
 }
 
 ################################ Spreed-webrtc 2.2
@@ -292,12 +292,12 @@ ENCRYPTIONSECRET=$(openssl rand -hex 32)
 SESSIONSECRET=$(openssl rand -hex 32)
 SERVERTOKEN=$(openssl rand -hex 32)
 SHAREDSECRET=$(openssl rand -hex 32)
-DOMAIN=$(whiptail --title "Techandme.se Collabora online installer" --inputbox "Nextcloud url, make sure it looks like this: https://cloud.nextcloud.com" $WT_HEIGHT $WT_WIDTH https://yourdomain.com 3>&1 1>&2 2>&3)
-NCDIR=$(whiptail --title "Nextcloud directory" --inputbox "If you're not sure use the default setting" $WT_HEIGHT $WT_WIDTH /var/www/nextcloud 3>&1 1>&2 2>&3)
-WEB=$(whiptail --title "What webserver do you run" --inputbox "If you're not sure use the default setting" $WT_HEIGHT $WT_WIDTH apache2 3>&1 1>&2 2>&3)
-SPREEDDOMAIN=$(whiptail --title "Spreed domain" --inputbox "Leave empty for autodiscovery" $WT_HEIGHT $WT_WIDTH 3>&1 1>&2 2>&3)
-SPREEDPORT=$(whiptail --title "Spreed port" --inputbox "If you're not sure use the default setting" $WT_HEIGHT $WT_WIDTH 8443 3>&1 1>&2 2>&3)
-VHOST443=$(whiptail --title "Vhost 443 file location" --inputbox "If you're not sure use the default setting" $WT_HEIGHT $WT_WIDTH /etc/"$WEB"/sites-available/nextcloud_ssl_domain_self_signed.conf 3>&1 1>&2 2>&3)
+DOMAIN=$(whiptail --title "Techandme.se Collabora online installer" --inputbox "Nextcloud url, make sure it looks like this: https://cloud.nextcloud.com" "$WT_HEIGHT" "$WT_WIDTH" https://yourdomain.com 3>&1 1>&2 2>&3)
+NCDIR=$(whiptail --title "Nextcloud directory" --inputbox "If you're not sure use the default setting" "$WT_HEIGHT" "$WT_WIDTH" /var/www/nextcloud 3>&1 1>&2 2>&3)
+WEB=$(whiptail --title "What webserver do you run" --inputbox "If you're not sure use the default setting" "$WT_HEIGHT" "$WT_WIDTH" apache2 3>&1 1>&2 2>&3)
+SPREEDDOMAIN=$(whiptail --title "Spreed domain" --inputbox "Leave empty for autodiscovery" "$WT_HEIGHT" "$WT_WIDTH" 3>&1 1>&2 2>&3)
+SPREEDPORT=$(whiptail --title "Spreed port" --inputbox "If you're not sure use the default setting" "$WT_HEIGHT" "$WT_WIDTH" 8443 3>&1 1>&2 2>&3)
+VHOST443=$(whiptail --title "Vhost 443 file location" --inputbox "If you're not sure use the default setting" "$WT_HEIGHT" "$WT_WIDTH" /etc/"$WEB"/sites-available/nextcloud_ssl_domain_self_signed.conf 3>&1 1>&2 2>&3)
 #VHOST80="/etc/$WEB/sites-available/xxx"
 LISTENADDRESS="$ADDRESS"
 LISTENPORT="$SPREEDPORT"
@@ -368,13 +368,13 @@ echo "This will help us troubleshoot the issues, you could also visit: mydomain.
 ################################ Gpxpod 2.3
 
 do_gpxpod() {
-	whiptail --msgbox "Under construction..." $WT_HEIGHT $WT_WIDTH
+	whiptail --msgbox "Under construction..." "$WT_HEIGHT" "$WT_WIDTH"
 }
 
 ################################################ Tools 3
 
 do_tools() {
-FUN=$(whiptail --backtitle "Tools" --title "Tech and Tool - Tools - https://www.techandme.se" --menu "Tech and tool" $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT --cancel-button Back --ok-button Select \
+FUN=$(whiptail --backtitle "Tools" --title "Tech and Tool - Tools - https://www.techandme.se" --menu "Tech and tool" "$WT_HEIGHT" "$WT_WIDTH" $WT_MENU_HEIGHT --cancel-button Back --ok-button Select \
 "T1 Show LAN IP, Gateway, Netmask" "Ifconfig" \
 "T2 Show WAN IP" "External IP address" \
 "T3 Change Hostname" "Your machine's name" \
@@ -446,14 +446,14 @@ Interface: $IFACE
 LAN IP: $ADDRESS
 Netmask: $NETMASK
 Gateway: $GATEWAY\
-" $WT_HEIGHT $WT_WIDTH
+" "$WT_HEIGHT" "$WT_WIDTH"
 }
 
 ################################ Wan IP 3.2
 
 do_wan_ip() {
   WAN=$(wget -qO- http://ipecho.net/plain ; echo)
-  whiptail --msgbox "WAN IP: $WAN" $WT_HEIGHT $WT_WIDTH
+  whiptail --msgbox "WAN IP: $WAN" "$WT_HEIGHT" "$WT_WIDTH"
 }
 
 ################################ Hostname 3.3
@@ -465,7 +465,7 @@ may contain only the ASCII letters 'a' through 'z' (case-insensitive),
 the digits '0' through '9', and the hyphen.
 Hostname labels cannot begin or end with a hyphen.
 No other symbols, punctuation characters, or blank spaces are permitted.\
-" $WT_HEIGHT $WT_WIDTH
+" "$WT_HEIGHT" "$WT_WIDTH"
 
   CURRENT_HOSTNAME=$(cat < /etc/hostname | tr -d " \t\n\r")
   NEW_HOSTNAME=$(whiptail --inputbox "Please enter a hostname" 20 60 "$CURRENT_HOSTNAME" 3>&1 1>&2 2>&3)
@@ -478,7 +478,7 @@ No other symbols, punctuation characters, or blank spaces are permitted.\
 ################################ Internationalisation 3.4
 
 do_internationalisation_menu() {
-  FUN=$(whiptail --backtitle "Internationalisation" --title "Tech and Tool - https://www.techandme.se" --menu "Internationalisation Options" $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT --cancel-button Back --ok-button Select \
+  FUN=$(whiptail --backtitle "Internationalisation" --title "Tech and Tool - https://www.techandme.se" --menu "Internationalisation Options" "$WT_HEIGHT" "$WT_WIDTH" $WT_MENU_HEIGHT --cancel-button Back --ok-button Select \
     "I1 Change Locale" "Set up language and regional settings to match your location" \
     "I2 Change Timezone" "Set up timezone to match your location" \
     "I3 Change Keyboard Layout" "Set the keyboard layout to match your keyboard" \
@@ -542,7 +542,7 @@ fi
 ################################ Raspberry specific 3.6
 
 do_Raspberry() {
-  FUN=$(whiptail --backtitle "Raspberry" --title "Tech and Tool - https://www.techandme.se" --menu "Raspberry" $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT --cancel-button Back --ok-button Select \
+  FUN=$(whiptail --backtitle "Raspberry" --title "Tech and Tool - https://www.techandme.se" --menu "Raspberry" "$WT_HEIGHT" "$WT_WIDTH" $WT_MENU_HEIGHT --cancel-button Back --ok-button Select \
   "R1 Resize SD" "" \
   "R2 External USB" "Use an USB HD/SSD as root" \
   "R3 RPI-update" "Update the RPI firmware and kernel" \
@@ -638,14 +638,14 @@ EOF
   chmod +x /etc/init.d/resize2fs_once &&
   update-rc.d resize2fs_once defaults &&
 
-  whiptail --msgbox "Root partition has been resized.\nThe filesystem will be enlarged upon the next reboot" $WT_HEIGHT $WT_WIDTH
+  whiptail --msgbox "Root partition has been resized.\nThe filesystem will be enlarged upon the next reboot" "$WT_HEIGHT" "$WT_WIDTH"
   ASK_TO_REBOOT=1
 }
 
 ##################### External USB 3.62
 
 do_external_usb() {
-	whiptail --msgbox "Under construction..." $WT_HEIGHT $WT_WIDTH
+	whiptail --msgbox "Under construction..." "$WT_HEIGHT" "$WT_WIDTH"
 }
 
 ##################### RPI-update 3.63
@@ -681,7 +681,7 @@ else
   wget http://archive.raspberrypi.org/debian/pool/main/r/raspi-config/raspi-config_20160527_all.deb -P /tmp
   apt-get install libnewt0.52 whiptail parted triggerhappy lua5.1 -y
   dpkg -i /tmp/raspi-config_20160527_all.deb
-  whiptail --msgbox "Raspi-config is now installed, run it by typing: sudo raspi-config" $WT_HEIGHT $WT_WIDTH
+  whiptail --msgbox "Raspi-config is now installed, run it by typing: sudo raspi-config" "$WT_HEIGHT" "$WT_WIDTH"
   raspi-config
 fi
 }
@@ -701,23 +701,23 @@ fi
 ################################ Show folder content and permissions 3.8
 
 do_listdir() {
-	LISTDIR=$(whiptail --inputbox "Directory to list? Eg. /mnt/yourfolder" $WT_HEIGHT $WT_WIDTH 3>&1 1>&2 2>&3)
+	LISTDIR=$(whiptail --inputbox "Directory to list? Eg. /mnt/yourfolder" "$WT_HEIGHT" "$WT_WIDTH" 3>&1 1>&2 2>&3)
 	LISTDIR1=$(ls -la "$LISTDIR")
-	whiptail --msgbox "$LISTDIR1" $WT_HEIGHT $WT_WIDTH --scrolltext --title "Scroll with your mouse or page up/down or arrow keys"
+	whiptail --msgbox "$LISTDIR1" "$WT_HEIGHT" "$WT_WIDTH" --scrolltext --title "Scroll with your mouse or page up/down or arrow keys"
 }
 
 ################################ Show connected devices 3.9
 
 do_blkid() {
   BLKID=$(blkid)
-  whiptail --msgbox "$BLKID" $WT_HEIGHT $WT_WIDTH --scrolltext --title "Scroll with your mouse or page up/down or arrow keys"
+  whiptail --msgbox "$BLKID" "$WT_HEIGHT" "$WT_WIDTH" --scrolltext --title "Scroll with your mouse or page up/down or arrow keys"
 }
 
 ################################ Show disk usage 3.10
 
 do_df() {
   DF=$(df -h)
-  whiptail --msgbox "$DF" $WT_HEIGHT $WT_WIDTH --scrolltext --title "Scroll with your mouse or page up/down or arrow keys"
+  whiptail --msgbox "$DF" "$WT_HEIGHT" "$WT_WIDTH" --scrolltext --title "Scroll with your mouse or page up/down or arrow keys"
 }
 
 ################################ Show system performance 3.11
@@ -764,16 +764,16 @@ do_disable_ipv6() {
  sysctl -p
  echo
 
- whiptail --msgbox "IPV6 is now disabled..." $WT_HEIGHT $WT_WIDTH
+ whiptail --msgbox "IPV6 is now disabled..." "$WT_HEIGHT" "$WT_WIDTH"
 }
 
 ################################ Find string text 3.13
 
 do_find_string() {
-        STRINGTEXT=$(whiptail --inputbox "Text that you want to search for? eg. ip mismatch: 192.168.1.133" $WT_HEIGHT $WT_WIDTH 3>&1 1>&2 2>&3)
-        STRINGDIR=$(whiptail --inputbox "Directory you want to search in? eg. / for whole system or /home" $WT_HEIGHT $WT_WIDTH 3>&1 1>&2 2>&3)
+        STRINGTEXT=$(whiptail --inputbox "Text that you want to search for? eg. ip mismatch: 192.168.1.133" "$WT_HEIGHT" "$WT_WIDTH" 3>&1 1>&2 2>&3)
+        STRINGDIR=$(whiptail --inputbox "Directory you want to search in? eg. / for whole system or /home" "$WT_HEIGHT" "$WT_WIDTH" 3>&1 1>&2 2>&3)
         STRINGCMD=$(grep -Rl "$STRINGTEXT" "$STRINGDIR")
-        whiptail --msgbox "$STRINGCMD" $WT_HEIGHT $WT_WIDTH
+        whiptail --msgbox "$STRINGCMD" "$WT_HEIGHT" "$WT_WIDTH"
 }
 
 ################################ Reboot on out of memory 3.14
@@ -795,7 +795,7 @@ do_oom() {
  sysctl -p /etc/sysctl.d/oom_reboot.conf
  echo
 
- whiptail --msgbox "System will now reboot on out of memory errors..." $WT_HEIGHT $WT_WIDTH
+ whiptail --msgbox "System will now reboot on out of memory errors..." "$WT_HEIGHT" "$WT_WIDTH"
 }
 
 ################################ 3.15
@@ -827,7 +827,7 @@ do_dns() {
   resolvconf -u
   ifdown -a; ifup -a
 
-  whiptail --msgbox "Dns is now set to google, if no response in 1 second it switches to opendns..." $WT_HEIGHT $WT_WIDTH
+  whiptail --msgbox "Dns is now set to google, if no response in 1 second it switches to opendns..." "$WT_HEIGHT" "$WT_WIDTH"
 }
 
 ################################ Progress bar 3.20
@@ -839,7 +839,7 @@ if grep -q "Dpkg::Progress-Fancy "1";" "/etc/apt/apt.conf.d/99progressbar"; then
 else
   echo "Dpkg::Progress-Fancy "1";" > /etc/apt/apt.conf.d/99progressbar
 
-	whiptail --msgbox "You now have a fancy progress bar, outside this installer run apt or apt-get install <package>" $WT_HEIGHT $WT_WIDTH
+	whiptail --msgbox "You now have a fancy progress bar, outside this installer run apt or apt-get install <package>" "$WT_HEIGHT" "$WT_WIDTH"
 fi
 }
 
@@ -849,7 +849,7 @@ do_bootterminal() {
 if grep -q "GRUB_CMDLINE_LINUX_DEFAULT=""" "/etc/default/grub"; then
   sed -i 's|GRUB_CMDLINE_LINUX_DEFAULT=""|GRUB_CMDLINE_LINUX_DEFAULT="text"|g' /etc/default/grub
   update-grub
-  whiptail --msgbox "System now boots to terminal..." $WT_HEIGHT $WT_WIDTH
+  whiptail --msgbox "System now boots to terminal..." "$WT_HEIGHT" "$WT_WIDTH"
 fi
 }
 
@@ -860,37 +860,37 @@ do_bootgui() {
     sed -i 's|GRUB_CMDLINE_LINUX_DEFAULT="text"|GRUB_CMDLINE_LINUX_DEFAULT=""|g' /etc/default/grub
   	update-grub
 
-    whiptail --msgbox "System now boots to desktop..." $WT_HEIGHT $WT_WIDTH
+    whiptail --msgbox "System now boots to desktop..." "$WT_HEIGHT" "$WT_WIDTH"
   fi
 }
 
 ################################ Swappiness 3.23
 
 do_swappiness() {
-SWAPPINESS=$(whiptail --inputbox "Set the swappiness value" $WT_HEIGHT $WT_WIDTH 0 3>&1 1>&2 2>&3)
+SWAPPINESS=$(whiptail --inputbox "Set the swappiness value" "$WT_HEIGHT" "$WT_WIDTH" 0 3>&1 1>&2 2>&3)
 
 if grep -q "vm.swappiness" "/etc/sysctl.conf"; then
     sed -i '/vm.swappiness/d' /etc/sysctl.conf
   	echo "vm.swappiness = $SWAPPINESS" >> /etc/sysctl.conf
   	sysctl -p
 
-    whiptail --msgbox "Swappiness is set..." $WT_HEIGHT $WT_WIDTH
+    whiptail --msgbox "Swappiness is set..." "$WT_HEIGHT" "$WT_WIDTH"
 else
   echo "vm.swappiness = $SWAPPINESS" >> /etc/sysctl.conf
   sysctl -p
 
-  whiptail --msgbox "Swappiness is set..." $WT_HEIGHT $WT_WIDTH
+  whiptail --msgbox "Swappiness is set..." "$WT_HEIGHT" "$WT_WIDTH"
 fi
 }
 
 ################################ Delete line containing string 3.24
 
 do_stringdel() {
-DELETESTRING=$(whiptail --inputbox "Which line containing the following string needs to be deleted?" $WT_HEIGHT $WT_WIDTH "eg. address 192.168.1.1" 3>&1 1>&2 2>&3)
-DELETESTRINGFILE=$(whiptail --inputbox "In what file should we search?" $WT_HEIGHT $WT_WIDTH "eg. /etc/network" 3>&1 1>&2 2>&3)
+DELETESTRING=$(whiptail --inputbox "Which line containing the following string needs to be deleted?" "$WT_HEIGHT" "$WT_WIDTH" "eg. address 192.168.1.1" 3>&1 1>&2 2>&3)
+DELETESTRINGFILE=$(whiptail --inputbox "In what file should we search?" "$WT_HEIGHT" "$WT_WIDTH" "eg. /etc/network" 3>&1 1>&2 2>&3)
 
 sed -i "/$DELETESTRING/d" "$DELETESTRINGFILE"
-whiptail --title "This is your updated file" --textbox "$DELETESTRINGFILE" $WT_HEIGHT $WT_WIDTH
+whiptail --title "This is your updated file" --textbox "$DELETESTRINGFILE" "$WT_HEIGHT" "$WT_WIDTH"
 }
 
 ################################ Kernel upgrade 3.25
@@ -900,7 +900,7 @@ mkdir -p $SCRIPTS
 wget https://raw.githubusercontent.com/muhasturk/ukupgrade/master/ukupgrade -P $SCRIPTS
 bash $SCRIPTS/ukupgrade
 
-whiptail --msgbox "Kernel upgraded..." $WT_HEIGHT $WT_WIDTH
+whiptail --msgbox "Kernel upgraded..." "$WT_HEIGHT" "$WT_WIDTH"
 }
 
 ################################  Backup system 3.26
@@ -908,7 +908,7 @@ whiptail --msgbox "Kernel upgraded..." $WT_HEIGHT $WT_WIDTH
 do_backup() {
 tar cvpjf -P /backup.tar.bz2 --exclude=/proc --exclude=/dev --exclude=/media --exclude=/lost+found --exclude=/backup.tar.bz2 --exclude=/mnt --exclude=/sys /
 
-whiptail --msgbox "Backup finished, backup.tar.bz2 is located in /" $WT_HEIGHT $WT_WIDTH
+whiptail --msgbox "Backup finished, backup.tar.bz2 is located in /" "$WT_HEIGHT" "$WT_WIDTH"
 }
 
 ################################  Restore Backup 3.27
@@ -924,17 +924,17 @@ do_restore_backup() {
   mkdir -p sys
   mkdir -p dev
 
-  whiptail --msgbox "Restoring the backup is finished..." $WT_HEIGHT $WT_WIDTH
+  whiptail --msgbox "Restoring the backup is finished..." "$WT_HEIGHT" "$WT_WIDTH"
   ASK_TO_REBOOT=1
 else
-  whiptail --msgbox "Could not find the backup file make sure you made the backup..." $WT_HEIGHT $WT_WIDTH
+  whiptail --msgbox "Could not find the backup file make sure you made the backup..." "$WT_HEIGHT" "$WT_WIDTH"
 fi
 }
 
 ################################  Fail2Ban SSH 3.28
 
 do_fail2ban_ssh() {
-PORT1=$(whiptail --inputbox "SSH port? Default port is 22" $WT_HEIGHT $WT_WIDTH 22 3>&1 1>&2 2>&3)
+PORT1=$(whiptail --inputbox "SSH port? Default port is 22" "$WT_HEIGHT" "$WT_WIDTH" 22 3>&1 1>&2 2>&3)
 
 if [ $(dpkg-query -W -f='${Status}' fail2ban 2>/dev/null | grep -c "ok installed") -eq 1 ]; then
       echo "Fail2Ban is already installed!"
@@ -942,7 +942,7 @@ if [ $(dpkg-query -W -f='${Status}' fail2ban 2>/dev/null | grep -c "ok installed
       sed -i 's|bantime  = 600|bantime  = 1200|g' /etc/fail2ban/jail.local
       sed -i 's|maxretry = 3|maxretry = 5"|g' /etc/fail2ban/jail.local
       service fail2ban restart
-      whiptail --msgbox "SSH is now protected with Fail2Ban..." $WT_HEIGHT $WT_WIDTH
+      whiptail --msgbox "SSH is now protected with Fail2Ban..." "$WT_HEIGHT" "$WT_WIDTH"
 else
       apt-get install fail2ban -y
       cp /etc/fail2ban/jail.conf /etc/fail2ban/jail.local
@@ -950,21 +950,21 @@ else
       sed -i 's|bantime  = 600|bantime  = 1200|g' /etc/fail2ban/jail.local
       sed -i 's|maxretry = 3|maxretry = 5"|g' /etc/fail2ban/jail.local
       service fail2ban restart
-      whiptail --msgbox "SSH is now protected with Fail2Ban..." $WT_HEIGHT $WT_WIDTH
+      whiptail --msgbox "SSH is now protected with Fail2Ban..." "$WT_HEIGHT" "$WT_WIDTH"
 fi
 }
 
 ################################  Google auth SSH 3.29
 
 do_2fa() {
-USERNAME=$(whiptail --inputbox "Username you want to enable 2 factor authentication for?" $WT_HEIGHT $WT_WIDTH 3>&1 1>&2 2>&3)
+USERNAME=$(whiptail --inputbox "Username you want to enable 2 factor authentication for?" "$WT_HEIGHT" "$WT_WIDTH" 3>&1 1>&2 2>&3)
 
 whiptail --msgbox "\
 WARNING\
 Please make sure to save the codes presented to you before logging out.
 Failing to do so, will lock you out of your system.
 You can at any time find the keys in /var/google-authenticator\
-" $WT_HEIGHT $WT_WIDTH
+" "$WT_HEIGHT" "$WT_WIDTH"
 
 if [ $(dpkg-query -W -f='${Status}' openssh-server 2>/dev/null | grep -c "ok installed") -eq 1 ];
 then
@@ -994,8 +994,8 @@ EOF
   service ssh restart
   chmod 600 /var/google-authenticator
 
-  whiptail --msgbox "SSH is now protected with 2FA, next you will see your codes, add them to the google auth. app. Please write down the keys on a piece of paper you see in the next screen. /var/google-authenticator holds your keys..." $WT_HEIGHT $WT_WIDTH
-  whiptail --textbox "/var/google-authenticator" $WT_HEIGHT $WT_WIDTH --title "Please scroll down to the keys" --scrolltext
+  whiptail --msgbox "SSH is now protected with 2FA, next you will see your codes, add them to the google auth. app. Please write down the keys on a piece of paper you see in the next screen. /var/google-authenticator holds your keys..." "$WT_HEIGHT" "$WT_WIDTH"
+  whiptail --textbox "/var/google-authenticator" "$WT_HEIGHT" "$WT_WIDTH" --title "Please scroll down to the keys" --scrolltext
 fi
 }
 
@@ -1039,7 +1039,7 @@ do_install() {
   done < <(apt-get update)
 } | whiptail --title "Progress" --gauge "Please wait while updating" 6 60 0
 
-  FUN=$(whiptail --backtitle "Install software packages" --title "Tech and Tool - https://www.techandme.se" --menu "Tech and tool" $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT --cancel-button Back --ok-button Select \
+  FUN=$(whiptail --backtitle "Install software packages" --title "Tech and Tool - https://www.techandme.se" --menu "Tech and tool" "$WT_HEIGHT" "$WT_WIDTH" $WT_MENU_HEIGHT --cancel-button Back --ok-button Select \
       "I1 Install Package" "User defined" \
       "I2 Install Webmin" "Graphical interface to manage headless systems" \
       "I3 Install SSH Server" "Needed by a remote machine to be accessable via SSH" \
@@ -1102,13 +1102,13 @@ do_install() {
 ################################ Install package 4.1
 
 do_install_package() {
-	PACKAGE=$(whiptail --inputbox "Package name?" $WT_HEIGHT $WT_WIDTH 3>&1 1>&2 2>&3)
+	PACKAGE=$(whiptail --inputbox "Package name?" "$WT_HEIGHT" "$WT_WIDTH" 3>&1 1>&2 2>&3)
 
 	if [ $(dpkg-query -W -f='${Status}' $PACKAGE 2>/dev/null | grep -c "ok installed") -eq 1 ]; then
         echo "$PACKAGE is already installed!"
 else
 	apt-get install "$PACKAGE" -y
-  whiptail --msgbox "$PACKAGE is now installed..." $WT_HEIGHT $WT_WIDTH
+  whiptail --msgbox "$PACKAGE is now installed..." "$WT_HEIGHT" "$WT_WIDTH"
 fi
 }
 
@@ -1124,7 +1124,7 @@ do_install_webmin() {
   ufw allow 10000/tcp
   cd
 
-whiptail --msgbox "Webmin is now installed, access it at https://$ADDRESS:10000..." $WT_HEIGHT $WT_WIDTH
+whiptail --msgbox "Webmin is now installed, access it at https://$ADDRESS:10000..." "$WT_HEIGHT" "$WT_WIDTH"
 }
 
 ################################ Install SSH server 4.3
@@ -1138,7 +1138,7 @@ then
 else
   apt-get install openssh-server -y
   sed -i 's|PermitEmptyPasswords yes|PermitEmptyPasswords no|g' /etc/ssh/sshd_config
-  whiptail --msgbox "SSH server is now installed..." $WT_HEIGHT $WT_WIDTH
+  whiptail --msgbox "SSH server is now installed..." "$WT_HEIGHT" "$WT_WIDTH"
 fi
 }
 
@@ -1152,24 +1152,24 @@ then
 else
   apt-get install openssh-client -y
 
-  whiptail --msgbox "SSH client is now installed..." $WT_HEIGHT $WT_WIDTH
+  whiptail --msgbox "SSH client is now installed..." "$WT_HEIGHT" "$WT_WIDTH"
 fi
 }
 
 ################################ Change SSH port 4.5
 
 do_ssh() {
-PORT=$(whiptail --inputbox "New SSH port?" $WT_HEIGHT $WT_WIDTH 3>&1 1>&2 2>&3)
+PORT=$(whiptail --inputbox "New SSH port?" "$WT_HEIGHT" "$WT_WIDTH" 3>&1 1>&2 2>&3)
   	ufw allow "$PORT"/tcp
   	ufw deny 22
   	sed -i "s|22|$PORT|g" /etc/ssh/sshd_config
-  whiptail --msgbox "SSH port is now changed to $PORT and your firewall rules are updated..." $WT_HEIGHT $WT_WIDTH
+  whiptail --msgbox "SSH port is now changed to $PORT and your firewall rules are updated..." "$WT_HEIGHT" "$WT_WIDTH"
 }
 
 ################################ Install ClamAV 4.6
 
 do_clamav() {
-TOMAIL=$(whiptail --inputbox "What email should receive mail when system is infected?" $WT_HEIGHT $WT_WIDTH 3>&1 1>&2 2>&3)
+TOMAIL=$(whiptail --inputbox "What email should receive mail when system is infected?" "$WT_HEIGHT" "$WT_WIDTH" 3>&1 1>&2 2>&3)
 
   if [ $(dpkg-query -W -f='${Status}' clamav 2>/dev/null | grep -c "ok installed") -eq 1 ]; then
     apt-get remove clamav clamav-freshclam -y
@@ -1211,7 +1211,7 @@ CLAMSCAN
   chmod 0755 /root/clamscan_daily.sh
   ln /root/clamscan_daily.sh /etc/cron.daily/clamscan_daily
 
-  whiptail --msgbox "ClamAV is now installed..." $WT_HEIGHT $WT_WIDTH
+  whiptail --msgbox "ClamAV is now installed..." "$WT_HEIGHT" "$WT_WIDTH"
 }
 
 ################################ Install Fail2Ban 4.7
@@ -1221,7 +1221,7 @@ do_fail2ban() {
         echo "Fail2ban server is already installed!"
 else
   apt-get install fail2ban -y
-  whiptail --msgbox "Fail2Ban is now installed..." $WT_HEIGHT $WT_WIDTH
+  whiptail --msgbox "Fail2Ban is now installed..." "$WT_HEIGHT" "$WT_WIDTH"
 fi
 }
 
@@ -1239,7 +1239,7 @@ else
   ufw allow 80/tcp
   dpkg --configure --pending
 
-  whiptail --msgbox "Nginx is now installed, also port 443 and 80 are open in the firewall..." $WT_HEIGHT $WT_WIDTH
+  whiptail --msgbox "Nginx is now installed, also port 443 and 80 are open in the firewall..." "$WT_HEIGHT" "$WT_WIDTH"
 fi
 }
 
@@ -1297,7 +1297,7 @@ ufw allow 30033/tcp
 ufw allow 10011/tcp
 ufw allow 41144/tcp
 
-whiptail --msgbox "Teamspeak is now installed..." $WT_HEIGHT $WT_WIDTH
+whiptail --msgbox "Teamspeak is now installed..." "$WT_HEIGHT" "$WT_WIDTH"
 }
 
 ################################ Install NFS client 4.10
@@ -1308,7 +1308,7 @@ do_install_nfs_client() {
 else
   apt-get install nfs-common -y
 
-  whiptail --msgbox 'Installed! Auto mount like this: echo "<nfs-server-IP>:/   /mount_point   nfs    auto  0  0" >> /etc/fstab' $WT_HEIGHT $WT_WIDTH
+  whiptail --msgbox 'Installed! Auto mount like this: echo "<nfs-server-IP>:/   /mount_point   nfs    auto  0  0" >> /etc/fstab' "$WT_HEIGHT" "$WT_WIDTH"
 fi
 }
 
@@ -1322,7 +1322,7 @@ else
   apt-get install nfs-kernel-server -y
   ufw allow 2049
 
-  whiptail --msgbox "Installed! You can broadcast your NFS server and set it up in webmin (when installed): https://$ADDRESS:10000" $WT_HEIGHT $WT_WIDTH
+  whiptail --msgbox "Installed! You can broadcast your NFS server and set it up in webmin (when installed): https://$ADDRESS:10000" "$WT_HEIGHT" "$WT_WIDTH"
 fi
 }
 
@@ -1362,7 +1362,7 @@ else
   	git clone https://github.com/htpcBeginner/AtoMiC-ToolKit ~/AtoMiC-ToolKit
   	#cd
 fi
-    whiptail --msgbox "AtoMiC-ToolKit is now installed, run it with: cd ~/AtoMiC-ToolKit && sudo bash setup.sh" $WT_HEIGHT $WT_WIDTH
+    whiptail --msgbox "AtoMiC-ToolKit is now installed, run it with: cd ~/AtoMiC-ToolKit && sudo bash setup.sh" "$WT_HEIGHT" "$WT_WIDTH"
     cd ~/AtoMiC-ToolKit
   	bash setup.sh
   	cd
@@ -1401,7 +1401,7 @@ do_install_networkmanager() {
         echo "network-manager is already installed!"
   else
         apt-get install network-manager -y
-        whiptail --msgbox "Network-manager is now installed..." $WT_HEIGHT $WT_WIDTH
+        whiptail --msgbox "Network-manager is now installed..." "$WT_HEIGHT" "$WT_WIDTH"
   fi
 }
 
@@ -1427,7 +1427,7 @@ else
         apt-get install network-manager-openvpn -y
   fi
 
-  whiptail --msgbox "OpenVpn is now installed..." $WT_HEIGHT $WT_WIDTH
+  whiptail --msgbox "OpenVpn is now installed..." "$WT_HEIGHT" "$WT_WIDTH"
 fi
 }
 
@@ -1473,7 +1473,7 @@ else
 	echo "bash /root/plexupdate/plexupdate.sh" >> /etc/cron.daily/plex.sh
 	chmod 754 /etc/cron.daily/plex.sh
 fi
-whiptail --msgbox "Plex is now installed..." $WT_HEIGHT $WT_WIDTH
+whiptail --msgbox "Plex is now installed..." "$WT_HEIGHT" "$WT_WIDTH"
 }
 
 ################################ Install VNC server 4.19
@@ -1490,7 +1490,7 @@ else
   /usr/bin/lxsession -s LXDE &
   tightvncserver :1
   ufw allow 5901
-  whiptail --msgbox "Firewall port updated (5901). Start: tightvncserver - Stop tightvncserver -kill :1" $WT_HEIGHT $WT_WIDTH
+  whiptail --msgbox "Firewall port updated (5901). Start: tightvncserver - Stop tightvncserver -kill :1" "$WT_HEIGHT" "$WT_WIDTH"
 fi
 }
 
@@ -1501,7 +1501,7 @@ if [ $(dpkg-query -W -f='${Status}' zram-config 2>/dev/null | grep -c "ok instal
       echo "Zram is already installed!"
 else
 apt-get install zram-config -y
-whiptail --msgbox "Zram-config is now installed..." $WT_HEIGHT $WT_WIDTH
+whiptail --msgbox "Zram-config is now installed..." "$WT_HEIGHT" "$WT_WIDTH"
 ASK_TO_REBOOT=1
 fi
 }
@@ -1533,7 +1533,7 @@ wget -q https://www.virtualbox.org/download/oracle_vbox.asc -O- | sudo apt-key a
 
 sudo modprobe vboxdrv
 
-whiptail --msgbox "Virtualbox is now installed..." $WT_HEIGHT $WT_WIDTH
+whiptail --msgbox "Virtualbox is now installed..." "$WT_HEIGHT" "$WT_WIDTH"
 }
 
 ################################ Install virtualbox extension pack 4.22
@@ -1542,7 +1542,7 @@ do_vboxextpack() {
 wget http://download.virtualbox.org/virtualbox/5.1.4/Oracle_VM_VirtualBox_Extension_Pack-5.1.4-110228.vbox-extpack -P $SCRIPTS/
 vboxmanage extpack install $SCRIPTS/http://download.virtualbox.org/virtualbox/5.1.4/Oracle_VM_VirtualBox_Extension_Pack-5.1.4-110228.vbox-extpack
 
-whiptail --msgbox "Virtualbox extension pack is installed..." $WT_HEIGHT $WT_WIDTH
+whiptail --msgbox "Virtualbox extension pack is installed..." "$WT_HEIGHT" "$WT_WIDTH"
 }
 
 ################################ Install virtualbox guest additions 4.23
@@ -1559,14 +1559,14 @@ cd
 umount /mnt/tmp
 rm -rf /mnt/tmp
 
-whiptail --msgbox "Virtualbox guest additions are now installed, make sure to reboot..." $WT_HEIGHT $WT_WIDTH
+whiptail --msgbox "Virtualbox guest additions are now installed, make sure to reboot..." "$WT_HEIGHT" "$WT_WIDTH"
 ASK_TO_REBOOT=1
 }
 
 ################################################ Firewall 5
 
 do_firewall() {
-  FUN=$(whiptail  --backtitle "Firewall" --title "Tech and Tool - https://www.techandme.se" --menu "Firewall options" $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT --cancel-button Back --ok-button Select \
+  FUN=$(whiptail  --backtitle "Firewall" --title "Tech and Tool - https://www.techandme.se" --menu "Firewall options" "$WT_HEIGHT" "$WT_WIDTH" $WT_MENU_HEIGHT --cancel-button Back --ok-button Select \
     "A0 Enable Firewall" "" \
     "A1 Disable Firewall" "" \
     "A2 Show current rules" "" \
@@ -1646,26 +1646,26 @@ sudo ufw enable
 sudo ufw default deny incoming
 sudo ufw status
 sleep 2
-whiptail --msgbox "Firewall is now enabled..." $WT_HEIGHT $WT_WIDTH
+whiptail --msgbox "Firewall is now enabled..." "$WT_HEIGHT" "$WT_WIDTH"
 }
 ######Firewall#######
 do_ufw_disable() {
 sudo ufw disable
 sudo ufw status
 sleep 2
-whiptail --msgbox "Firewall is now disabled, you are at risk..." $WT_HEIGHT $WT_WIDTH
+whiptail --msgbox "Firewall is now disabled, you are at risk..." "$WT_HEIGHT" "$WT_WIDTH"
 }
 ######Firewall#######
 do_ufw_status() {
 STATUS=$(sudo ufw status)
-whiptail --msgbox "$STATUS" $WT_HEIGHT $WT_WIDTH
+whiptail --msgbox "$STATUS" "$WT_HEIGHT" "$WT_WIDTH"
 }
 ######Firewall#######
 do_ufw_reset() {
 sudo ufw reset << EOF
 y
 EOF
-whiptail --msgbox "Firewall is now reset please set your rules..." $WT_HEIGHT $WT_WIDTH
+whiptail --msgbox "Firewall is now reset please set your rules..." "$WT_HEIGHT" "$WT_WIDTH"
 }
 ######Firewall#######
 do_allow_32400() {
@@ -1918,7 +1918,7 @@ Note that this tool is tested on Ubuntu 16.04 (should work on debian)
 
 Visit https://www.techandme.se for awsome free virtual machines,
 Nextcloud, ownCloud, Teamspeak, Wordpress, Minecraft etc.\
-" $WT_HEIGHT $WT_WIDTH
+" "$WT_HEIGHT" "$WT_WIDTH"
 }
 
 ################################################ System info 10
@@ -1936,28 +1936,31 @@ else
  } | whiptail --title "Progress" --gauge "Please wait while installing landscape..." 6 60 0
 fi
 
+  HEADER=$(bash /etc/update-motd.d/00-header)
+  VERSION=$(grep "# VERSION =" "/usr/sbin/techandtool")
   SYSINFO=$(landscape-sysinfo)
   UPDATESAV=$(bash /etc/update-motd.d/90-updates-available)
   FSCK=$(bash /etc/update-motd.d/98-fsck-at-reboot)
   REBOOT=$(bash /etc/update-motd.d/98-reboot-required )
   RELEASE=$(bash /etc/update-motd.d/91-release-upgrade)
-  HEADER=$(bash /etc/update-motd.d/00-header)
+
 
   whiptail --title "System Information" --msgbox "\
-  $HEADER
-  $SYSINFO
-  $UPDATESAV
-  $FSCK
-  $REBOOT
-  $RELEASE\
-  " $WT_HEIGHT $WT_WIDTH
+  "$HEADER"
+  "Tech and tool: $VERSION"
+  "$SYSINFO"
+  "$UPDATESAV"
+  "$FSCK"
+  "$REBOOT"
+  "$RELEASE"\
+  " "$WT_HEIGHT" "$WT_WIDTH"
 }
 
 ################################################ Main menu 11
 
 calc_wt_size
 while true; do
-  FUN=$(whiptail --backtitle "Tech and Tool main menu" --title "Tech and Tool - https://www.techandme.se" --menu "Tech and tool" $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT --cancel-button Finish --ok-button Select \
+  FUN=$(whiptail --backtitle "Tech and Tool main menu" --title "Tech and Tool - https://www.techandme.se" --menu "Tech and tool" "$WT_HEIGHT" "$WT_WIDTH" $WT_MENU_HEIGHT --cancel-button Finish --ok-button Select \
     "1 Apps" "Nextcloud" \
     "2 Tools" "Various tools" \
     "3 Packages" "Install various software packages" \
