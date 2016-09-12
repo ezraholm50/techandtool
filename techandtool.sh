@@ -201,8 +201,8 @@ else
     apt-get install wget -y
 fi
 
-  if [ -f /tmp/ver* ]; then
-          rm /tmp/ver*
+  if [ -f /tmp/version ]; then
+          rm /tmp/version
   fi
 
     wget -q https://raw.githubusercontent.com/ezraholm50/techandtool/master/version -P /tmp/
@@ -1943,7 +1943,6 @@ fi
   FSCK=$(bash /etc/update-motd.d/98-fsck-at-reboot)
   REBOOT=$(bash /etc/update-motd.d/98-reboot-required )
   RELEASE=$(bash /etc/update-motd.d/91-release-upgrade)
-
 
   whiptail --title "System Information" --msgbox "\
   "$HEADER"
