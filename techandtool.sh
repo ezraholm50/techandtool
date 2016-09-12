@@ -1950,7 +1950,7 @@ fi
   $FSCK
   $REBOOT
   $RELEASE\
-  " "$WT_HEIGHT" "$WT_WIDTH"
+  " "$WT_HEIGHT" "$WT_WIDTH" --scrolltext
 }
 
 ################################################ Main menu 11
