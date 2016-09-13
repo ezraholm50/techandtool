@@ -2,7 +2,7 @@
 
 * Useful graphical tool to install various things and set config values from within the CLI/Terminal
 * Initially created for the Nextcloud VM (and RPI ARMHF VM branch) made by @enoch85 and @ezraholm50.
-* Tested on Ubuntu server 16.04. (Possibly works on lower versions aswell)
+* Tested on Ubuntu server 16.04.
 * Might work on other debian distro's aswell.
 
 # How to:
@@ -11,11 +11,14 @@
 * ```sudo cp /var/scripts/techandtool.sh /usr/sbin/techandtool```
 * ```chmod +x /usr/sbin/techandtool```
 * ```sudo techandtool```
-* Every time you want to use the installer run: sudo techandtool
+* Every time you want to use the installer run: ```sudo techandtool```
+
+* To debug the tool run: ```sudo bash -x techandtool```
 
 # This script can:
 * 1 Variable / requirements
-* 1.1 Network
+* 1.0 Network
+* 1.1 Network vars
 * 1.2 Raspberry - can get expand
 * 1.3 Fix nasty locale error over SSH
 * 1.4 Whiptail size
@@ -24,7 +27,7 @@
 * 1.7 Update notification
 * 1.8 Locations
 * 1.9 Ask to reboot
-* 1.10 Vacant
+* 1.10 Check Ubuntu OS
 * 2 Apps
 * 2.1 Collabora (Under construction)
 * 2.2 Spreed-webrtc (Under construction)
@@ -96,7 +99,6 @@
 * CAREFULL THIS IS ALPHA SOFTWARE, USE AT YOUR OWN RISK
 
 # Tech and Me
-
 We at [Tech and Me](https://www.techandme.se) dedicate our time building and maintaining Virtual Machines so that the less skilled users can benefit from easy setup servers.
 
 Here is an example of VM's we offer for **free**:

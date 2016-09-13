@@ -11,7 +11,8 @@
 #
 ##### Index ######
 # 1 Variable / requirements
-# 1.1 Network
+# 1.0 Network
+# 1.1 Network vars
 # 1.2 Raspberry - can get expand
 # 1.3 Fix nasty locale error over SSH
 # 1.4 Whiptail size
@@ -20,7 +21,7 @@
 # 1.7 Update notification
 # 1.8 Locations
 # 1.9 Ask to reboot
-# 1.10 Vacant
+# 1.10 Check Ubuntu OS
 # 2 Apps
 # 2.1 Collabora
 # 2.2 Spreed-webrtc
@@ -90,17 +91,43 @@
 # 7 Tech and Tool
 ################################################ Variable 1
 
+REPO='https://raw.githubusercontent.com/ezraholm50/techandtool/master'
 
-
-################################ Network 1.1
+################################ Network vars 1.1
 
 IFCONFIG=$(ifconfig)
+clear
 IP="/sbin/ip"
-IFACE=$($IP -o link show | awk '{print $2,$9}' | grep "UP" | cut -d ":" -f 1)
+IFACE=$(lshw -c network | grep "logical name" | awk '{print $3}')
+clear
 INTERFACES="/etc/network/interfaces"
+clear
 ADDRESS=$($IP route get 1 | awk '{print $NF;exit}')
 NETMASK=$(ifconfig "$IFACE" | grep Mask | sed s/^.*Mask://)
 GATEWAY=$($IP route | awk '/default/ { print $3 }')
+
+if ! [ -x "$(command -v nslookup)" ]; then
+	apt-get install dnsutils -y -q
+else
+	echo 'dnsutils is installed.' >&2
+  clear
+fi
+if ! [ -x "$(command -v ifup)" ]; then
+	apt-get install ifupdown -y -q
+else
+	echo 'ifupdown is installed.' >&2
+  clear
+fi
+
+nslookup google.com
+if [[ $? > 0 ]]
+then
+	whiptail --msgbox "Network NOT OK. You must have a working Network connection to run this script." "$WT_HEIGHT" "$WT_WIDTH"
+        exit 1
+else
+	echo "Network OK."
+  clear
+fi
 
 ################################ Raspberry - can get expand 1.2
 
@@ -140,6 +167,7 @@ get_can_expand() {
 if [ $(dpkg-query -W -f='${Status}' openssh-server 2>/dev/null | grep -c "ok installed") -eq 1 ]; then
   if grep -q "#SendEnv LANG LC_*" "/etc/ssh/ssh_config"; then
     echo "Fix already applied..."
+    clear
   else
     sed -i "s|SendEnv|#SendEnv|g" /etc/ssh/ssh_config
     service ssh restart
@@ -147,6 +175,7 @@ if [ $(dpkg-query -W -f='${Status}' openssh-server 2>/dev/null | grep -c "ok ins
 
   if grep -q "#AcceptEnv LANG LC_*" "/etc/ssh/sshd_config"; then
     echo "Fix already applied..."
+    clear
   else
     sed -i "s|AcceptEnv|#AcceptEnv|g" /etc/ssh/sshd_config
     service ssh restart
@@ -156,6 +185,7 @@ fi
 ################################ Whiptail size 1.4
 
 INTERACTIVE=True
+
 calc_wt_size() {
   WT_HEIGHT=17
   WT_WIDTH=$(tput cols)
@@ -173,6 +203,7 @@ calc_wt_size() {
 
 	if [ $(dpkg-query -W -f='${Status}' whiptail 2>/dev/null | grep -c "ok installed") -eq 1 ]; then
         echo "Whiptail is already installed..."
+        clear
 else
 
     {
@@ -195,11 +226,12 @@ fi
 ################################ Update notification 1.7
 
 CURRENTVERSION=$(grep -m1 "# VERSION=" /usr/sbin/techandtool)
-GITHUBVERSION=$(grep "# VERSION=" /tmp/version)
+GITHUBVERSION=$(curl -s $REPO/version)
 SCRIPTS="/var/scripts"
 
 if [ $(dpkg-query -W -f='${Status}' wget 2>/dev/null | grep -c "ok installed") -eq 1 ]; then
       echo "Wget is already installed..."
+      clear
 else
     apt-get install wget -y
 fi
@@ -208,8 +240,6 @@ fi
           rm /tmp/version
   fi
 
-    wget -q https://raw.githubusercontent.com/ezraholm50/techandtool/master/version -P /tmp/
-
 if [ "$CURRENTVERSION" == "$GITHUBVERSION" ]; then
           echo "Tool is up to date..."
 else
@@ -217,20 +247,20 @@ else
   whiptail --yesno "A new version of this tool is available, download it now?" --title "Update Notification!" 10 60 2
   if [ $? -eq 0 ]; then # yes
 
-  if [ -f $SCRIPTS/techandtool.sh ]; then
-          rm $SCRIPTS/techandtool.sh
+  if [ -f "$SCRIPTS"/techandtool.sh ]; then
+          rm "$SCRIPTS"/techandtool.sh
   fi
 
   if [ -f /usr/sbin/techandtool ]; then
           rm /usr/sbin/techandtool
   fi
-          mkdir -p $SCRIPTS
-          wget -q https://github.com/ezraholm50/techandtool/raw/master/techandtool.sh -P $SCRIPTS
-          cp $SCRIPTS/techandtool.sh /usr/sbin/techandtool
+          mkdir -p "$SCRIPTS"
+          wget -q https://github.com/ezraholm50/techandtool/raw/master/techandtool.sh -P "$SCRIPTS"
+          cp "$SCRIPTS"/techandtool.sh /usr/sbin/techandtool
           chmod +x /usr/sbin/techandtool
 
-          if [ -f $SCRIPTS/techandtool.sh ]; then
-                  rm $SCRIPTS/techandtool.sh
+          if [ -f "$SCRIPTS"/techandtool.sh ]; then
+                  rm "$SCRIPTS"/techandtool.sh
           fi
 
           exec techandtool
@@ -255,9 +285,31 @@ do_finish() {
   exit 0
 }
 
-################################################ 1.10
+################################################ Check Ubuntu OS 1.10
 
+DISTRO=$(lsb_release -sd | cut -d ' ' -f 2)
+version(){
+    local h t v
 
+    [[ $2 = "$1" || $2 = "$3" ]] && return 0
+
+    v=$(printf '%s\n' "$@" | sort -V)
+    h=$(head -n1 <<<"$v")
+    t=$(tail -n1 <<<"$v")
+
+    [[ $2 != "$h" && $2 != "$t" ]]
+}
+
+if ! version 16.04 "$DISTRO" 16.04.4; then
+    whiptail --msgbox "Ubuntu version $DISTRO must be between 16.04 - 16.04.4" "$WT_HEIGHT" "$WT_WIDTH"
+    exit
+fi
+
+if [ $(dpkg-query -W -f='${Status}' ubuntu-server 2>/dev/null | grep -c "ok installed") -eq 0 ];
+then
+  	whiptail --msgbox "'ubuntu-server' is not installed, this doesn't seem to be a server. Please install the server version of Ubuntu and restart the script" "$WT_HEIGHT" "$WT_WIDTH"
+#        exit 1
+fi
 
 ################################################ Apps 2
 
@@ -899,9 +951,9 @@ whiptail --title "This is your updated file" --textbox "$DELETESTRINGFILE" "$WT_
 ################################ Kernel upgrade 3.25
 
 do_ukupgrade() {
-mkdir -p $SCRIPTS
-wget https://raw.githubusercontent.com/muhasturk/ukupgrade/master/ukupgrade -P $SCRIPTS
-bash $SCRIPTS/ukupgrade
+mkdir -p "$SCRIPTS"
+wget https://raw.githubusercontent.com/muhasturk/ukupgrade/master/ukupgrade -P "$SCRIPTS"
+bash "$SCRIPTS"/ukupgrade
 
 whiptail --msgbox "Kernel upgraded..." "$WT_HEIGHT" "$WT_WIDTH"
 }
@@ -1411,9 +1463,9 @@ do_install_networkmanager() {
 ################################ Install Nextcloud 4.16
 
 do_nextcloud() {
-mkdir -p $SCRIPTS
-wget https://raw.githubusercontent.com/nextcloud/vm/master/nextcloud_install_production.sh -P $SCRIPTS
-bash $SCRIPTS/nextcloud_install_production.sh
+mkdir -p "$SCRIPTS"
+wget https://raw.githubusercontent.com/nextcloud/vm/master/nextcloud_install_production.sh -P "$SCRIPTS"
+bash "$SCRIPTS"/nextcloud_install_production.sh
 }
 
 ################################ Install OpenVpn 4.17
@@ -1542,8 +1594,8 @@ whiptail --msgbox "Virtualbox is now installed..." "$WT_HEIGHT" "$WT_WIDTH"
 ################################ Install virtualbox extension pack 4.22
 
 do_vboxextpack() {
-wget http://download.virtualbox.org/virtualbox/5.1.4/Oracle_VM_VirtualBox_Extension_Pack-5.1.4-110228.vbox-extpack -P $SCRIPTS/
-vboxmanage extpack install $SCRIPTS/http://download.virtualbox.org/virtualbox/5.1.4/Oracle_VM_VirtualBox_Extension_Pack-5.1.4-110228.vbox-extpack
+wget http://download.virtualbox.org/virtualbox/5.1.4/Oracle_VM_VirtualBox_Extension_Pack-5.1.4-110228.vbox-extpack -P "$SCRIPTS"/
+vboxmanage extpack install "$SCRIPTS"/http://download.virtualbox.org/virtualbox/5.1.4/Oracle_VM_VirtualBox_Extension_Pack-5.1.4-110228.vbox-extpack
 
 whiptail --msgbox "Virtualbox extension pack is installed..." "$WT_HEIGHT" "$WT_WIDTH"
 }
@@ -1873,20 +1925,20 @@ do_update() {
 
 	dpkg --configure --pending
 
-  if [ -f $SCRIPTS/techandtool.sh ]; then
-          rm $SCRIPTS/techandtool.sh
+  if [ -f "$SCRIPTS"/techandtool.sh ]; then
+          rm "$SCRIPTS"/techandtool.sh
   fi
 
   if [ -f /usr/sbin/techandtool ]; then
           rm /usr/sbin/techandtool
   fi
-          mkdir -p $SCRIPTS
-          wget -q https://github.com/ezraholm50/techandtool/raw/master/techandtool.sh -P $SCRIPTS
-          cp $SCRIPTS/techandtool.sh /usr/sbin/techandtool
+          mkdir -p "$SCRIPTS"
+          wget -q https://github.com/ezraholm50/techandtool/raw/master/techandtool.sh -P "$SCRIPTS"
+          cp "$SCRIPTS"/techandtool.sh /usr/sbin/techandtool
           chmod +x /usr/sbin/techandtool
 
-          if [ -f $SCRIPTS/techandtool.sh ]; then
-                  rm $SCRIPTS/techandtool.sh
+          if [ -f "$SCRIPTS"/techandtool.sh ]; then
+                  rm "$SCRIPTS"/techandtool.sh
           fi
 
           exec techandtool
