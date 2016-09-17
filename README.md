@@ -16,6 +16,7 @@
 * To debug the tool run: ```sudo bash -x techandtool```
 
 # This script can:
+Index
 * 1 Variable / requirements
 * 1.0 Network
 * 1.1 Network vars
@@ -28,13 +29,15 @@
 * 1.8 Locations
 * 1.9 Ask to reboot
 * 1.10 Check Ubuntu OS
-* 2 Apps
-* 2.1 Collabora (Under construction)
-* 2.2 Spreed-webrtc (Under construction)
-* 2.3 Gpxpod (Under construction)
-* 2.4 Vacant
-* 2.5 Vacant
-* 2.6 Vacant
+* 2 Tech and Me
+* 2.1 Install Nextcloud
+* 2.2 Install Nextcloud Apps
+* 2.91 Collabora
+* 2.92 Spreed-webrtc
+* 2.93 Gpxpod
+* 2.3 Install Wordpress
+* 2.4 Install NextBerry
+* 2.5 Install Teamspeak
 * 3 Tools
 * 3.1 Show LAN details
 * 3.2 Show WAN details
@@ -43,7 +46,7 @@
 * 3.5 Connect to WLAN
 * 3.6 Raspberry specific
 * 3.61 Resize root fs
-* 3.62 External USB HD (Under construction)
+* 3.62 External USB HD
 * 3.63 RPI-update
 * 3.64 Raspi-config
 * 3.7 Show folder size
@@ -76,14 +79,14 @@
 * 4.6 Install ClamAV
 * 4.7 Install Fail2Ban
 * 4.8 Install Nginx
-* 4.9 Install Teamspeak
+* 4.9 Vacant
 * 4.10 Install NFS client
 * 4.11 Install NFS server
 * 4.12 Install DDclient
 * 4.13 Install Atomic-Toolkit
 * 4.14 Install Plesk
 * 4.15 Install Network-manager
-* 4.16 Install Nextcloud
+* 4.16 Vacant
 * 4.17 Install OpenVpn
 * 4.18 Install Plex
 * 4.19 Install VNC
@@ -98,7 +101,7 @@
 
 * CAREFULL THIS IS ALPHA SOFTWARE, USE AT YOUR OWN RISK
 
-# Tech and Me
+* Tech and Me
 We at [Tech and Me](https://www.techandme.se) dedicate our time building and maintaining Virtual Machines so that the less skilled users can benefit from easy setup servers.
 
 Here is an example of VM's we offer for **free**:

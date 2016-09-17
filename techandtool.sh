@@ -7,7 +7,7 @@
 # Whiptail menu to install various Nextcloud app and do other useful stuf.
 #
 # To do
-# Backup & restore, 2FA, ukupgrade, Collabora, Spreed, Gpxpod
+# Backup & restore, 2FA, ukupgrade, Collabora, Spreed, Gpxpod, if success then msg on do_*
 #
 ##### Index ######
 # 1 Variable / requirements
@@ -22,13 +22,15 @@
 # 1.8 Locations
 # 1.9 Ask to reboot
 # 1.10 Check Ubuntu OS
-# 2 Apps
-# 2.1 Collabora
-# 2.2 Spreed-webrtc
-# 2.3 Gpxpod
-# 2.4 Vacant
-# 2.5 Vacant
-# 2.6 Vacant
+# 2 Tech and Me
+# 2.1 Install Nextcloud
+# 2.2 Install Nextcloud Apps
+# 2.91 Collabora
+# 2.92 Spreed-webrtc
+# 2.93 Gpxpod
+# 2.3 Install Wordpress
+# 2.4 Install NextBerry
+# 2.5 Install Teamspeak
 # 3 Tools
 # 3.1 Show LAN details
 # 3.2 Show WAN details
@@ -70,14 +72,14 @@
 # 4.6 Install ClamAV
 # 4.7 Install Fail2Ban
 # 4.8 Install Nginx
-# 4.9 Install Teamspeak
+# 4.9 Vacant
 # 4.10 Install NFS client
 # 4.11 Install NFS server
 # 4.12 Install DDclient
 # 4.13 Install Atomic-Toolkit
 # 4.14 Install Plesk
 # 4.15 Install Network-manager
-# 4.16 Install Nextcloud
+# 4.16 Vacant
 # 4.17 Install OpenVpn
 # 4.18 Install Plex
 # 4.19 Install VNC
@@ -91,7 +93,7 @@
 # 7 Tech and Tool
 ################################################ Variable 1
 
-REPO='https://raw.githubusercontent.com/ezraholm50/techandtool/master'
+INTERACTIVE=True
 
 ################################ Network vars 1.1
 
@@ -184,16 +186,14 @@ fi
 
 ################################ Whiptail size 1.4
 
-INTERACTIVE=True
-
 calc_wt_size() {
   WT_HEIGHT=17
   WT_WIDTH=$(tput cols)
 
-  if [ -z ""$WT_WIDTH"" ] || [ ""$WT_WIDTH"" -lt 60 ]; then
+  if [ -z "$WT_WIDTH" ] || [ "$WT_WIDTH" -lt 60 ]; then
     WT_WIDTH=80
   fi
-  if [ ""$WT_WIDTH"" -gt 178 ]; then
+  if [ "$WT_WIDTH" -gt 178 ]; then
     WT_WIDTH=120
   fi
   WT_MENU_HEIGHT=$((WT_HEIGHT-7))
@@ -255,7 +255,7 @@ else
           rm /usr/sbin/techandtool
   fi
           mkdir -p "$SCRIPTS"
-          wget -q https://github.com/ezraholm50/techandtool/raw/master/techandtool.sh -P "$SCRIPTS"
+          wget -q $REPO/techandtool.sh -P "$SCRIPTS"
           cp "$SCRIPTS"/techandtool.sh /usr/sbin/techandtool
           chmod +x /usr/sbin/techandtool
 
@@ -269,7 +269,12 @@ fi
 
 ################################################ Locations 1.8
 
-
+REPO='https://raw.githubusercontent.com/ezraholm50/techandtool/master'
+COLLABORAREPO='https://raw.githubusercontent.com/ezraholm50/collabora-auto/master'
+SPREEDREPO='https://raw.githubusercontent.com/ezraholm50/Spreed-auto/master'
+NCREPO='https://raw.githubusercontent.com/nextcloud/vm/masteR'
+WORDPRESSREPO='https://raw.githubusercontent.com/enoch85/wordpress-vm/master/'
+NEXTBERRYREPO='https://raw.githubusercontent.com/ezraholm50/NextBerry/master'
 
 ################################################ Do finish 1.9
 
@@ -311,22 +316,27 @@ then
 #        exit 1
 fi
 
-################################################ Apps 2
+################################################ Techandme 2
 
-do_apps() {
-  FUN=$(whiptail --backtitle "Apps" --title "Tech and Tool - https://www.techandme.se" --menu "Tech and tool" "$WT_HEIGHT" "$WT_WIDTH" $WT_MENU_HEIGHT --cancel-button Back --ok-button Select \
-  "P1 Collabora" "Docker" \
-  "P2 Spreed-webrtc" "Spreedme" \
-  "P3 Gpxpod" "" \
+
+do_techandme() {
+  FUN=$(whiptail --backtitle "Tech and Me VM's" --title "Tech and Tool - https://www.techandme.se" --menu "Tech and tool" "$WT_HEIGHT" "$WT_WIDTH" $WT_MENU_HEIGHT --cancel-button Back --ok-button Select \
+  "0 Install Nextcloud" "Requires a clean Ubuntu 16.04 server" \
+  "1 Install Nextcloud apps" "" \
+  "2 Install Wordpress" "Requires a clean Ubuntu 16.04 server" \
+  "3 Install NextBerry" "Requires a clean Ubuntu 16.04 server on RPI 2 or 3" \
+  "4 Install Teamspeak" "Requires Ubuntu 16.04 server" \
     3>&1 1>&2 2>&3)
   RET=$?
   if [ $RET -eq 1 ]; then
     return 0
   elif [ $RET -eq 0 ]; then
     case "$FUN" in
-      P1\ *) do_collabora ;;
-      P2\ *) do_spreed_webrtc ;;
-      P3\ *) do_gpxpod ;;
+      0\ *) do_nextcloud ;;
+      1\ *) do_apps ;;
+      2\ *) do_wordpress ;;
+      3\ *) do_nextberry ;;
+      4\ *) do_teamspeak ;;
       *) whiptail --msgbox "Programmer error: unrecognized option" 20 60 1 ;;
     esac || whiptail --msgbox "There was an error running option $FUN" 20 60 1
  else
@@ -334,158 +344,194 @@ do_apps() {
   fi
 }
 
-################################ Collabora 2.1
+################################################ Install Nextcloud 2.1
+
+do_nextcloud() {
+mkdir -p "$SCRIPTS"
+wget "$NCREPO"/nextcloud_install_production.sh -P "$SCRIPTS"
+bash "$SCRIPTS"/nextcloud_install_production.sh
+}
+
+################################################ Install Nextcloud apps 2.2
+
+do_apps() {
+  FUN=$(whiptail --backtitle "Apps" --title "Tech and Tool - https://www.techandme.se" --menu "Tech and tool" "$WT_HEIGHT" "$WT_WIDTH" $WT_MENU_HEIGHT --cancel-button Back --ok-button Select \
+  "1 Collabora" "Docker" \
+  "2 Spreed-webrtc" "Spreedme" \
+  "3 Gpxpod" "" \
+    3>&1 1>&2 2>&3)
+  RET=$?
+  if [ $RET -eq 1 ]; then
+    return 0
+  elif [ $RET -eq 0 ]; then
+    case "$FUN" in
+      1\ *) do_collabora ;;
+      2\ *) do_spreed_webrtc ;;
+      3\ *) do_gpxpod ;;
+      *) whiptail --msgbox "Programmer error: unrecognized option" 20 60 1 ;;
+    esac || whiptail --msgbox "There was an error running option $FUN" 20 60 1
+ else
+   exit 1
+  fi
+}
+
+################### Collabora 2.91
 
 do_collabora() {
   whiptail --msgbox "Under construction..." "$WT_HEIGHT" "$WT_WIDTH"
+  #wget $COLLABORAREPO/install.sh -P $SCRIPTS
+  #mv $SCRIPTS/install.sh $SCRIPTS/collaborainstall.sh
+  #bash $SCRIPTS/collaborainstall.sh
 }
 
-################################ Spreed-webrtc 2.2
+################### Spreed-webrtc 2.92
 
 do_spreed_webrtc() {
-ENCRYPTIONSECRET=$(openssl rand -hex 32)
-SESSIONSECRET=$(openssl rand -hex 32)
-SERVERTOKEN=$(openssl rand -hex 32)
-SHAREDSECRET=$(openssl rand -hex 32)
-DOMAIN=$(whiptail --title "Techandme.se Collabora online installer" --inputbox "Nextcloud url, make sure it looks like this: https://cloud.nextcloud.com" "$WT_HEIGHT" "$WT_WIDTH" https://yourdomain.com 3>&1 1>&2 2>&3)
-NCDIR=$(whiptail --title "Nextcloud directory" --inputbox "If you're not sure use the default setting" "$WT_HEIGHT" "$WT_WIDTH" /var/www/nextcloud 3>&1 1>&2 2>&3)
-WEB=$(whiptail --title "What webserver do you run" --inputbox "If you're not sure use the default setting" "$WT_HEIGHT" "$WT_WIDTH" apache2 3>&1 1>&2 2>&3)
-SPREEDDOMAIN=$(whiptail --title "Spreed domain" --inputbox "Leave empty for autodiscovery" "$WT_HEIGHT" "$WT_WIDTH" 3>&1 1>&2 2>&3)
-SPREEDPORT=$(whiptail --title "Spreed port" --inputbox "If you're not sure use the default setting" "$WT_HEIGHT" "$WT_WIDTH" 8443 3>&1 1>&2 2>&3)
-VHOST443=$(whiptail --title "Vhost 443 file location" --inputbox "If you're not sure use the default setting" "$WT_HEIGHT" "$WT_WIDTH" /etc/"$WEB"/sites-available/nextcloud_ssl_domain_self_signed.conf 3>&1 1>&2 2>&3)
-#VHOST80="/etc/$WEB/sites-available/xxx"
-LISTENADDRESS="$ADDRESS"
-LISTENPORT="$SPREEDPORT"
-
-# Install spreed (Unstable is used as there are some systemd errors in ubuntu 16.04)
-apt-add-repository ppa:strukturag/spreed-webrtc
-apt-get update
-apt-get install spreed-webrtc -y
-
-# Change server conf.
-sed -i "s|listen = 127.0.0.1:8080|listen = $LISTENADDRESS:$LISTENPORT|g" /etc/spreed/webrtc.conf
-sed -i "s|;basePath = /some/sub/path/|basePath = /webrtc/|g" /etc/spreed/webrtc.conf
-sed -i "s|;authorizeRoomJoin = false|authorizeRoomJoin = true|g" /etc/spreed/webrtc.conf
-sed -i "s|;stunURIs = stun:stun.spreed.me:443|stunURIs = stun:stun.spreed.me:443|g" /etc/spreed/webrtc.conf
-sed -i "s|encryptionSecret = .*|encryptionSecret = $ENCRYPTIONSECRET|g" /etc/spreed/webrtc.conf
-sed -i "s|sessionSecret = .*|sessionSecret = $SESSIONSECRET|g" /etc/spreed/webrtc.conf
-sed -i "s|serverToken = .*|serverToken = $SERVERTOKEN|g" /etc/spreed/webrtc.conf
-sed -i "s|;extra = /usr/share/spreed-webrtc-server/extra|extra = $NCDIR/apps/spreedme/extra|g" /etc/spreed/webrtc.conf
-sed -i "s|;plugin = extra/static/myplugin.js|plugin = $NCDIR/apps/spreedme/extra/static/owncloud.js|g" /etc/spreed/webrtc.conf
-sed -i "s|enabled = false|enabled = true|g" /etc/spreed/webrtc.conf
-sed -i "s|;mode = sharedsecret|mode = sharedsecret|g" /etc/spreed/webrtc.conf
-sed -i "s|;sharedsecret_secret = .*|sharedsecret_secret = $SHAREDSECRET|g" /etc/spreed/webrtc.conf
-
-# Change spreed.me config.php
-cp "$NCDIR"/apps/spreedme/config/config.php.in "$NCDIR"/apps/spreedme/config/config.php
-sed -i "s|const SPREED_WEBRTC_ORIGIN = '';|const SPREED_WEBRTC_ORIGIN = '$SPREEDDOMAIN';|g" "$NCDIR"/apps/spreedme/config/config.php
-sed -i "s|const SPREED_WEBRTC_SHAREDSECRET = 'bb04fb058e2d7fd19c5bdaa129e7883195f73a9c49414a7eXXXXXXXXXXXXXXXX';|const SPREED_WEBRTC_SHAREDSECRET = '$SHAREDSECRET';|g" "$NCDIR"/apps/spreedme/config/config.php
-
-# Change OwnCloudConfig.js
-cp "$NCDIR"/apps/spreedme/extra/static/config/OwnCloudConfig.js.in "$NCDIR"/apps/spreedme/extra/static/config/OwnCloudConfig.js
-sed -i "s|OWNCLOUD_ORIGIN: '',|OWNCLOUD_ORIGIN: 'SPREEDDOMAIN',|g" "$NCDIR"/apps/spreedme/extra/static/config/OwnCloudConfig.js
-
-# Restart spreed server
-service spreedwebrtc restart
-
-# Vhost configuration 443
-sed -i 's|</VirtualHost>||g' "$VHOST443"
-CAT <<-VHOST > "$VHOST443"
-<Location /webrtc>
-      ProxyPass http://"$LISTENADDRESS":"$LISTENPORT"/webrtc
-      ProxyPassReverse /webrtc
-  </Location>
-  <Location /webrtc/ws>
-      ProxyPass ws://"$LISTENADDRESS":"$LISTENPORT"/webrtc/ws
-  </Location>
-  ProxyVia On
-  ProxyPreserveHost On
-  RequestHeader set X-Forwarded-Proto 'https' env=HTTPS
-</VirtualHost>
-VHOST
-
-# Enable apache2 mods if needed
-      	if [ -d /etc/apache2/ ]; then
-      	        a2enmod proxy proxy_http proxy_wstunnel headers
-      	fi
-
-# Restart webserver
-service "$WEB" reload
-
-# Almost done
-echo
-echo "Please enable the app in Nextcloud/ownCloud..."
-echo
-echo "If there are any errors make sure to append /?debug to the url when visiting the spreedme app in the cloud"
-echo "This will help us troubleshoot the issues, you could also visit: mydomain.com/index.php/apps/spreedme/admin/debug"
+whiptail --msgbox "Under construction..." "$WT_HEIGHT" "$WT_WIDTH"
+#wget $SPREEDREPO/install.sh -P $SCRIPTS
+#mv $SCRIPTS/install.sh $SCRIPTS/spreedinstall.sh
+#bash $SCRIPTS/spreedinstall.sh
 }
 
-################################ Gpxpod 2.3
+################### Gpxpod 2.93
 
 do_gpxpod() {
 	whiptail --msgbox "Under construction..." "$WT_HEIGHT" "$WT_WIDTH"
+}
+
+################################################ Install Wordpress 2.3
+
+do_wordpress() {
+mkdir -p "$SCRIPTS"
+wget "$WORDPRESSREPO"/wordpress_install.sh -P "$SCRIPTS"
+bash "$SCRIPTS"/wordpress_install.sh
+}
+
+################################################ Install Nextberry 2.4
+
+do_nextberry() {
+mkdir -p "$SCRIPTS"
+wget "$NEXTBERRYREPO"/nextcloud_install_production.sh -P "$SCRIPTS"
+bash "$SCRIPTS"/nextcloud_install_production.sh
+}
+
+################################################ Install Teamspeak 2.5
+
+do_teamspeak() {
+# Add user
+useradd teamspeak3
+sed -i 's|:/home/teamspeak3:|:/home/teamspeak3:/usr/sbin/nologin|g' /etc/passwd
+
+# Get Teamspeak
+wget http://ftp.4players.de/pub/hosted/ts3/releases/3.0.10.3/teamspeak3-server_linux-amd64-3.0.10.3.tar.gz -P /tmp
+
+# Unpack Teamspeak
+tar xzf /tmp/teamspeak3-server_linux-amd64-3.0.10.3.tar.gz
+
+# Move to right directory
+mv /tmp/teamspeak3-server_linux-amd64 /usr/local/teamspeak3
+
+# Set ownership
+chown -R teamspeak3 /usr/local/teamspeak3
+
+# Add to upstart
+ln -s /usr/local/teamspeak3/ts3server_startscript.sh /etc/init.d/teamspeak3
+update-rc.d teamspeak3 defaults
+
+# Warning
+echo -e "\e[32m"
+echo    "+--------------------------------------------------------------------+"
+echo    "| Next you will need to copy/paste 3 things to a safe location       |"
+echo    "|                                                                    |"
+echo -e "|         \e[0mLOGIN, PASSWORD, SECURITY TOKEN\e[32m                            |"
+echo    "|                                                                    |"
+echo -e "|         \e[0mIF YOU FAIL TO DO SO, YOU HAVE TO REINSTALL TEAMSPEAK\e[32m    |"
+echo -e "|         \e[0mIn 30 Sec the script will continue, so be quick!/e[32m           |"
+echo    "+--------------------------------------------------------------------+"
+echo
+read -p "Press any key to start copying the important stuff to a safe location..." -n1 -s
+echo -e "\e[0m"
+echo
+
+# Start service
+service teamspeak3 start && sleep 30
+echo
+function ask_yes_or_no() {
+    read -p "$1 ([y]es or [N]o): "
+    case $(echo $REPLY | tr '[A-Z]' '[a-z]') in
+        y|yes) echo "yes" ;;
+        *)     echo "no" ;;
+    esac
+}
+
+ufw allow 9987/udp
+ufw allow 30033/tcp
+ufw allow 10011/tcp
+ufw allow 41144/tcp
+
+whiptail --msgbox "Teamspeak is now installed..." "$WT_HEIGHT" "$WT_WIDTH"
 }
 
 ################################################ Tools 3
 
 do_tools() {
 FUN=$(whiptail --backtitle "Tools" --title "Tech and Tool - Tools - https://www.techandme.se" --menu "Tech and tool" "$WT_HEIGHT" "$WT_WIDTH" $WT_MENU_HEIGHT --cancel-button Back --ok-button Select \
-"T1 Show LAN IP, Gateway, Netmask" "Ifconfig" \
-"T2 Show WAN IP" "External IP address" \
-"T3 Change Hostname" "Your machine's name" \
-"T4 Internationalisation Options" "Change language, time, date and keyboard layout" \
-"T5 Connect to WLAN" "Please have a wifi dongle/card plugged in before start" \
-"T6 Show folder size" "Using ncdu" \
-"T7 Show folder content" "with permissions" \
-"T8 Show connected devices" "blkid" \
-"T9 Show disks usage" "df -h" \
-"T10 Show system performance" "HTOP" \
-"T11 Disable IPV6" "Via sysctl.conf" \
-"T12 Find text" "In a given directory" \
-"T13 OOM fix" "Auto reboot on out of memory errors" \
-"T18 Set dns to Google and OpenDns" "Try google first if no response after 1 sec. switch to next NS" \
-"T19 Add progress bar" "Apply's to apt-get update, install & upgrade" \
-"T20 Boot to terminal by default" "Only if you use a GUI/desktop now" \
-"T21 Boot to GUI/desktop by default" "Only if you have a GUI installed and have terminal as default" \
-"T22 Delete line containing a string of text" "Warning, deletes every line containing the string!" \
-"T23 Set swappiness" "" \
-"T24 Upgrade Ubuntu Kernel" "To the latest version" \
-"T25 Backup your system" "" \
-"T26 Restore backup" "Made with the option above" \
-"T27 Protect SSH with Fail2Ban" "" \
-"T28 Protect SSH with Google 2 factor authentication" "" \
-"T29 Distribution upgrade" "Only LTS" \
+"1 Show LAN IP, Gateway, Netmask" "Ifconfig" \
+"2 Show WAN IP" "External IP address" \
+"3 Change Hostname" "Your machine's name" \
+"4 Internationalisation Options" "Change language, time, date and keyboard layout" \
+"5 Connect to WLAN" "Please have a wifi dongle/card plugged in before start" \
+"6 Show folder size" "Using ncdu" \
+"7 Show folder content" "with permissions" \
+"8 Show connected devices" "blkid" \
+"9 Show disks usage" "df -h" \
+"10 Show system performance" "HTOP" \
+"11 Disable IPV6" "Via sysctl.conf" \
+"12 Find text" "In a given directory" \
+"13 OOM fix" "Auto reboot on out of memory errors" \
+"18 Set dns to Google and OpenDns" "Try google first if no response after 1 sec. switch to next NS" \
+"19 Add progress bar" "Apply's to apt-get update, install & upgrade" \
+"20 Boot to terminal by default" "Only if you use a GUI/desktop now" \
+"21 Boot to GUI/desktop by default" "Only if you have a GUI installed and have terminal as default" \
+"22 Delete line containing a string of text" "Warning, deletes every line containing the string!" \
+"23 Set swappiness" "" \
+"24 Upgrade Ubuntu Kernel" "To the latest version" \
+"25 Backup your system" "" \
+"26 Restore backup" "Made with the option above" \
+"27 Protect SSH with Fail2Ban" "" \
+"28 Protect SSH with Google 2 factor authentication" "" \
+"29 Distribution upgrade" "Only LTS" \
   3>&1 1>&2 2>&3)
 RET=$?
 if [ $RET -eq 1 ]; then
   return 0
 elif [ $RET -eq 0 ]; then
   case "$FUN" in
-    T1\ *) do_ifconfig ;;
-    T2\ *) do_wan_ip ;;
-    T3\ *) do_change_hostname ;;
-    T4\ *) do_internationalisation_menu ;;
-    T5\ *) do_wlan ;;
-    T6\ *) do_foldersize ;;
-    T7\ *) do_listdir ;;
-    T8\ *) do_blkid ;;
-    T9\ *) do_df ;;
-    T10\ *) do_htop ;;
-    T11\ *) do_disable_ipv6 ;;
-    T12\ *) do_find_string ;;
-    T13\ *) do_oom ;;
-    T18\ *) do_dns ;;
-    T19\ *) do_progressbar ;;
-    T20\ *) do_bootterminal ;;
-    T21\ *) do_bootgui ;;
-    T22\ *) do_stringdel ;;
-    T23\ *) do_swappiness ;;
-    T24\ *) do_ukupgrade ;;
-    T25\ *) do_backup ;;
-    T26\ *) do_restore_backup ;;
-    T27\ *) do_fail2ban_ssh ;;
-    T28\ *) do_2fa ;;
-    T29\ *) do_ltsupgrade ;;
+    1\ *) do_ifconfig ;;
+    2\ *) do_wan_ip ;;
+    3\ *) do_change_hostname ;;
+    4\ *) do_internationalisation_menu ;;
+    5\ *) do_wlan ;;
+    6\ *) do_foldersize ;;
+    7\ *) do_listdir ;;
+    8\ *) do_blkid ;;
+    9\ *) do_df ;;
+    10\ *) do_htop ;;
+    11\ *) do_disable_ipv6 ;;
+    12\ *) do_find_string ;;
+    13\ *) do_oom ;;
+    18\ *) do_dns ;;
+    19\ *) do_progressbar ;;
+    20\ *) do_bootterminal ;;
+    21\ *) do_bootgui ;;
+    22\ *) do_stringdel ;;
+    23\ *) do_swappiness ;;
+    24\ *) do_ukupgrade ;;
+    25\ *) do_backup ;;
+    26\ *) do_restore_backup ;;
+    27\ *) do_fail2ban_ssh ;;
+    28\ *) do_2fa ;;
+    29\ *) do_ltsupgrade ;;
     *) whiptail --msgbox "Programmer error: unrecognized option" 20 60 1 ;;
   esac || whiptail --msgbox "There was an error running option $FUN" 20 60 1
 else
@@ -598,20 +644,20 @@ fi
 
 do_Raspberry() {
   FUN=$(whiptail --backtitle "Raspberry" --title "Tech and Tool - https://www.techandme.se" --menu "Raspberry" "$WT_HEIGHT" "$WT_WIDTH" $WT_MENU_HEIGHT --cancel-button Back --ok-button Select \
-  "R1 Resize SD" "" \
-  "R2 External USB" "Use an USB HD/SSD as root" \
-  "R3 RPI-update" "Update the RPI firmware and kernel" \
-  "R4 Raspi-config" "Set various settings, not all are tested! Already safely overclocked!" \
+  "1 Resize SD" "" \
+  "2 External USB" "Use an USB HD/SSD as root" \
+  "3 RPI-update" "Update the RPI firmware and kernel" \
+  "4 Raspi-config" "Set various settings, not all are tested! Already safely overclocked!" \
     3>&1 1>&2 2>&3)
   RET=$?
   if [ $RET -eq 1 ]; then
     return 0
   elif [ $RET -eq 0 ]; then
     case "$FUN" in
-      R1\ *) do_expand_rootfs "$@";;
-      R2\ *) do_external_usb ;;
-      R3\ *) do_rpi_update ;;
-      R4\ *) do_raspi_config ;;
+      1\ *) do_expand_rootfs "$@";;
+      2\ *) do_external_usb ;;
+      3\ *) do_rpi_update ;;
+      4\ *) do_raspi_config ;;
       *) whiptail --msgbox "Programmer error: unrecognized option" 20 60 1 ;;
     esac || whiptail --msgbox "There was an error running option $FUN" 20 60 1
   fi
@@ -1103,21 +1149,19 @@ do_install() {
       "I6 Install ClamAV" "Antivirus, set daily scans, infections will be emailed" \
       "I7 Install Fail2Ban" "Install a failed login monitor, needs jails for apps!!!!" \
       "I8 Install Nginx" "Install Nginx webserver" \
-      "I9 Install Teamspeak" "Install Teamspeak 3 server to do voice chat" \
+      "I9 Install Zram-config" "For devices with low RAM, compresses your RAM content (RPI)" \
       "I10 Install NFS Client" "Install NFS client to be able to mount NFS shares" \
       "I11 Install NFS Server" "Install NFS server to be able to broadcast NFS shares" \
       "I12 Install DDClient" "Update Dynamic Dns with WAN IP, dyndns.com, easydns.com etc." \
       "I13 Install AtoMiC-ToolKit" "Installer for Sabnzbd, Sonar, Couchpotato etc." \
       "I14 Install OpenVPN" "Connect to an OpenVPN server to secure your connections" \
       "I15 Install Network manager" "Advanced network tools" \
-      "I16 Install NextCloud" "Your own Dropbox/google drive" \
+      "I16 Install Plesk" "Hosting platform, ONLY for a clean Ubuntu 14.04 server!" \
       "I17 Install Plex" "Powerfull Media manager, also sets daily updates" \
       "I18 Install Vnc server" "With LXDE minimal/core desktop, only use with SSH." \
-      "I19 Install Zram-config" "For devices with low RAM, compresses your RAM content (RPI)" \
       "I20 Install Virtualbox" "Virtualize any OS Windows, ubuntu etc." \
       "I21 Install Virtualbox extension pack" "Expand Virtualbox's capability's" \
       "I22 Install Virtualbox guest additions" "Enables features such as USB, shared folders etc. in side the guest" \
-      "I23 Install Plesk" "Hosting platform, ONLY for a clean Ubuntu 14.04 server!" \
     3>&1 1>&2 2>&3)
   RET=$?
   if [ $RET -eq 1 ]; then
@@ -1132,21 +1176,19 @@ do_install() {
       I6\ *) do_clamav ;;
       I7\ *) do_fail2ban ;;
       I8\ *) do_nginx ;;
-      I9\ *) do_teamspeak ;;
+      I9\ *) do_install_zram ;;
       I10\ *) do_install_nfs_client ;;
       I11\ *) do_install_nfs_server ;;
       I12\ *) do_install_ddclient ;;
       I13\ *) do_atomic ;;
       I14\ *) do_openvpn ;;
       I15\ *) do_install_networkmanager ;;
-      I16\ *) do_nextcloud ;;
+      I16\ *) do_plesk ;;
       I17\ *) do_install_plex ;;
       I18\ *) do_install_vnc ;;
-      I19\ *) do_install_zram ;;
       I20\ *) do_virtualbox ;;
       I21\ *) do_vboxextpack ;;
       I22\ *) do_vboxguestadd ;;
-      I23\ *) do_plesk ;;
       *) whiptail --msgbox "Programmer error: unrecognized option" 20 60 1 ;;
     esac || whiptail --msgbox "There was an error running option $FUN" 20 60 1
  else
@@ -1298,62 +1340,9 @@ else
 fi
 }
 
-################################ Install Teamspeak  4.9
+################################ Install  4.9
 
-do_teamspeak() {
-# Add user
-useradd teamspeak3
-sed -i 's|:/home/teamspeak3:|:/home/teamspeak3:/usr/sbin/nologin|g' /etc/passwd
 
-# Get Teamspeak
-wget http://ftp.4players.de/pub/hosted/ts3/releases/3.0.10.3/teamspeak3-server_linux-amd64-3.0.10.3.tar.gz -P /tmp
-
-# Unpack Teamspeak
-tar xzf /tmp/teamspeak3-server_linux-amd64-3.0.10.3.tar.gz
-
-# Move to right directory
-mv /tmp/teamspeak3-server_linux-amd64 /usr/local/teamspeak3
-
-# Set ownership
-chown -R teamspeak3 /usr/local/teamspeak3
-
-# Add to upstart
-ln -s /usr/local/teamspeak3/ts3server_startscript.sh /etc/init.d/teamspeak3
-update-rc.d teamspeak3 defaults
-
-# Warning
-echo -e "\e[32m"
-echo    "+--------------------------------------------------------------------+"
-echo    "| Next you will need to copy/paste 3 things to a safe location       |"
-echo    "|                                                                    |"
-echo -e "|         \e[0mLOGIN, PASSWORD, SECURITY TOKEN\e[32m                            |"
-echo    "|                                                                    |"
-echo -e "|         \e[0mIF YOU FAIL TO DO SO, YOU HAVE TO REINSTALL TEAMSPEAK\e[32m    |"
-echo -e "|         \e[0mIn 30 Sec the script will continue, so be quick!/e[32m           |"
-echo    "+--------------------------------------------------------------------+"
-echo
-read -p "Press any key to start copying the important stuff to a safe location..." -n1 -s
-echo -e "\e[0m"
-echo
-
-# Start service
-service teamspeak3 start && sleep 30
-echo
-function ask_yes_or_no() {
-    read -p "$1 ([y]es or [N]o): "
-    case $(echo $REPLY | tr '[A-Z]' '[a-z]') in
-        y|yes) echo "yes" ;;
-        *)     echo "no" ;;
-    esac
-}
-
-ufw allow 9987/udp
-ufw allow 30033/tcp
-ufw allow 10011/tcp
-ufw allow 41144/tcp
-
-whiptail --msgbox "Teamspeak is now installed..." "$WT_HEIGHT" "$WT_WIDTH"
-}
 
 ################################ Install NFS client 4.10
 
@@ -1460,13 +1449,9 @@ do_install_networkmanager() {
   fi
 }
 
-################################ Install Nextcloud 4.16
+################################ Install 4.16
 
-do_nextcloud() {
-mkdir -p "$SCRIPTS"
-wget https://raw.githubusercontent.com/nextcloud/vm/master/nextcloud_install_production.sh -P "$SCRIPTS"
-bash "$SCRIPTS"/nextcloud_install_production.sh
-}
+
 
 ################################ Install OpenVpn 4.17
 
@@ -2015,7 +2000,7 @@ fi
 calc_wt_size
 while true; do
   FUN=$(whiptail --backtitle "Tech and Tool main menu" --title "Tech and Tool - https://www.techandme.se" --menu "Tech and tool" "$WT_HEIGHT" "$WT_WIDTH" $WT_MENU_HEIGHT --cancel-button Finish --ok-button Select \
-    "1 Apps" "Nextcloud" \
+    "1 Tech and Me" "Install various VM's" \
     "2 Tools" "Various tools" \
     "3 Packages" "Install various software packages" \
     "4 Firewall" "Enable/disable and open/close ports" \
@@ -2031,7 +2016,7 @@ while true; do
 	do_finish
   elif [ $RET -eq 0 ]; then
     case "$FUN" in
-      1\ *) do_apps ;;
+      1\ *) do_techandme ;;
       2\ *) do_tools ;;
       3\ *) do_install ;;
       4\ *) do_firewall ;;
