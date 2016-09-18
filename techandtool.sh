@@ -1671,7 +1671,7 @@ do_firewall() {
       1\ *) do_ufw_disable ;;
       2\ *) do_ufw_status ;;
       3\ *) do_ufw_allow ;;
-      33\ *) do_ufw_deny
+      33\ *) do_ufw_deny ;;
       4\ *) do_ufw_reset ;;
       5\ *) do_allow_teamspeak ;;
       6\ *) do_allow_32400 ;;
