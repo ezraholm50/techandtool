@@ -625,18 +625,14 @@ do_change_timezone() {
 
 do_wlan() {
 whiptail --yesno "Do you want to connect to wifi? Its recommended to use a wired connection for your Nextcloud server!" --yes-button "Wireless" --no-button "Wired" "$WT_HEIGHT" "$WT_WIDTH"
-	if [ $? -eq 0 ]; then # yes
-
+if [ $? -eq 0 ]; then # yes
       apt-get install linux-firmware wicd-curses wicd-daemon wicd-cli -y
-
-			whiptail --msgbox "In the next screen navigate with the arrow keys (right arrow for config) and don't for get to select auto connect at the networks config settings." "$WT_HEIGHT" "$WT_WIDTH"
       wicd-curses
-      whiptail --msgbox "Due to the new interface the DHCP server gave you a new ip:\n\n'$ADDRESS' \n\n If the NIC starts with 'wl', you're good to go and you can unplug the ethernet cable: \n\n '$IFACE'" "$WT_HEIGHT" "$WT_WIDTH"
+			#whiptail --msgbox "In the next screen navigate with the arrow keys (right arrow for config) and don't for get to select auto connect at the networks config settings." "$WT_HEIGHT" "$WT_WIDTH"
+      #whiptail --msgbox "Due to the new interface the DHCP server gave you a new ip:\n\n'$ADDRESS' \n\n If the NIC starts with 'wl', you're good to go and you can unplug the ethernet cable: \n\n '$IFACE'" "$WT_HEIGHT" "$WT_WIDTH"
 
-	else
-        		echo
+else
         		echo "We'll use a wired connection..."
-        		echo
 fi
 }
 
@@ -1446,7 +1442,6 @@ fi
 ################################ Install Plesk 4.14
 
 do_plesk() {
-
   {
   i=1
   while read -r line; do
@@ -1638,64 +1633,68 @@ ASK_TO_REBOOT=1
 
 do_firewall() {
   FUN=$(whiptail  --backtitle "Firewall" --title "Tech and Tool - https://www.techandme.se" --menu "Firewall options" "$WT_HEIGHT" "$WT_WIDTH" "$WT_MENU_HEIGHT" --cancel-button Back --ok-button Select \
-    "A0 Enable Firewall" "" \
-    "A1 Disable Firewall" "" \
-    "A2 Show current rules" "" \
-    "!! Reset Firewall" "Be carefull only do this if you know what you're doing" \
-    "A3 Allow port Multiple" "Teamspeak" \
-    "A4 Allow port 32400" "Plex" \
-    "A5 Allow port 8989" "Sonarr" \
-    "A6 Allow port 5050" "Couchpotato" \
-    "A7 Allow port 8181" "Headphones" \
-    "A8 Allow port 8085" "HTPC Manager" \
-    "A9 Allow port 8080" "Mylar" \
-    "A10 Allow port 10000" "Webmin" \
-    "A11 Allow port 8080" "Sabnzbdplus" \
-    "A12 Allow port 9090" "Sabnzbdplus https" \
-    "A13 Allow port 2049" "NFS" \
-    "A14 Deny port Multiple" "Teamspeak" \
-    "A15 Deny port 32400" "Plex" \
-    "A16 Deny port 8989" "Sonarr" \
-    "A17 Deny port 5050" "Couchpotato" \
-    "A18 Deny port 8181" "Headphones" \
-    "A19 Deny port 8085" "HTPC Manager" \
-    "A20 Deny port 8080" "Mylar" \
-    "A21 Deny port 10000" "Webmin" \
-    "A22 Deny port 8080" "Sabnzbdplus" \
-    "A23 Deny port 9090" "Sabnzbdplus https" \
-    "A24 Deny port 2049" "NFS" \
+    "0 Enable Firewall" "" \
+    "1 Disable Firewall" "" \
+    "2 Show current rules" "" \
+    "3 Allow user defined" "" \
+    "33 Deny user defined" "" \
+    "4 Reset Firewall" "Be carefull only do this if you know what you're doing" \
+    "5 Allow port Multiple" "Teamspeak" \
+    "6 Allow port 32400" "Plex" \
+    "7 Allow port 8989" "Sonarr" \
+    "8 Allow port 5050" "Couchpotato" \
+    "9 Allow port 8181" "Headphones" \
+    "10 Allow port 8085" "HTPC Manager" \
+    "11 Allow port 8080" "Mylar" \
+    "12 Allow port 10000" "Webmin" \
+    "13 Allow port 8080" "Sabnzbdplus" \
+    "14 Allow port 9090" "Sabnzbdplus https" \
+    "15 Allow port 2049" "NFS" \
+    "16 Deny port Multiple" "Teamspeak" \
+    "17 Deny port 32400" "Plex" \
+    "18 Deny port 8989" "Sonarr" \
+    "19 Deny port 5050" "Couchpotato" \
+    "20 Deny port 8181" "Headphones" \
+    "21 Deny port 8085" "HTPC Manager" \
+    "22 Deny port 8080" "Mylar" \
+    "23 Deny port 10000" "Webmin" \
+    "24 Deny port 8080" "Sabnzbdplus" \
+    "25 Deny port 9090" "Sabnzbdplus https" \
+    "26 Deny port 2049" "NFS" \
     3>&1 1>&2 2>&3)
   RET=$?
   if [ $RET -eq 1 ]; then
     return 0
   elif [ $RET -eq 0 ]; then
     case "$FUN" in
-      A0\ *) do_ufw_enable ;;
-      A1\ *) do_ufw_disable ;;
-      A2\ *) do_ufw_status ;;
-      !!\ *) do_ufw_reset ;;
-      A3\ *) do_allow_teamspeak ;;
-      A4\ *) do_allow_32400 ;;
-      A5\ *) do_allow_8989 ;;
-      A6\ *) do_allow_5050 ;;
-      A7\ *) do_allow_8181 ;;
-      A8\ *) do_allow_8085 ;;
-      A9\ *) do_allow_mylar ;;
-      A10\ *) do_allow_10000 ;;
-      A11\ *) do_allow_8080 ;;
-      A12\ *) do_allow_9090 ;;
-      A13\ *) do_allow_2049 ;;
-      A14\ *) do_deny_teamspeak ;;
-      A15\ *) do_deny_32400 ;;
-      A16\ *) do_deny_8989 ;;
-      A17\ *) do_deny_5050 ;;
-      A18\ *) do_deny_8181 ;;
-      A19\ *) do_deny_8085 ;;
-      A20\ *) do_deny_mylar ;;
-      A21\ *) do_deny_10000 ;;
-      A22\ *) do_deny_8080 ;;
-      A23\ *) do_deny_9090 ;;
-      A24\ *) do_deny_2049 ;;
+      0\ *) do_ufw_enable ;;
+      1\ *) do_ufw_disable ;;
+      2\ *) do_ufw_status ;;
+      3\ *) do_ufw_allow ;;
+      33\ *) do_ufw_deny
+      4\ *) do_ufw_reset ;;
+      5\ *) do_allow_teamspeak ;;
+      6\ *) do_allow_32400 ;;
+      7\ *) do_allow_8989 ;;
+      8\ *) do_allow_5050 ;;
+      9\ *) do_allow_8181 ;;
+      10\ *) do_allow_8085 ;;
+      11\ *) do_allow_mylar ;;
+      12\ *) do_allow_10000 ;;
+      13\ *) do_allow_8080 ;;
+      14\ *) do_allow_9090 ;;
+      15\ *) do_allow_2049 ;;
+      16\ *) do_deny_teamspeak ;;
+      17\ *) do_deny_32400 ;;
+      18\ *) do_deny_8989 ;;
+      19\ *) do_deny_5050 ;;
+      20\ *) do_deny_8181 ;;
+      21\ *) do_deny_8085 ;;
+      22\ *) do_deny_mylar ;;
+      23\ *) do_deny_10000 ;;
+      24\ *) do_deny_8080 ;;
+      25\ *) do_deny_9090 ;;
+      26\ *) do_deny_2049 ;;
       *) whiptail --msgbox "Programmer error: unrecognized option" 20 60 1 ;;
     esac || whiptail --msgbox "There was an error running option $FUN" 20 60 1
   fi
@@ -1710,168 +1709,182 @@ do_firewall() {
 # Ufw reset
 ######Firewall#######
 do_ufw_enable() {
-#sudo ufw reset << EOF
+#ufw reset << EOF
 #y
 #EOF
-sudo ufw enable
-sudo ufw default deny incoming
-sudo ufw status
+ufw enable
+ufw default deny incoming
+ufw status
 sleep 2
 whiptail --msgbox "Firewall is now enabled..." "$WT_HEIGHT" "$WT_WIDTH"
 }
 ######Firewall#######
 do_ufw_disable() {
-sudo ufw disable
-sudo ufw status
+ufw disable
+ufw status
 sleep 2
 whiptail --msgbox "Firewall is now disabled, you are at risk..." "$WT_HEIGHT" "$WT_WIDTH"
 }
 ######Firewall#######
 do_ufw_status() {
-STATUS=$(sudo ufw status)
+STATUS=$(ufw status)
 whiptail --msgbox "$STATUS" "$WT_HEIGHT" "$WT_WIDTH"
 }
 ######Firewall#######
+do_ufw_allow() {
+PORT=$(whiptail --inputbox "What port or range should we allow? Type: man ufw for details on the firewall." "$WT_HEIGHT" "$WT_WIDTH" 3>&1 1>&2 2>&3)
+ufw allow $PORT
+ufw status
+sleep 2
+}
+######Firewall#######
+do_ufw_deny() {
+PORT=$(whiptail --inputbox "What port or range should we deny? Type: man ufw for details on the firewall." "$WT_HEIGHT" "$WT_WIDTH" 3>&1 1>&2 2>&3)
+ufw allow $PORT
+ufw status
+sleep 2
+}
+######Firewall#######
 do_ufw_reset() {
-sudo ufw reset << EOF
+ufw reset << EOF
 y
 EOF
 whiptail --msgbox "Firewall is now reset please set your rules..." "$WT_HEIGHT" "$WT_WIDTH"
 }
 ######Firewall#######
 do_allow_32400() {
-sudo ufw allow 32400
-sudo ufw status
+ufw allow 32400
+ufw status
 sleep 2
 }
 ######Firewall#######
 do_allow_10000() {
-sudo ufw allow 10000
-sudo ufw status
+ufw allow 10000
+ufw status
 sleep 2
 }
 ######Firewall#######
 do_allow_5050() {
-sudo ufw allow 5050
-sudo ufw status
+ufw allow 5050
+ufw status
 sleep 2
 }
 ######Firewall#######
 do_allow_9090() {
-sudo ufw allow 9090
-sudo ufw status
+ufw allow 9090
+ufw status
 sleep 2
 }
 ######Firewall#######
 do_allow_8080() {
-sudo ufw allow 8080
-sudo ufw status
+ufw allow 8080
+ufw status
 sleep 2
 }
 ######Firewall#######
 do_allow_8989() {
-sudo ufw allow 8989
-sudo ufw status
+ufw allow 8989
+ufw status
 sleep 2
 }
 ######Firewall#######
 do_allow_8181() {
-sudo ufw allow 8181
-sudo ufw status
+ufw allow 8181
+ufw status
 sleep 2
 }
 ######Firewall#######
 do_allow_8085() {
-sudo ufw allow 8085
-sudo ufw status
+ufw allow 8085
+ufw status
 sleep 2
 }
 ######Firewall#######
 do_allow_mylar() {
-sudo ufw allow 8080
-sudo ufw status
+ufw allow 8080
+ufw status
 sleep 2
 }
 ######Firewall#######
 do_allow_2049() {
-sudo ufw allow 2049
-sudo ufw status
+ufw allow 2049
+ufw status
 sleep 2
 }
 ######Firewall#######
 do_allow_teamspeak() {
-sudo ufw allow 9987
-sudo ufw allow 10011
-sudo ufw allow 30033
-sudo ufw status
+ufw allow 9987
+ufw allow 10011
+ufw allow 30033
+ufw status
 sleep 2
 }
 ######Firewall#######
 do_deny_32400() {
-sudo ufw deny 32400
-sudo ufw status
+ufw deny 32400
+ufw status
 sleep 2
 }
 ######Firewall#######
 do_deny_10000() {
-sudo ufw deny 10000
-sudo ufw status
+ufw deny 10000
+ufw status
 sleep 2
 }
 ######Firewall#######
 do_deny_5050() {
-sudo ufw deny 5050
-sudo ufw status
+ufw deny 5050
+ufw status
 sleep 2
 }
 ######Firewall#######
 do_deny_9090() {
-sudo ufw deny 9090
-sudo ufw status
+ufw deny 9090
+ufw status
 sleep 2
 }
 ######Firewall#######
 do_deny_8080() {
-sudo ufw deny 8080
-sudo ufw status
+ufw deny 8080
+ufw status
 sleep 2
 }
 ######Firewall#######
 do_deny_8989() {
-sudo ufw deny 8989
-sudo ufw status
+ufw deny 8989
+ufw status
 sleep 2
 }
 ######Firewall#######
 do_deny_8181() {
-sudo ufw deny 8181
-sudo ufw status
+ufw deny 8181
+ufw status
 sleep 2
 }
 ######Firewall#######
 do_deny_8085() {
-sudo ufw deny 8085
-sudo ufw status
+ufw deny 8085
+ufw status
 sleep 2
 }
 ######Firewall#######
 do_deny_mylar() {
-sudo ufw deny 8080
-sudo ufw status
+ufw deny 8080
+ufw status
 sleep 2
 }
 ######Firewall#######
 do_deny_2049() {
-sudo ufw deny 2049
-sudo ufw status
+ufw deny 2049
+ufw status
 sleep 2
 }
 ######Firewall#######
 do_deny_teamspeak() {
-sudo ufw deny 9987
-sudo ufw deny 10011
-sudo ufw deny 30033
-sudo ufw status
+ufw deny 9987
+ufw deny 10011
+ufw deny 30033
+ufw status
 sleep 2
 }
 ################################# Update 6
