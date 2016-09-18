@@ -50,8 +50,8 @@
 # 3.12 Disable IPV6
 # 3.13 Find string in files
 # 3.14 Reboot on out of memory
-# 3.15 Vacant
-# 3.16 Vacant
+# 3.15 Notify email upon ROOT login SSH
+# 3.16 Notify email upon $USER login SSH
 # 3.17 Vacant
 # 3.18 Vacant
 # 3.19 Set dns to google and opendns
@@ -501,6 +501,8 @@ FUN=$(whiptail --backtitle "Tools" --title "Tech and Tool - Tools - https://www.
 "27 Protect SSH with Fail2Ban" "" \
 "28 Protect SSH with Google 2 factor authentication" "" \
 "29 Distribution upgrade" "Only LTS" \
+"30 Notify email address upon SSH login" "Only for 'ROOT'" \
+"31 Notify email address upon SSH login" "User defined account" \
   3>&1 1>&2 2>&3)
 RET=$?
 if [ $RET -eq 1 ]; then
@@ -532,6 +534,8 @@ elif [ $RET -eq 0 ]; then
     27\ *) do_fail2ban_ssh ;;
     28\ *) do_2fa ;;
     29\ *) do_ltsupgrade ;;
+    30\ *) do_rootmailssh ;;
+    31\ *) do_usermailssh ;;
     *) whiptail --msgbox "Programmer error: unrecognized option" 20 60 1 ;;
   esac || whiptail --msgbox "There was an error running option $FUN" 20 60 1
 else
@@ -895,13 +899,44 @@ do_oom() {
  whiptail --msgbox "System will now reboot on out of memory errors..." "$WT_HEIGHT" "$WT_WIDTH"
 }
 
-################################ 3.15
+################################ Mail when ROOT logs into SSH 3.15
 
+do_rootmailssh() {
+CURRENT_HOSTNAME=$(cat < /etc/hostname | tr -d " \t\n\r")
+MAILADDRESS=$(whiptail --inputbox "Text that you want to search for? eg. ip mismatch: 192.168.1.133" "$WT_HEIGHT" "$WT_WIDTH" 3>&1 1>&2 2>&3)
 
+if [ $(dpkg-query -W -f='${Status}' mailutils 2>/dev/null | grep -c "ok installed") -eq 1 ]; then
+    echo "mailutils is already installed..."
+else
+    apt-get install mailutils -y
+fi
 
-################################  3.16
+if grep -q "ALERT - Root Shell Access" "/root/.bashrc"; then
+  echo "Already applied..."
+else
+echo "echo 'ALERT - Root Shell Access ("$CURRENT_HOSTNAME") on:' `date` `who` | mail -s "Alert: Root Access from `who | cut -d'(' -f2 | cut -d')' -f1`" "$MAILADDRESS"" >> /root/.bashrc
+fi
+}
 
+################################  Mail when $USER logs into SSH 3.16
 
+do_usermailssh() {
+CURRENT_HOSTNAME=$(cat < /etc/hostname | tr -d " \t\n\r")
+MAILADDRESS=$(whiptail --inputbox "Mail for notification?" "$WT_HEIGHT" "$WT_WIDTH" 3>&1 1>&2 2>&3)
+USER=$(whiptail --inputbox "User that you want to be notified for upon login? (case sensetive)" "$WT_HEIGHT" "$WT_WIDTH" 3>&1 1>&2 2>&3)
+
+if [ $(dpkg-query -W -f='${Status}' mailutils 2>/dev/null | grep -c "ok installed") -eq 1 ]; then
+    echo "mailutils is already installed..."
+else
+    apt-get install mailutils -y
+fi
+
+if grep -q "ALERT - Root Shell Access" "/home/$USER/.bashrc"; then
+  echo "Already applied..."
+else
+echo "echo 'ALERT - $USER Shell Access ("$CURRENT_HOSTNAME") on:' `date` `who` | mail -s "Alert: $USER Access from `who | cut -d'(' -f2 | cut -d')' -f1`" "$MAILADDRESS"" >> /home/$USER/.bashrc
+fi
+}
 
 ################################ 3.17
 

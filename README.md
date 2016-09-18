@@ -57,8 +57,8 @@ Index
 * 3.12 Disable IPV6
 * 3.13 Find string in files
 * 3.14 Reboot on out of memory
-* 3.15 Vacant
-* 3.16 Vacant
+* 3.15 Notify email upon ROOT login SSH
+* 3.16 Notify email upon $USER login SSH
 * 3.17 Vacant
 * 3.18 Vacant
 * 3.19 Set dns to google and opendns
