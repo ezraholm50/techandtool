@@ -305,9 +305,9 @@ version(){
     [[ $2 != "$h" && $2 != "$t" ]]
 }
 
-if ! version 16.04 "$DISTRO" 16.04.4; then
-    whiptail --msgbox "Ubuntu version $DISTRO must be between 16.04 - 16.04.4" "$WT_HEIGHT" "$WT_WIDTH"
-    exit
+if ! version 16.04 "$DISTRO" 16.04.10; then
+    whiptail --msgbox "Ubuntu version $DISTRO must be between 16.04 - 16.04.10" "$WT_HEIGHT" "$WT_WIDTH"
+    #exit
 fi
 
 if [ $(dpkg-query -W -f='${Status}' ubuntu-server 2>/dev/null | grep -c "ok installed") -eq 0 ];
@@ -320,7 +320,7 @@ fi
 
 
 do_techandme() {
-  FUN=$(whiptail --backtitle "Tech and Me VM's" --title "Tech and Tool - https://www.techandme.se" --menu "Tech and tool" "$WT_HEIGHT" "$WT_WIDTH" $WT_MENU_HEIGHT --cancel-button Back --ok-button Select \
+  FUN=$(whiptail --backtitle "Tech and Me VM's" --title "Tech and Tool - https://www.techandme.se" --menu "Tech and tool" "$WT_HEIGHT" "$WT_WIDTH" "$WT_MENU_HEIGHT" --cancel-button Back --ok-button Select \
   "0 Install Nextcloud" "Requires a clean Ubuntu 16.04 server" \
   "1 Install Nextcloud apps" "" \
   "2 Install Wordpress" "Requires a clean Ubuntu 16.04 server" \
@@ -355,7 +355,7 @@ bash "$SCRIPTS"/nextcloud_install_production.sh
 ################################################ Install Nextcloud apps 2.2
 
 do_apps() {
-  FUN=$(whiptail --backtitle "Apps" --title "Tech and Tool - https://www.techandme.se" --menu "Tech and tool" "$WT_HEIGHT" "$WT_WIDTH" $WT_MENU_HEIGHT --cancel-button Back --ok-button Select \
+  FUN=$(whiptail --backtitle "Apps" --title "Tech and Tool - https://www.techandme.se" --menu "Tech and tool" "$WT_HEIGHT" "$WT_WIDTH" "$WT_MENU_HEIGHT" --cancel-button Back --ok-button Select \
   "1 Collabora" "Docker" \
   "2 Spreed-webrtc" "Spreedme" \
   "3 Gpxpod" "" \
@@ -475,7 +475,7 @@ whiptail --msgbox "Teamspeak is now installed..." "$WT_HEIGHT" "$WT_WIDTH"
 ################################################ Tools 3
 
 do_tools() {
-FUN=$(whiptail --backtitle "Tools" --title "Tech and Tool - Tools - https://www.techandme.se" --menu "Tech and tool" "$WT_HEIGHT" "$WT_WIDTH" $WT_MENU_HEIGHT --cancel-button Back --ok-button Select \
+FUN=$(whiptail --backtitle "Tools" --title "Tech and Tool - Tools - https://www.techandme.se" --menu "Tech and tool" "$WT_HEIGHT" "$WT_WIDTH" "$WT_MENU_HEIGHT" --cancel-button Back --ok-button Select \
 "1 Show LAN IP, Gateway, Netmask" "Ifconfig" \
 "2 Show WAN IP" "External IP address" \
 "3 Change Hostname" "Your machine's name" \
@@ -579,7 +579,7 @@ No other symbols, punctuation characters, or blank spaces are permitted.\
 ################################ Internationalisation 3.4
 
 do_internationalisation_menu() {
-  FUN=$(whiptail --backtitle "Internationalisation" --title "Tech and Tool - https://www.techandme.se" --menu "Internationalisation Options" "$WT_HEIGHT" "$WT_WIDTH" $WT_MENU_HEIGHT --cancel-button Back --ok-button Select \
+  FUN=$(whiptail --backtitle "Internationalisation" --title "Tech and Tool - https://www.techandme.se" --menu "Internationalisation Options" "$WT_HEIGHT" "$WT_WIDTH" "$WT_MENU_HEIGHT" --cancel-button Back --ok-button Select \
     "I1 Change Locale" "Set up language and regional settings to match your location" \
     "I2 Change Timezone" "Set up timezone to match your location" \
     "I3 Change Keyboard Layout" "Set the keyboard layout to match your keyboard" \
@@ -618,20 +618,16 @@ do_change_timezone() {
 }
 
 ################################ Wifi 3.5
-#IFACEWIFI=$(lshw -c network | grep "wl" | awk '{print $3}')
-#IFACEWIRED=$(lshw -c network | grep "en" | awk '{print $3}')
 
 do_wlan() {
-whiptail --yesno "Do you want to connect to wifi? Its recommended to use a wired connection for your Nextcloud server!" --yes-button "Wireless" --no-button "Wired" 20 60 1
-	if [ $? -eq 0 ];         then # yes
+whiptail --yesno "Do you want to connect to wifi? Its recommended to use a wired connection for your Nextcloud server!" --yes-button "Wireless" --no-button "Wired" "$WT_HEIGHT" "$WT_WIDTH"
+	if [ $? -eq 0 ]; then # yes
 
-                        apt-get install linux-firmware wicd-curses wicd-daemon wicd-cli -y
-                        #ifdown "$IFACEWIRED"
-                        #sed -i "s|'$IFACEWIRED'|'$IFACEWIFI'|g" /etc/network/interfaces
-			whiptail --msgbox "In the next screen navigate with the arrow keys (right arrow for config) and don't for get to select auto connect at the networks config settings." 20 60 2
-                        wicd-curses
-                        #ifup "$IFACEWIFI"
-                        whiptail --msgbox "Due to the new interface the DHCP server gave you a new ip:\n\n'$ADDRESS' \n\n If the NIC starts with 'wl', you're good to go and you can unplug the ethernet cable: \n\n '$IFACE'" 12 60 1
+      apt-get install linux-firmware wicd-curses wicd-daemon wicd-cli -y
+
+			whiptail --msgbox "In the next screen navigate with the arrow keys (right arrow for config) and don't for get to select auto connect at the networks config settings." "$WT_HEIGHT" "$WT_WIDTH"
+      wicd-curses
+      whiptail --msgbox "Due to the new interface the DHCP server gave you a new ip:\n\n'$ADDRESS' \n\n If the NIC starts with 'wl', you're good to go and you can unplug the ethernet cable: \n\n '$IFACE'" "$WT_HEIGHT" "$WT_WIDTH"
 
 	else
         		echo
@@ -643,7 +639,7 @@ fi
 ################################ Raspberry specific 3.6
 
 do_Raspberry() {
-  FUN=$(whiptail --backtitle "Raspberry" --title "Tech and Tool - https://www.techandme.se" --menu "Raspberry" "$WT_HEIGHT" "$WT_WIDTH" $WT_MENU_HEIGHT --cancel-button Back --ok-button Select \
+  FUN=$(whiptail --backtitle "Raspberry" --title "Tech and Tool - https://www.techandme.se" --menu "Raspberry" "$WT_HEIGHT" "$WT_WIDTH" "$WT_MENU_HEIGHT" --cancel-button Back --ok-button Select \
   "1 Resize SD" "" \
   "2 External USB" "Use an USB HD/SSD as root" \
   "3 RPI-update" "Update the RPI firmware and kernel" \
@@ -1140,7 +1136,7 @@ do_install() {
   done < <(apt-get update)
 } | whiptail --title "Progress" --gauge "Please wait while updating" 6 60 0
 
-  FUN=$(whiptail --backtitle "Install software packages" --title "Tech and Tool - https://www.techandme.se" --menu "Tech and tool" "$WT_HEIGHT" "$WT_WIDTH" $WT_MENU_HEIGHT --cancel-button Back --ok-button Select \
+  FUN=$(whiptail --backtitle "Install software packages" --title "Tech and Tool - https://www.techandme.se" --menu "Tech and tool" "$WT_HEIGHT" "$WT_WIDTH" "$WT_MENU_HEIGHT" --cancel-button Back --ok-button Select \
       "I1 Install Package" "User defined" \
       "I2 Install Webmin" "Graphical interface to manage headless systems" \
       "I3 Install SSH Server" "Needed by a remote machine to be accessable via SSH" \
@@ -1606,7 +1602,7 @@ ASK_TO_REBOOT=1
 ################################################ Firewall 5
 
 do_firewall() {
-  FUN=$(whiptail  --backtitle "Firewall" --title "Tech and Tool - https://www.techandme.se" --menu "Firewall options" "$WT_HEIGHT" "$WT_WIDTH" $WT_MENU_HEIGHT --cancel-button Back --ok-button Select \
+  FUN=$(whiptail  --backtitle "Firewall" --title "Tech and Tool - https://www.techandme.se" --menu "Firewall options" "$WT_HEIGHT" "$WT_WIDTH" "$WT_MENU_HEIGHT" --cancel-button Back --ok-button Select \
     "A0 Enable Firewall" "" \
     "A1 Disable Firewall" "" \
     "A2 Show current rules" "" \
@@ -1999,7 +1995,7 @@ fi
 
 calc_wt_size
 while true; do
-  FUN=$(whiptail --backtitle "Tech and Tool main menu" --title "Tech and Tool - https://www.techandme.se" --menu "Tech and tool" "$WT_HEIGHT" "$WT_WIDTH" $WT_MENU_HEIGHT --cancel-button Finish --ok-button Select \
+  FUN=$(whiptail --backtitle "Tech and Tool main menu" --title "Tech and Tool - https://www.techandme.se" --menu "Tech and tool" "$WT_HEIGHT" "$WT_WIDTH" "$WT_MENU_HEIGHT" --cancel-button Finish --ok-button Select \
     "1 Tech and Me" "Install various VM's" \
     "2 Tools" "Various tools" \
     "3 Packages" "Install various software packages" \
