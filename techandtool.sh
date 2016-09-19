@@ -19,7 +19,7 @@
 # 1.5 Whiptail check
 # 1.6 Root check
 # 1.7 Update notification
-# 1.8 Locations
+# 1.8 Vacant
 # 1.9 Ask to reboot
 # 1.10 Check Ubuntu OS
 # 2 Tech and Me
@@ -94,6 +94,12 @@
 ################################################ Variable 1
 
 INTERACTIVE=True
+REPO='https://raw.githubusercontent.com/ezraholm50/techandtool/master'
+COLLABORAREPO='https://raw.githubusercontent.com/ezraholm50/collabora-auto/master'
+SPREEDREPO='https://raw.githubusercontent.com/ezraholm50/Spreed-auto/master'
+NCREPO='https://raw.githubusercontent.com/nextcloud/vm/masteR'
+WORDPRESSREPO='https://raw.githubusercontent.com/enoch85/wordpress-vm/master/'
+NEXTBERRYREPO='https://raw.githubusercontent.com/ezraholm50/NextBerry/master'
 
 ################################ Network vars 1.1
 
@@ -267,14 +273,9 @@ else
     fi
 fi
 
-################################################ Locations 1.8
+################################################ 1.8
 
-REPO='https://raw.githubusercontent.com/ezraholm50/techandtool/master'
-COLLABORAREPO='https://raw.githubusercontent.com/ezraholm50/collabora-auto/master'
-SPREEDREPO='https://raw.githubusercontent.com/ezraholm50/Spreed-auto/master'
-NCREPO='https://raw.githubusercontent.com/nextcloud/vm/masteR'
-WORDPRESSREPO='https://raw.githubusercontent.com/enoch85/wordpress-vm/master/'
-NEXTBERRYREPO='https://raw.githubusercontent.com/ezraholm50/NextBerry/master'
+
 
 ################################################ Do finish 1.9
 

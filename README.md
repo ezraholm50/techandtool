@@ -26,7 +26,7 @@ Index
 * 1.5 Whiptail check
 * 1.6 Root check
 * 1.7 Update notification
-* 1.8 Locations
+* 1.8 Vacant
 * 1.9 Ask to reboot
 * 1.10 Check Ubuntu OS
 * 2 Tech and Me
