@@ -229,16 +229,16 @@ CURRENTVERSION=$(grep -m1 "# VERSION=" /usr/sbin/techandtool)
 GITHUBVERSION=$(curl -s $REPO/version)
 SCRIPTS="/var/scripts"
 
-if [ $(dpkg-query -W -f='${Status}' wget 2>/dev/null | grep -c "ok installed") -eq 1 ]; then
-      echo "Wget is already installed..."
+if [ $(dpkg-query -W -f='${Status}' curl 2>/dev/null | grep -c "ok installed") -eq 1 ]; then
+      echo "Curl is already installed..."
       clear
 else
-    apt-get install wget -y
+    apt-get install curl -y
 fi
 
-  if [ -f /tmp/version ]; then
-          rm /tmp/version
-  fi
+#  if [ -f /tmp/version ]; then
+#          rm /tmp/version
+#  fi
 
 if [ "$CURRENTVERSION" == "$GITHUBVERSION" ]; then
           echo "Tool is up to date..."
