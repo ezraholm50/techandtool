@@ -1062,7 +1062,7 @@ if [ -f /$BACKUPFILE ]; then
   mkdir -p sys
   mkdir -p dev
 
-  tar xvpfj /$BACKUPFILE -C /
+  tar -xvpfj /$BACKUPFILE -C /
   if [ $? -eq 1 ]; then
     whiptail --msgbox "There where errors running this command. Please run this tool in debug mode: sudo bash -x /usr/sbin/techandtool" "$WT_HEIGHT" "$WT_WIDTH"
   else
