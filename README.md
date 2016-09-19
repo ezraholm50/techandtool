@@ -101,7 +101,7 @@ Index
 
 * CAREFULL THIS IS ALPHA SOFTWARE, USE AT YOUR OWN RISK
 
-* Tech and Me
+# Tech and Me
 We at [Tech and Me](https://www.techandme.se) dedicate our time building and maintaining Virtual Machines so that the less skilled users can benefit from easy setup servers.
 
 Here is an example of VM's we offer for **free**:

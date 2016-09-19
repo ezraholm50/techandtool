@@ -1016,6 +1016,16 @@ fi
 ################################ Boot terminal 3.21
 
 do_bootterminal() {
+if grep -q "GRUB_CMDLINE_LINUX_DEFAULT="splash quiet"" "/etc/default/grub"; then
+  sed -i 's|GRUB_CMDLINE_LINUX_DEFAULT="splash quiet"|GRUB_CMDLINE_LINUX_DEFAULT="text"|g' /etc/default/grub
+  update-grub
+  if [ $? -eq 1 ]; then
+    whiptail --msgbox "There where errors running this command. Please run this tool in debug mode: sudo bash -x /usr/sbin/techandtool" "$WT_HEIGHT" "$WT_WIDTH"
+  else
+    whiptail --msgbox "System now boots to terminal..." "$WT_HEIGHT" "$WT_WIDTH"
+  fi
+fi
+
 if grep -q "GRUB_CMDLINE_LINUX_DEFAULT=""" "/etc/default/grub"; then
   sed -i 's|GRUB_CMDLINE_LINUX_DEFAULT=""|GRUB_CMDLINE_LINUX_DEFAULT="text"|g' /etc/default/grub
   update-grub
@@ -1030,6 +1040,16 @@ fi
 ################################ Boot gui 3.22
 
 do_bootgui() {
+if grep -q GRUB_CMDLINE_LINUX_DEFAULT="splash quiet" "/etc/default/grub"; then
+  sed -i 's|GRUB_CMDLINE_LINUX_DEFAULT="splash quiet"|GRUB_CMDLINE_LINUX_DEFAULT=""|g' /etc/default/grub
+  update-grub
+  if [ $? -eq 1 ]; then
+    whiptail --msgbox "There where errors running this command. Please run this tool in debug mode: sudo bash -x /usr/sbin/techandtool" "$WT_HEIGHT" "$WT_WIDTH"
+  else
+    whiptail --msgbox "System now boots to desktop..." "$WT_HEIGHT" "$WT_WIDTH"
+  fi
+fi
+
   if grep -q GRUB_CMDLINE_LINUX_DEFAULT="text" "/etc/default/grub"; then
     sed -i 's|GRUB_CMDLINE_LINUX_DEFAULT="text"|GRUB_CMDLINE_LINUX_DEFAULT=""|g' /etc/default/grub
   	update-grub
@@ -1099,20 +1119,21 @@ fi
 ################################  Restore Backup 3.27
 
 do_restore_backup() {
-BACKUPFILE=$(cat /var/scripts/donotremove-backupfile)
+  whiptail --msgbox "Under construction..." "$WT_HEIGHT" "$WT_WIDTH"
+#BACKUPFILE=$(cat /var/scripts/donotremove-backupfile)
 
-if [ -f /$BACKUPFILE ]; then
-  mkdir -p proc
-  mkdir -p media
-  mkdir -p lost+found
-  mkdir -p mnt
-  mkdir -p sys
-  mkdir -p dev
+#if [ -f /$BACKUPFILE ]; then
+#  mkdir -p proc
+#  mkdir -p media
+#  mkdir -p lost+found
+#  mkdir -p mnt
+#  mkdir -p sys
+#  mkdir -p dev
 
-  tar --bzip2 -xvpf /$BACKUPFILE -C / && whiptail --msgbox "Restoring the backup is finished..." "$WT_HEIGHT" "$WT_WIDTH" && ASK_TO_REBOOT=1
-else
-  whiptail --msgbox "Could not find the backup file make sure you made the backup..." "$WT_HEIGHT" "$WT_WIDTH"
-fi
+#  tar --bzip2 -xvpf /$BACKUPFILE -C / && whiptail --msgbox "Restoring the backup is finished..." "$WT_HEIGHT" "$WT_WIDTH" && ASK_TO_REBOOT=1
+#else
+#  whiptail --msgbox "Could not find the backup file make sure you made the backup..." "$WT_HEIGHT" "$WT_WIDTH"
+#fi
 }
 
 ################################  Fail2Ban SSH 3.28
