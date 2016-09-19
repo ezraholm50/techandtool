@@ -97,7 +97,7 @@ INTERACTIVE=True
 REPO='https://raw.githubusercontent.com/ezraholm50/techandtool/master'
 COLLABORAREPO='https://raw.githubusercontent.com/ezraholm50/collabora-auto/master'
 SPREEDREPO='https://raw.githubusercontent.com/ezraholm50/Spreed-auto/master'
-NCREPO='https://raw.githubusercontent.com/nextcloud/vm/masteR'
+NCREPO='https://raw.githubusercontent.com/nextcloud/vm/master'
 WORDPRESSREPO='https://raw.githubusercontent.com/enoch85/wordpress-vm/master/'
 NEXTBERRYREPO='https://raw.githubusercontent.com/ezraholm50/NextBerry/master'
 
@@ -308,13 +308,13 @@ version(){
 
 if ! version 16.04 "$DISTRO" 16.04.10; then
     whiptail --msgbox "Ubuntu version $DISTRO must be between 16.04 - 16.04.10" "$WT_HEIGHT" "$WT_WIDTH"
-    #exit
+    exit
 fi
 
 if [ $(dpkg-query -W -f='${Status}' ubuntu-server 2>/dev/null | grep -c "ok installed") -eq 0 ];
 then
   	whiptail --msgbox "'ubuntu-server' is not installed, this doesn't seem to be a server. Please install the server version of Ubuntu and restart the script" "$WT_HEIGHT" "$WT_WIDTH"
-#        exit 1
+    exit 1
 fi
 
 ################################################ Techandme 2
