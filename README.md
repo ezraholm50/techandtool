@@ -2,8 +2,8 @@
 
 * Useful graphical tool to install various things and set config values from within the CLI/Terminal
 * Initially created for the Nextcloud VM (and RPI ARMHF VM branch) made by @enoch85 and @ezraholm50.
-* Tested on Ubuntu server 16.04.
-* Might work on other debian distro's aswell.
+* Tested and works on Ubuntu server 16.04.
+* No support is provided for other distributions.
 
 # How to:
 * ```sudo mkdir -p /var/scripts```

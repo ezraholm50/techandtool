@@ -1977,13 +1977,16 @@ do_update() {
 ################################################ Reboot 7
 
 do_reboot() {
-	ASK_TO_REBOOT=1
+  whiptail --yesno "Would you like to reboot now?" "$WT_HEIGHT" "$WT_WIDTH"
+  if [ $? -eq 0 ]; then # yes
+    reboot
+  fi
 }
 
 ################################################ Poweroff 8
 
 do_poweroff() {
-    whiptail --yesno "Would you like to shutdown now?" 20 60 2
+    whiptail --yesno "Would you like to shutdown now?" "$WT_HEIGHT" "$WT_WIDTH"
     if [ $? -eq 0 ]; then # yes
       shutdown now
     fi
