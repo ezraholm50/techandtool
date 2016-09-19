@@ -1040,14 +1040,14 @@ DATE=$(date "+%F")
 BACKUPFILE="$HOSTNAME-$DATE.tar.bz2"
 
 
-tar -cvpjf /$BACKUPFILE --xattrs --absolute-names --exclude=/proc --exclude=/dev --exclude=/media --exclude=/lost+found --exclude=/$BACKUPFILE --exclude=/mnt --exclude=/sys / && whiptail --msgbox "Backup finished, backup.tar.bz2 is located in /" "$WT_HEIGHT" "$WT_WIDTH"
-echo "$BACKUPFILE" > /var/scripts/donotremove-backupfile
-}
+tar -cvpjf /$BACKUPFILE --xattrs --absolute-names --exclude=/proc --exclude=/dev --exclude=/media --exclude=/lost+found --exclude=/$BACKUPFILE --exclude=/mnt --exclude=/sys / #&& whiptail --msgbox "Backup finished, backup.tar.bz2 is located in /" "$WT_HEIGHT" "$WT_WIDTH"
 if [ $? -eq 1 ]; then
   whiptail --msgbox "There where errors running this command. Please run this tool in debug mode: sudo bash -x /usr/sbin/techandtool" "$WT_HEIGHT" "$WT_WIDTH"
 else
   whiptail --msgbox "Backup finished, $BACKUPFILE is located in /" "$WT_HEIGHT" "$WT_WIDTH"
+  echo "$BACKUPFILE" > /var/scripts/donotremove-backupfile
 fi
+}
 
 ################################  Restore Backup 3.27
 
@@ -1055,8 +1055,6 @@ do_restore_backup() {
 BACKUPFILE=$(cat /var/scripts/donotremove-backupfile
 )
 if [ -f /$BACKUPFILE ]; then
-  tar xvpfj /$BACKUPFILE -C /
-
   mkdir -p proc
   mkdir -p media
   mkdir -p lost+found
@@ -1064,16 +1062,18 @@ if [ -f /$BACKUPFILE ]; then
   mkdir -p sys
   mkdir -p dev
 
+  tar xvpfj /$BACKUPFILE -C /
+  if [ $? -eq 1 ]; then
+    whiptail --msgbox "There where errors running this command. Please run this tool in debug mode: sudo bash -x /usr/sbin/techandtool" "$WT_HEIGHT" "$WT_WIDTH"
+  else
+    whiptail --msgbox "Restoring the backup is finished..." "$WT_HEIGHT" "$WT_WIDTH"
+    ASK_TO_REBOOT=1
+  fi
+
 else
   whiptail --msgbox "Could not find the backup file make sure you made the backup..." "$WT_HEIGHT" "$WT_WIDTH"
 fi
 }
-if [ $? -eq 1 ]; then
-  whiptail --msgbox "There where errors running this command. Please run this tool in debug mode: sudo bash -x /usr/sbin/techandtool" "$WT_HEIGHT" "$WT_WIDTH"
-else
-  whiptail --msgbox "Restoring the backup is finished..." "$WT_HEIGHT" "$WT_WIDTH"
-  ASK_TO_REBOOT=1
-fi
 
 ################################  Fail2Ban SSH 3.28
 
