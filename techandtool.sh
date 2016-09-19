@@ -871,7 +871,7 @@ do_find_string() {
         STRINGTEXT=$(whiptail --inputbox "Text that you want to search for? eg. ip mismatch: 192.168.1.133" "$WT_HEIGHT" "$WT_WIDTH" 3>&1 1>&2 2>&3)
         STRINGDIR=$(whiptail --inputbox "Directory you want to search in? eg. / for whole system or /home" "$WT_HEIGHT" "$WT_WIDTH" 3>&1 1>&2 2>&3)
         STRINGCMD=$(grep -Rl "$STRINGTEXT" "$STRINGDIR")
-        whiptail --msgbox "$STRINGCMD" "$WT_HEIGHT" "$WT_WIDTH"
+        whiptail --msgbox "$STRINGCMD" "$WT_HEIGHT" "$WT_WIDTH" --scrolltext
 }
 
 ################################ Reboot on out of memory 3.14
@@ -900,7 +900,7 @@ do_oom() {
 
 do_rootmailssh() {
 CURRENT_HOSTNAME=$(cat < /etc/hostname | tr -d " \t\n\r")
-MAILADDRESS=$(whiptail --inputbox "Text that you want to search for? eg. ip mismatch: 192.168.1.133" "$WT_HEIGHT" "$WT_WIDTH" 3>&1 1>&2 2>&3)
+MAILADDRESS=$(whiptail --inputbox "Mail for notification?" "$WT_HEIGHT" "$WT_WIDTH" 3>&1 1>&2 2>&3)
 
 if [ $(dpkg-query -W -f='${Status}' mailutils 2>/dev/null | grep -c "ok installed") -eq 1 ]; then
     echo "mailutils is already installed..."
