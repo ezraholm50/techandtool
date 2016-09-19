@@ -579,6 +579,9 @@ No other symbols, punctuation characters, or blank spaces are permitted.\
     echo "$NEW_HOSTNAME" > /etc/hostname
     sed -i "s/127.0.1.1.*$CURRENT_HOSTNAME/127.0.1.1\t$NEW_HOSTNAME/g" /etc/hosts
   fi
+
+  CURRENT_HOSTNAME1=$(cat < /etc/hostname | tr -d " \t\n\r")
+  whiptail --msgbox "This is your new current hostname: $CURRENT_HOSTNAME1" "$WT_HEIGHT" "$WT_WIDTH"
 }
 
 ################################ Internationalisation 3.4
@@ -862,7 +865,9 @@ do_disable_ipv6() {
  sysctl -p
  echo
 
- whiptail --msgbox "IPV6 is now disabled..." "$WT_HEIGHT" "$WT_WIDTH"
+if grep -q "net.ipv6.conf.all.disable_ipv6 = 1" "/etc/sysctl.conf"; then
+   whiptail --msgbox "IPV6 is now disabled..." "$WT_HEIGHT" "$WT_WIDTH"
+fi
 }
 
 ################################ Find string text 3.13
@@ -912,6 +917,11 @@ if grep -q "ALERT - Root Shell Access" "/root/.bashrc"; then
   echo "Already applied..."
 else
 echo "echo 'ALERT - Root Shell Access ("$CURRENT_HOSTNAME") on:' `date` `who` | mail -s "Alert: Root Access from `who | cut -d'(' -f2 | cut -d')' -f1`" "$MAILADDRESS"" >> /root/.bashrc
+  if [ $? -eq 1 ]; then
+    whiptail --msgbox "There where errors running this command. Please run this tool in debug mode: sudo bash -x /usr/sbin/techandtool" "$WT_HEIGHT" "$WT_WIDTH"
+  else
+    whiptail --msgbox "Installed email notification upon login of the ROOT user. Please logout and test it." "$WT_HEIGHT" "$WT_WIDTH"
+  fi
 fi
 }
 
@@ -932,6 +942,11 @@ if grep -q "ALERT - Root Shell Access" "/home/$USER/.bashrc"; then
   echo "Already applied..."
 else
 echo "echo 'ALERT - $USER Shell Access ("$CURRENT_HOSTNAME") on:' `date` `who` | mail -s "Alert: $USER Access from `who | cut -d'(' -f2 | cut -d')' -f1`" "$MAILADDRESS"" >> /home/$USER/.bashrc
+  if [ $? -eq 1 ]; then
+    whiptail --msgbox "There where errors running this command. Please run this tool in debug mode: sudo bash -x /usr/sbin/techandtool" "$WT_HEIGHT" "$WT_WIDTH"
+  else
+    whiptail --msgbox "Installed email notification upon login of the specified user. Please logout and test it." "$WT_HEIGHT" "$WT_WIDTH"
+  fi
 fi
 }
 
@@ -942,11 +957,16 @@ fi
 ################################ Set dns to google and opendns 3.19
 
 do_dns() {
-  # Clear existing DNS servers
+  # Backup & Clear existing DNS servers
+  mkdir -p /etc/resolvconf/resolv.conf.d.backup
+  cp -R /etc/resolv.conf /etc/resolvconf/resolv.conf.d.backup/
+  cp -R /etc/resolvconf/resolv.conf.d/* /etc/resolvconf/resolv.conf.d.backup/
+
   cat /dev/null > /etc/resolv.conf
   cat /dev/null > /etc/resolvconf/resolv.conf.d/tail
   cat /dev/null > /etc/resolvconf/resolv.conf.d/head
   cat /dev/null > /etc/resolvconf/resolv.conf.d/base
+
   #cat /dev/null > /etc/resolvconf/resolv.conf.d/original
   echo "options timeout:1 rotate attempts:1" > /etc/resolvconf/resolv.conf.d/tail
   echo "nameserver 8.8.8.8 #Google NS1" >> /etc/resolvconf/resolv.conf.d/tail
@@ -956,19 +976,40 @@ do_dns() {
   resolvconf -u
   ifdown -a; ifup -a
 
-  whiptail --msgbox "Dns is now set to google, if no response in 1 second it switches to opendns..." "$WT_HEIGHT" "$WT_WIDTH"
+  nslookup google.com
+if [[ $? > 0 ]]
+then
+  	whiptail --msgbox "Network NOT OK. Reverting old settings..." "$WT_HEIGHT" "$WT_WIDTH"
+    cp -R /etc/resolvconf/resolv.conf.d.backup/resolv.conf /etc/resolv.conf
+    cp -R /etc/resolvconf/resolv.conf.d.backup/* /etc/resolvconf/resolv.conf.d/
+
+    resolvconf -u
+    ifdown -a; ifup -a
+
+    nslookup google.com
+    if [[ $? > 0 ]]
+    then
+    whiptail --msgbox "There where errors running this command. Please run this tool in debug mode: sudo bash -x /usr/sbin/techandtool" "$WT_HEIGHT" "$WT_WIDTH"
+    else
+    whiptail --msgbox "Settings reverted succesfully..." "$WT_HEIGHT" "$WT_WIDTH"
+    fi
+else
+    whiptail --msgbox "Dns is now set to google, if no response in 1 second it switches to opendns..." "$WT_HEIGHT" "$WT_WIDTH"
+fi
 }
 
 ################################ Progress bar 3.20
 
 do_progressbar() {
 if grep -q "Dpkg::Progress-Fancy "1";" "/etc/apt/apt.conf.d/99progressbar"; then
-  echo
-  echo "Already installed..."
+  whiptail --msgbox "Already installed..." "$WT_HEIGHT" "$WT_WIDTH"
 else
   echo "Dpkg::Progress-Fancy "1";" > /etc/apt/apt.conf.d/99progressbar
-
-	whiptail --msgbox "You now have a fancy progress bar, outside this installer run apt or apt-get install <package>" "$WT_HEIGHT" "$WT_WIDTH"
+  if [ $? -eq 1 ]; then
+    whiptail --msgbox "There where errors running this command. Please run this tool in debug mode: sudo bash -x /usr/sbin/techandtool" "$WT_HEIGHT" "$WT_WIDTH"
+  else
+	  whiptail --msgbox "You now have a fancy progress bar, outside this installer run apt or apt-get install <package>" "$WT_HEIGHT" "$WT_WIDTH"
+  fi
 fi
 }
 
@@ -978,7 +1019,11 @@ do_bootterminal() {
 if grep -q "GRUB_CMDLINE_LINUX_DEFAULT=""" "/etc/default/grub"; then
   sed -i 's|GRUB_CMDLINE_LINUX_DEFAULT=""|GRUB_CMDLINE_LINUX_DEFAULT="text"|g' /etc/default/grub
   update-grub
-  whiptail --msgbox "System now boots to terminal..." "$WT_HEIGHT" "$WT_WIDTH"
+  if [ $? -eq 1 ]; then
+    whiptail --msgbox "There where errors running this command. Please run this tool in debug mode: sudo bash -x /usr/sbin/techandtool" "$WT_HEIGHT" "$WT_WIDTH"
+  else
+    whiptail --msgbox "System now boots to terminal..." "$WT_HEIGHT" "$WT_WIDTH"
+  fi
 fi
 }
 
@@ -988,8 +1033,11 @@ do_bootgui() {
   if grep -q GRUB_CMDLINE_LINUX_DEFAULT="text" "/etc/default/grub"; then
     sed -i 's|GRUB_CMDLINE_LINUX_DEFAULT="text"|GRUB_CMDLINE_LINUX_DEFAULT=""|g' /etc/default/grub
   	update-grub
-
-    whiptail --msgbox "System now boots to desktop..." "$WT_HEIGHT" "$WT_WIDTH"
+    if [ $? -eq 1 ]; then
+      whiptail --msgbox "There where errors running this command. Please run this tool in debug mode: sudo bash -x /usr/sbin/techandtool" "$WT_HEIGHT" "$WT_WIDTH"
+    else
+      whiptail --msgbox "System now boots to desktop..." "$WT_HEIGHT" "$WT_WIDTH"
+    fi
   fi
 }
 
@@ -1019,7 +1067,7 @@ DELETESTRING=$(whiptail --inputbox "Which line containing the following string n
 DELETESTRINGFILE=$(whiptail --inputbox "In what file should we search?" "$WT_HEIGHT" "$WT_WIDTH" "eg. /etc/network" 3>&1 1>&2 2>&3)
 
 sed -i "/$DELETESTRING/d" "$DELETESTRINGFILE"
-whiptail --title "This is your updated file" --textbox "$DELETESTRINGFILE" "$WT_HEIGHT" "$WT_WIDTH"
+whiptail --title "This is your updated file" --textbox "$DELETESTRINGFILE" "$WT_HEIGHT" "$WT_WIDTH" --scrolltext
 }
 
 ################################ Kernel upgrade 3.25
