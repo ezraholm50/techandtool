@@ -307,8 +307,8 @@ version(){
 }
 
 if ! version 16.04 "$DISTRO" 16.04.10; then
-    whiptail --msgbox "Ubuntu version $DISTRO must be between 16.04 - 16.04.10" "$WT_HEIGHT" "$WT_WIDTH"
-    exit
+    whiptail --msgbox "Ubuntu version $DISTRO is tested on 16.04 - 16.04.10 no support is given for other releases." "$WT_HEIGHT" "$WT_WIDTH"
+    #exit
 fi
 
 if [ $(dpkg-query -W -f='${Status}' ubuntu-server 2>/dev/null | grep -c "ok installed") -eq 0 ];
