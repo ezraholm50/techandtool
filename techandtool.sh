@@ -1362,8 +1362,9 @@ fi
 do_ssh() {
 PORT=$(whiptail --inputbox "New SSH port?" "$WT_HEIGHT" "$WT_WIDTH" 3>&1 1>&2 2>&3)
   	ufw allow "$PORT"/tcp
-  	ufw deny 22
+		ufw delete allow 22
   	sed -i "s|22|$PORT|g" /etc/ssh/sshd_config
+    service openssh-server restart
   whiptail --msgbox "SSH port is now changed to $PORT and your firewall rules are updated..." "$WT_HEIGHT" "$WT_WIDTH"
 }
 
