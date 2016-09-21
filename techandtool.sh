@@ -490,6 +490,7 @@ FUN=$(whiptail --backtitle "Tools" --title "Tech and Tool - Tools - https://www.
 "11 Disable IPV6" "Via sysctl.conf" \
 "12 Find text" "In a given directory" \
 "13 OOM fix" "Auto reboot on out of memory errors" \
+"14 Generate new SSH keys" "" \
 "18 Set dns to Google and OpenDns" "Try google first if no response after 1 sec. switch to next NS" \
 "19 Add progress bar" "Apply's to apt-get update, install & upgrade" \
 "20 Boot to terminal by default" "Only if you use a GUI/desktop now" \
@@ -523,6 +524,7 @@ elif [ $RET -eq 0 ]; then
     11\ *) do_disable_ipv6 ;;
     12\ *) do_find_string ;;
     13\ *) do_oom ;;
+		14\ *) do_ssh_keys ;;
     18\ *) do_dns ;;
     19\ *) do_progressbar ;;
     20\ *) do_bootterminal ;;
@@ -741,6 +743,7 @@ EOF
 
   whiptail --msgbox "Root partition has been resized.\nThe filesystem will be enlarged upon the next reboot" "$WT_HEIGHT" "$WT_WIDTH"
   ASK_TO_REBOOT=1
+	do_finish
 }
 
 ##################### External USB 3.62
@@ -950,9 +953,12 @@ echo "echo 'ALERT - $USER Shell Access ("$CURRENT_HOSTNAME") on:' `date` `who` |
 fi
 }
 
-################################ 3.17
+################################ Generate new SSH keys 3.17
 
-
+do_ssh_keys() {
+	rm -v /etc/ssh/ssh_host_*
+	dpkg-reconfigure openssh-server
+}
 
 ################################ Set dns to google and opendns 3.19
 
@@ -1130,7 +1136,7 @@ do_restore_backup() {
 #  mkdir -p sys
 #  mkdir -p dev
 
-#  tar --bzip2 -xvpf /$BACKUPFILE -C / && whiptail --msgbox "Restoring the backup is finished..." "$WT_HEIGHT" "$WT_WIDTH" && ASK_TO_REBOOT=1
+#  tar --bzip2 -xvpf /$BACKUPFILE -C / && whiptail --msgbox "Restoring the backup is finished..." "$WT_HEIGHT" "$WT_WIDTH" && ASK_TO_REBOOT=1 && do_finish
 #else
 #  whiptail --msgbox "Could not find the backup file make sure you made the backup..." "$WT_HEIGHT" "$WT_WIDTH"
 #fi
@@ -1230,6 +1236,7 @@ y
 EOF
 
 ASK_TO_REBOOT=1
+do_finish
 }
 
 ################################################ Install 4
@@ -1647,6 +1654,7 @@ else
 apt-get install zram-config -y
 whiptail --msgbox "Zram-config is now installed..." "$WT_HEIGHT" "$WT_WIDTH"
 ASK_TO_REBOOT=1
+do_finish
 fi
 }
 
@@ -1705,6 +1713,7 @@ rm -rf /mnt/tmp
 
 whiptail --msgbox "Virtualbox guest additions are now installed, make sure to reboot..." "$WT_HEIGHT" "$WT_WIDTH"
 ASK_TO_REBOOT=1
+do_finish
 }
 
 ################################################ Firewall 5
