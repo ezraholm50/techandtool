@@ -1692,7 +1692,7 @@ whiptail --msgbox "Virtualbox is now installed..." "$WT_HEIGHT" "$WT_WIDTH"
 
 do_vboxextpack() {
 wget http://download.virtualbox.org/virtualbox/5.1.4/Oracle_VM_VirtualBox_Extension_Pack-5.1.4-110228.vbox-extpack -P "$SCRIPTS"/
-vboxmanage extpack install "$SCRIPTS"/http://download.virtualbox.org/virtualbox/5.1.4/Oracle_VM_VirtualBox_Extension_Pack-5.1.4-110228.vbox-extpack
+vboxmanage extpack install "$SCRIPTS"/Oracle_VM_VirtualBox_Extension_Pack-5.1.4-110228.vbox-extpack
 
 whiptail --msgbox "Virtualbox extension pack is installed..." "$WT_HEIGHT" "$WT_WIDTH"
 }
