@@ -1148,6 +1148,11 @@ do_fail2ban_ssh() {
 PORT1=$(whiptail --inputbox "SSH port? Default port is 22" "$WT_HEIGHT" "$WT_WIDTH" 22 3>&1 1>&2 2>&3)
 
 if [ $(dpkg-query -W -f='${Status}' fail2ban 2>/dev/null | grep -c "ok installed") -eq 1 ]; then
+			if 		[ -f /etc/fail2ban/jail.local ]; then
+				echo "jail.local exists"
+			else
+				cp /etc/fail2ban/jail.conf /etc/fail2ban/jail.local
+			fi
       echo "Fail2Ban is already installed!"
       sed -i "s|port     = ssh|port     = $PORT1|g" /etc/fail2ban/jail.local
       sed -i 's|bantime  = 600|bantime  = 1200|g' /etc/fail2ban/jail.local
@@ -1156,7 +1161,11 @@ if [ $(dpkg-query -W -f='${Status}' fail2ban 2>/dev/null | grep -c "ok installed
       whiptail --msgbox "SSH is now protected with Fail2Ban..." "$WT_HEIGHT" "$WT_WIDTH"
 else
       apt-get install fail2ban -y
-      cp /etc/fail2ban/jail.conf /etc/fail2ban/jail.local
+			if 		[ -f /etc/fail2ban/jail.local ]; then
+				echo "jail.local exists"
+			else
+				cp /etc/fail2ban/jail.conf /etc/fail2ban/jail.local
+			fi
       sed -i "s|port     = ssh|port     = $PORT1|g" /etc/fail2ban/jail.local
       sed -i 's|bantime  = 600|bantime  = 1200|g' /etc/fail2ban/jail.local
       sed -i 's|maxretry = 3|maxretry = 5"|g' /etc/fail2ban/jail.local
