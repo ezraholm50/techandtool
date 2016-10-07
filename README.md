@@ -68,8 +68,12 @@ Index
 * 3.23 Set swappiness
 * 3.24 Delete line containing string
 * 3.25 Upgrade kernel
-* 3.26 Vacant
-* 3.27 Vacant
+* 3.26 Backup system
+* 3.27 Restore backup
+* 3.28 Fail2Ban SSH
+* 3.29 Google auth SSH
+* 3.30 Distribution upgrade
+* 3.31 Check internet speed
 * 4 Install packages menu
 * 4.1 Install packages
 * 4.2 Install Webmin

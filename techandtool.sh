@@ -61,8 +61,12 @@
 # 3.23 Set swappiness
 # 3.24 Delete line containing string
 # 3.25 Upgrade kernel
-# 3.26 Vacant
-# 3.27 Vacant
+# 3.26 Backup system
+# 3.27 Restore backup
+# 3.28 Fail2Ban SSH
+# 3.29 Google auth SSH
+# 3.30 Distribution upgrade
+# 3.31 Check internet speed
 # 4 Install packages menu
 # 4.1 Install packages
 # 4.2 Install Webmin
@@ -505,6 +509,7 @@ FUN=$(whiptail --backtitle "Tools" --title "Tech and Tool - Tools - https://www.
 "29 Distribution upgrade" "Only LTS" \
 "30 Notify email address upon SSH login" "Only for 'ROOT'" \
 "31 Notify email address upon SSH login" "User defined account" \
+"32 Check internet speed" "" \
   3>&1 1>&2 2>&3)
 RET=$?
 if [ $RET -eq 1 ]; then
@@ -539,6 +544,7 @@ elif [ $RET -eq 0 ]; then
     29\ *) do_ltsupgrade ;;
     30\ *) do_rootmailssh ;;
     31\ *) do_usermailssh ;;
+		32\ *) do_internetspeed ;;
     *) whiptail --msgbox "Programmer error: unrecognized option" 20 60 1 ;;
   esac || whiptail --msgbox "There was an error running option $FUN" 20 60 1
 else
@@ -1246,6 +1252,18 @@ EOF
 
 ASK_TO_REBOOT=1
 do_finish
+}
+
+################################ Check internet speed 3.31
+
+do_internetspeed() {
+if 		[ -f /usr/sbin/speedtest-cli ]; then
+	rm /usr/sbin/speedtest-cli
+fi
+	wget -O speedtest-cli https://raw.github.com/sivel/speedtest-cli/master/speedtest_cli.py
+  mv speedtest-cli /usr/sbin/speedtest-cli
+	chmod +x /usr/sbin/speedtest-cli
+	speedtest-cli
 }
 
 ################################################ Install 4
