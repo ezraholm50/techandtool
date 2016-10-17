@@ -1,3 +1,4 @@
+#!/bin/bash
 DOMAIN=$(whiptail --title "Techandme.se Collabora" --inputbox "Nextcloud url, make sure it looks like this: cloud\.yourdomain\.com" $WT_HEIGHT $WT_WIDTH cloud\.yourdomain\.com 3>&1 1>&2 2>&3)
 CLEANDOMAIN=$(whiptail --title "Techandme.se Collabora" --inputbox "Nextcloud url, now make sure it look normal" $WT_HEIGHT $WT_WIDTH cloud.yourdomain.com 3>&1 1>&2 2>&3)
 EDITORDOMAIN=$(whiptail --title "Techandme.se Collabora" --inputbox "Collabora subdomain eg: office.yourdomain.com" $WT_HEIGHT $WT_WIDTH 3>&1 1>&2 2>&3)
