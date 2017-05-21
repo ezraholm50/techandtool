@@ -1,8 +1,9 @@
 #!/bin/bash
-#
+# shellcheck disable=2034,2059
+true
 # VERSION=1.0.0
 #
-# Tech and Me, 2016 - www.techandme.se
+# Tech and Me, 2017 - www.techandme.se
 #
 # Whiptail menu to install various Nextcloud app and do other useful stuf.
 #
